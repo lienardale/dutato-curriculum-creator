@@ -6,12 +6,17 @@ You are an AI agent creating a structured curriculum from source materials for t
 
 This pipeline is designed to survive agent session interruptions. **Every stage writes a checkpoint file before moving to the next.** If your session ends mid-pipeline, the next agent picks up where you left off.
 
-**First thing to do in any session — run status check:**
+**First thing to do in any session — activate the environment and check status:**
 ```bash
-cd tools/curriculum_creator && uv run python status.py output/<name>/
+cd tools/curriculum_creator
+uv sync                        # install/update deps (creates .venv/)
+source .venv/bin/activate      # activate — use plain `python` from now on
+python status.py output/<name>/
 ```
 
 This shows which stages are complete and where to resume. If the output directory doesn't exist yet, start from Stage 1.
+
+> **Important**: Always activate the venv at the start of your session. All commands below use plain `python` (not `python`).
 
 ## Pipeline Overview
 
@@ -57,17 +62,17 @@ Write `output/<name>/manifest.json`:
 For each source in the manifest, run the appropriate extractor:
 
 ```bash
-uv run python -c "from extractors import extract_source; extract_source('<source_path>', 'output/<name>/extracted/')"
+python -c "from extractors import extract_source; extract_source('<source_path>', 'output/<name>/extracted/')"
 ```
 
 Or use specific extractors:
 ```bash
-uv run python -m extractors.pdf /path/to/book.pdf -o output/<name>/extracted/
-uv run python -m extractors.web https://example.com -o output/<name>/extracted/
-uv run python -m extractors.code ./my-repo/ -o output/<name>/extracted/
-uv run python -m extractors.office /path/to/slides.pptx -o output/<name>/extracted/
-uv run python -m extractors.tabular /path/to/data.csv -o output/<name>/extracted/
-uv run python -m extractors.notion /path/to/export.zip -o output/<name>/extracted/
+python -m extractors.pdf /path/to/book.pdf -o output/<name>/extracted/
+python -m extractors.web https://example.com -o output/<name>/extracted/
+python -m extractors.code ./my-repo/ -o output/<name>/extracted/
+python -m extractors.office /path/to/slides.pptx -o output/<name>/extracted/
+python -m extractors.tabular /path/to/data.csv -o output/<name>/extracted/
+python -m extractors.notion /path/to/export.zip -o output/<name>/extracted/
 ```
 
 **Parallelization**: For 3+ sources, spawn one sub-agent per source.
@@ -169,7 +174,7 @@ Rules:
 
 Run the chunking bridge:
 ```bash
-uv run python chunk_bridge.py \
+python chunk_bridge.py \
   --structure output/<name>/structure.json \
   --extracted output/<name>/extracted/ \
   -o output/<name>/chunks.json
@@ -211,12 +216,12 @@ Present the summary to the user. Set `"approved": true` once the user approves.
 
 After user approval:
 ```bash
-uv run python upload.py \
+python upload.py \
   --input output/<name>/ \
   --owner user --user-id <uuid>
 
 # Or for org-owned:
-uv run python upload.py \
+python upload.py \
   --input output/<name>/ \
   --owner org --org-id <org-uuid>
 ```
@@ -251,7 +256,7 @@ After successful upload, write `output/<name>/upload_result.json`:
 ```
 Extract content from [source_path] using the curriculum_creator extractors.
 Working directory: tools/curriculum_creator/
-Run: uv run python -c "from extractors import extract_source; extract_source('[source_path]', 'output/[name]/extracted/')"
+Run: python -c "from extractors import extract_source; extract_source('[source_path]', 'output/[name]/extracted/')"
 Verify the output JSON has non-empty sections.
 Report: source_type, section count, total tokens.
 ```
@@ -270,7 +275,7 @@ Return the JSON object (do NOT write to disk — the main agent will merge).
 
 If you are a NEW agent session resuming this pipeline:
 
-1. Run `uv run python status.py output/<name>/` to see progress
+1. Run `python status.py output/<name>/` to see progress
 2. Read `manifest.json` to understand the curriculum
 3. Check which checkpoint files exist
 4. Read the most recent checkpoint to get context

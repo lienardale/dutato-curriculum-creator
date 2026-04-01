@@ -23,7 +23,8 @@ You → Launch AI agent session → Agent processes sources → Structured curri
 
 ```bash
 cd tools/curriculum_creator
-uv sync
+uv sync                    # creates .venv/ with all dependencies
+source .venv/bin/activate  # activate — use plain `python` from now on
 ```
 
 ### Create a Curriculum
@@ -51,7 +52,7 @@ Create a curriculum about Kubernetes from these sources:
 If you already have a curriculum output directory:
 
 ```bash
-uv run python upload.py \
+python upload.py \
   --input output/my-curriculum/ \
   --owner user --user-id <your-uuid>
 ```
@@ -61,7 +62,7 @@ uv run python upload.py \
 To set up your own database with the DuTaTo schema:
 
 ```bash
-uv run python setup_db.py --db-url postgresql://... --apply-migrations
+python setup_db.py --db-url postgresql://... --apply-migrations
 ```
 
 ## Supported Source Types
