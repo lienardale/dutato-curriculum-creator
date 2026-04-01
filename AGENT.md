@@ -299,6 +299,71 @@ After successful upload, write `output/<name>/upload_result.json`:
 
 ---
 
+## Stage 8 (Optional): CONDENSE (checkpoint: `condensation_plan.json`)
+
+After the extensive curriculum is uploaded, the user may ask for condensed variants: **detailed** (~10x shorter), **classic** (~100x shorter), **core** (~1000x shorter).
+
+### Process
+
+1. Read `structure.json` and `chunks.json` to understand the full curriculum
+2. Follow `rubrics/condensation.md` for tier budgets and selection criteria
+3. For each tier, decide which topics to keep, merge, drop, or synthesize
+4. For `merge`/`synthesize` strategies, **write the condensed content yourself** — read the original chunks, reason about what's essential, and write new concise text
+5. Write the plan to `output/<name>/condensation_plan.json`
+
+### Write `output/<name>/condensation_plan.json`:
+```json
+{
+  "detailed": [
+    {
+      "title": "SQL Fundamentals",
+      "description": "Core SQL language concepts",
+      "suggested_level": 1,
+      "condensation_strategy": "keep",
+      "source_topics": ["SQL Fundamentals"],
+      "children": [
+        {
+          "title": "Basic Queries",
+          "description": "SELECT, INSERT, UPDATE, DELETE",
+          "condensation_strategy": "merge",
+          "source_children": ["2.5. Querying a Table", "2.4. Populating a Table With Rows"],
+          "content": "Your merged text covering both children..."
+        }
+      ]
+    }
+  ],
+  "classic": [ ... ],
+  "core": [ ... ]
+}
+```
+
+Key rules:
+- `source_topics` / `source_children` trace back to original topic titles
+- For strategy `keep`: `condense.py` copies original chunks automatically
+- For strategy `merge` or `synthesize`: you **must** include a `content` field with the text you wrote
+- Each chunk should be 200-2000 tokens
+- Maintain pedagogical ordering within each tier
+
+### Present the plan to the user for review, then run:
+```bash
+python condense.py --input output/<name>/ --plan output/<name>/condensation_plan.json
+```
+
+This produces `output/<name>/variants/{tier}/` directories with standard files (manifest.json, structure.json, chunks.json).
+
+### Upload each variant:
+```bash
+python upload.py --input output/<name>/variants/detailed/ --owner user --user-id <uuid>
+python upload.py --input output/<name>/variants/classic/  --owner user --user-id <uuid>
+python upload.py --input output/<name>/variants/core/     --owner user --user-id <uuid>
+```
+
+The manifest includes `domain_family` and `variant` fields, so the Flutter app groups them with the extensive domain under one card.
+
+**Resume rule**: If `condensation_plan.json` exists, read it. Check which `variants/*/` directories already have all 3 output files — only re-assemble missing tiers.
+
+---
+
 ## Sub-Agent Guidance
 
 ### When to use sub-agents

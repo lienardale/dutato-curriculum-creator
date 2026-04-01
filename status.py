@@ -23,6 +23,7 @@ STAGES = [
     ("chunk", "chunks.json", "Content chunked"),
     ("review", "review.json", "Quality reviewed"),
     ("upload", "upload_result.json", "Uploaded to Supabase"),
+    ("condense", "condensation_plan.json", "Condensed variants planned (optional)"),
 ]
 
 

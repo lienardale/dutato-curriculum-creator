@@ -73,6 +73,8 @@ def create_domain(
     org_id: str | None = None,
     icon_name: str = "school",
     sort_order: int = 99,
+    domain_family: str | None = None,
+    variant: str | None = None,
 ) -> str:
     """Create a new domain or return existing ID."""
     # Check if domain already exists by slug
@@ -96,6 +98,10 @@ def create_domain(
         row["owner_id"] = owner_id
     if org_id:
         row["org_id"] = org_id
+    if domain_family:
+        row["domain_family"] = _sanitize(domain_family)
+    if variant:
+        row["variant"] = variant
 
     client.table("domains").insert(row).execute()
     console.print(f"  [green]✓[/] Created domain: {name} ({domain_id})")
@@ -509,9 +515,13 @@ def upload_curriculum(
     slug = manifest.get("domain", input_dir.name).lower().replace(" ", "-")
     description = manifest.get("description", "")
     sort_order = manifest.get("sort_order", 99)
+    domain_family = manifest.get("domain_family")
+    variant = manifest.get("variant")
 
     console.print(f"\n[bold blue]Uploading curriculum:[/] {name}")
     console.print(f"  Domain: {slug}")
+    if variant:
+        console.print(f"  Variant: {variant} (family: {domain_family})")
     console.print(f"  Topics: {_count_topics(topics)}")
     console.print(f"  Chunks: {len(chunks)}")
 
@@ -524,6 +534,8 @@ def upload_curriculum(
         owner_id=user_id,
         org_id=org_id if owner_type == "org" else None,
         sort_order=sort_order,
+        domain_family=domain_family,
+        variant=variant,
     )
 
     # Create curriculum levels from suggested_level values
