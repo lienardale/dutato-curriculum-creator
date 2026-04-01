@@ -72,20 +72,25 @@ def _get_extractor(source_type: str):
         raise ValueError(f"Unknown source type: {source_type}")
 
 
-def extract_source(source: str, output_dir: str | None = None) -> dict:
+def extract_source(source: str, output_dir: str | None = None, **kwargs) -> dict:
     """
     Extract content from a source (auto-detected type).
 
     Args:
         source: File path, URL, or directory path.
         output_dir: If provided, save the intermediate JSON there.
+        **kwargs: Extra arguments forwarded to the extractor (e.g. crawl
+                  params for the web extractor).
 
     Returns:
         The intermediate JSON dict.
     """
     source_type = _detect_source_type(source)
     extractor = _get_extractor(source_type)
-    result = extractor(source)
+    if source_type == "web" and kwargs:
+        result = extractor(source, **kwargs)
+    else:
+        result = extractor(source)
 
     # Ensure metadata has extracted_at timestamp
     result.setdefault("metadata", {})

@@ -75,6 +75,22 @@ python -m extractors.tabular /path/to/data.csv -o output/<name>/extracted/
 python -m extractors.notion /path/to/export.zip -o output/<name>/extracted/
 ```
 
+**Multi-page web sources** (documentation sites, tutorials with subpages):
+When a URL points to a table-of-contents or index page, use `--crawl` to follow
+links to subpages. This is essential for sites where the entry page is just a TOC.
+
+```bash
+python -m extractors.web https://docs.example.com/tutorial --crawl -o output/<name>/extracted/
+```
+
+Safety limits (all configurable):
+- `--max-pages 50` — absolute cap on subpages fetched
+- `--max-depth 1` — link-following hops (1 = direct links only, no recursive discovery)
+- `--max-tokens 200000` — stop when accumulated tokens exceed budget
+
+Only links sharing the entry URL's path prefix are followed (e.g. for
+`/docs/current/tutorial.html`, only `/docs/current/tutorial-*.html` pages).
+
 **Parallelization**: For 3+ sources, spawn one sub-agent per source.
 
 **Resume rule**: Check which source files already have a corresponding JSON in `extracted/`. Only extract missing ones.
