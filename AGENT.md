@@ -1,79 +1,132 @@
 # Curriculum Creator — Agent Instructions
 
-You are an AI agent creating a structured curriculum from source materials for the DuTaTo learning platform. This document guides you through the full pipeline.
+You are an AI agent creating a structured curriculum from source materials for the DuTaTo learning platform.
 
-## Overview
+## CRITICAL: Resumability
 
-You will:
-1. **Extract** content from source files using Python scripts
-2. **Explore** the extracted content to understand key concepts
-3. **Structure** a topic hierarchy with levels and ordering
-4. **Chunk** the content aligned to topics
-5. **Review** the output quality with the user
-6. **Upload** to Supabase
+This pipeline is designed to survive agent session interruptions. **Every stage writes a checkpoint file before moving to the next.** If your session ends mid-pipeline, the next agent picks up where you left off.
 
-Your working directory is `tools/curriculum_creator/`. All output goes to `output/{curriculum_name}/`.
-
-## Prerequisites
-
-Before starting, ensure dependencies are installed:
+**First thing to do in any session — run status check:**
 ```bash
-cd tools/curriculum_creator && uv sync
+cd tools/curriculum_creator && uv run python status.py output/<name>/
 ```
 
-## Step 1: Extract Sources
+This shows which stages are complete and where to resume. If the output directory doesn't exist yet, start from Stage 1.
 
-For each source file the user provides, run the appropriate extractor:
+## Pipeline Overview
 
-```bash
-# Auto-detect source type
-uv run python -c "from extractors import extract_source; extract_source('<source_path>', 'output/<name>/extracted/')"
-
-# Or use specific extractors directly
-uv run python -m extractors.pdf /path/to/book.pdf -o output/<name>/extracted/
-uv run python -m extractors.web https://example.com/docs -o output/<name>/extracted/
-uv run python -m extractors.code ./my-repo/ -o output/<name>/extracted/
-uv run python -m extractors.office /path/to/slides.pptx -o output/<name>/extracted/
-uv run python -m extractors.tabular /path/to/data.csv -o output/<name>/extracted/
-uv run python -m extractors.notion /path/to/export.zip -o output/<name>/extracted/
+```
+1. MANIFEST    → manifest.json         (curriculum metadata)
+2. EXTRACT     → extracted/*.json      (one per source)
+3. EXPLORE     → exploration.json      (concept analysis — MUST be saved)
+4. STRUCTURE   → structure.json        (topic hierarchy)
+5. CHUNK       → chunks.json           (content chunks)
+6. REVIEW      → review.json           (quality report)
+7. UPLOAD      → upload_result.json    (domain ID + stats)
 ```
 
-**Parallelization**: If there are multiple sources, spawn sub-agents to extract them in parallel. Each sub-agent runs one extractor and saves to the shared `output/<name>/extracted/` directory.
+Every stage has a checkpoint file. **Do NOT proceed to the next stage until the checkpoint is written to disk.**
 
-After extraction, read each JSON file to verify it has sections with content.
+---
 
-## Step 2: Create Manifest
+## Stage 1: MANIFEST (checkpoint: `manifest.json`)
+
+**Write this first**, before any extraction. It records what the user asked for so the next agent session knows the curriculum name, domain, and intended sources.
 
 Write `output/<name>/manifest.json`:
 ```json
 {
   "name": "Curriculum Display Name",
   "domain": "domain-slug",
-  "description": "One-line description of what this curriculum covers",
+  "description": "One-line description",
   "sources": [
-    {"type": "pdf", "path": "/path/to/source.pdf", "title": "Source Title"}
+    {"type": "pdf", "path": "/path/to/source.pdf", "title": "Source Title"},
+    {"type": "url", "path": "https://example.com/docs", "title": "Online Docs"}
   ],
   "created_at": "2026-03-31T12:00:00Z",
   "created_by": "agent"
 }
 ```
 
-## Step 3: Explore Content
+**Resume rule**: If `manifest.json` exists, read it to understand the curriculum context. Ask the user if anything changed.
 
-Read all extracted JSON files from `output/<name>/extracted/`. For each one, read the section titles and sample content.
+---
 
-Follow `rubrics/exploration.md` to:
-1. Identify the key concepts across all sources
-2. Map relationships between concepts (prerequisites, related, contrasting)
-3. Assess coverage: what's well-covered, what's thin, what's missing
-4. Note which sources cover which concepts
+## Stage 2: EXTRACT (checkpoint: `extracted/*.json`)
 
-**Present your exploration findings to the user** before proceeding:
-- List the main concept areas you identified
-- Note any gaps in coverage
-- Ask if they want to add more sources or adjust focus
+For each source in the manifest, run the appropriate extractor:
 
-## Step 4: Build Topic Hierarchy
+```bash
+uv run python -c "from extractors import extract_source; extract_source('<source_path>', 'output/<name>/extracted/')"
+```
+
+Or use specific extractors:
+```bash
+uv run python -m extractors.pdf /path/to/book.pdf -o output/<name>/extracted/
+uv run python -m extractors.web https://example.com -o output/<name>/extracted/
+uv run python -m extractors.code ./my-repo/ -o output/<name>/extracted/
+uv run python -m extractors.office /path/to/slides.pptx -o output/<name>/extracted/
+uv run python -m extractors.tabular /path/to/data.csv -o output/<name>/extracted/
+uv run python -m extractors.notion /path/to/export.zip -o output/<name>/extracted/
+```
+
+**Parallelization**: For 3+ sources, spawn one sub-agent per source.
+
+**Resume rule**: Check which source files already have a corresponding JSON in `extracted/`. Only extract missing ones.
+
+---
+
+## Stage 3: EXPLORE (checkpoint: `exploration.json`)
+
+This is the most expensive stage — you read all extracted content and analyze it. **You MUST save your analysis to `exploration.json` before proceeding.** If your session ends during exploration, the next agent reads this file instead of re-analyzing everything.
+
+### Process
+
+1. Read each extracted JSON from `output/<name>/extracted/`
+2. Follow `rubrics/exploration.md` to analyze content
+3. **Write per-source analysis incrementally** — if processing 5 sources, write after each one so partial progress is saved
+
+### Write `output/<name>/exploration.json`:
+```json
+{
+  "concepts": [
+    {
+      "name": "Binary Search",
+      "sources": ["algorithms-book.json", "coding-interview.json"],
+      "coverage": "strong",
+      "prerequisites": ["Arrays", "Sorting"],
+      "notes": "Well covered with examples in both sources"
+    }
+  ],
+  "gaps": [
+    {
+      "concept": "Amortized Analysis",
+      "severity": "recommended",
+      "suggestion": "Consider adding a source on algorithm analysis"
+    }
+  ],
+  "concept_order": ["Arrays", "Sorting", "Binary Search", "Trees", "Graphs"],
+  "coverage_summary": "Core data structures well covered. Algorithm analysis is thin.",
+  "per_source_analysis": {
+    "algorithms-book.json": {
+      "section_count": 25,
+      "key_concepts": ["Sorting", "Searching", "Graphs", "Dynamic Programming"],
+      "quality": 4,
+      "notes": "Comprehensive textbook, strong on theory"
+    }
+  }
+}
+```
+
+The `per_source_analysis` field is critical — it lets a resuming agent skip re-reading sources that were already analyzed. **Write this field incrementally as you process each source.**
+
+**Present findings to the user** and ask if they want to add more sources or adjust focus.
+
+**Resume rule**: If `exploration.json` exists, read it. Check `per_source_analysis` — if some sources are missing, only analyze those. If all sources are analyzed, skip to presenting findings.
+
+---
+
+## Stage 4: STRUCTURE (checkpoint: `structure.json`)
 
 Following `rubrics/structuring.md`, create the topic hierarchy.
 
@@ -81,10 +134,10 @@ Write `output/<name>/structure.json`:
 ```json
 [
   {
-    "title": "Topic Level 1",
+    "title": "Topic Title",
     "depth": 0,
     "sort_order": 0,
-    "description": "What this topic covers",
+    "description": "What this covers",
     "suggested_level": 1,
     "children": [
       {
@@ -101,15 +154,18 @@ Write `output/<name>/structure.json`:
 ```
 
 Rules:
-- Maximum 3 levels of depth (0, 1, 2)
-- Each leaf topic should map to 1-5 extracted sections via `source_sections`
-- Order topics from foundational → advanced
+- Maximum 3 depth levels (0, 1, 2)
+- Each leaf topic maps to 1-5 extracted sections via `source_sections`
+- Order: foundational → advanced
 - Assign `suggested_level` (1 = beginner, 2 = intermediate, 3 = advanced)
-- Every extracted section must appear in at least one topic's `source_sections`
 
-**Present the structure to the user** for review. Be ready to iterate.
+**Present the structure to the user** for review. Iterate if needed — overwrite `structure.json` with updates.
 
-## Step 5: Chunk Content
+**Resume rule**: If `structure.json` exists, show it to the user and ask if changes are needed.
+
+---
+
+## Stage 5: CHUNK (checkpoint: `chunks.json`)
 
 Run the chunking bridge:
 ```bash
@@ -119,56 +175,79 @@ uv run python chunk_bridge.py \
   -o output/<name>/chunks.json
 ```
 
-Verify the output: read `chunks.json` and check:
-- All topics have at least one chunk
-- No chunks are empty
-- Token counts are in the 500-1500 range (most of them)
-- Total chunk count is reasonable for the content volume
+Verify: read `chunks.json` and check token counts are in the 500-1500 range.
 
-## Step 6: Review
+**Resume rule**: If `chunks.json` exists and `structure.json` hasn't changed, skip. If the structure was modified, re-run chunking.
 
-Follow `rubrics/review_checklist.md` to verify quality:
-- [ ] All source content is represented in chunks
-- [ ] Topic hierarchy is balanced (no topic has 50 chunks while another has 1)
-- [ ] No orphan chunks (chunks without a matching topic)
-- [ ] Content makes sense when read topic-by-topic
-- [ ] Levels are assigned correctly (foundational topics at level 1)
+---
 
-**Present a summary to the user**:
-- Total topics, chunks, tokens
-- Per-topic chunk distribution
-- Any quality concerns
-- Ask for final approval to upload
+## Stage 6: REVIEW (checkpoint: `review.json`)
 
-## Step 7: Upload
+Follow `rubrics/review_checklist.md` to verify quality. **Save the review results.**
+
+Write `output/<name>/review.json`:
+```json
+{
+  "total_topics": 25,
+  "total_chunks": 142,
+  "total_tokens": 95000,
+  "avg_tokens_per_chunk": 669,
+  "chunks_per_topic": {"min": 1, "max": 15, "avg": 5.7},
+  "empty_topics": [],
+  "orphan_chunks": 0,
+  "quality_concerns": ["Topic 'Advanced Patterns' has only 1 chunk"],
+  "approved": false,
+  "reviewed_at": "2026-03-31T14:00:00Z"
+}
+```
+
+Present the summary to the user. Set `"approved": true` once the user approves.
+
+**Resume rule**: If `review.json` exists with `"approved": true`, skip to upload. If `"approved": false`, present the concerns and ask the user again.
+
+---
+
+## Stage 7: UPLOAD (checkpoint: `upload_result.json`)
 
 After user approval:
 ```bash
 uv run python upload.py \
   --input output/<name>/ \
   --owner user --user-id <uuid>
-```
 
-Or for org-owned:
-```bash
+# Or for org-owned:
 uv run python upload.py \
   --input output/<name>/ \
   --owner org --org-id <org-uuid>
 ```
 
-Report the domain ID back to the user.
+**Ask the user** for owner details (user-id, org-id) — never guess.
+
+After successful upload, write `output/<name>/upload_result.json`:
+```json
+{
+  "domain_id": "uuid-here",
+  "topics_inserted": 25,
+  "chunks_inserted": 142,
+  "target": "default",
+  "owner_type": "user",
+  "uploaded_at": "2026-03-31T15:00:00Z"
+}
+```
+
+**Resume rule**: If `upload_result.json` exists, the pipeline is complete. Report the domain ID to the user.
+
+---
 
 ## Sub-Agent Guidance
 
 ### When to use sub-agents
 
-- **Parallel extraction**: One sub-agent per source file (if >2 sources)
-- **Large content exploration**: One sub-agent per source for initial analysis, then merge findings in the main agent
-- **Review**: One sub-agent to validate chunk quality while the main agent prepares the summary
+- **Parallel extraction**: One sub-agent per source (if >2 sources)
+- **Large content exploration**: One sub-agent per source to write `per_source_analysis`, then merge
+- **Review**: One sub-agent to validate chunk quality
 
-### Sub-agent prompt template
-
-When spawning a sub-agent for extraction:
+### Sub-agent prompt template for extraction
 ```
 Extract content from [source_path] using the curriculum_creator extractors.
 Working directory: tools/curriculum_creator/
@@ -177,26 +256,38 @@ Verify the output JSON has non-empty sections.
 Report: source_type, section count, total tokens.
 ```
 
-When spawning a sub-agent for exploration:
+### Sub-agent prompt template for per-source exploration
 ```
 Read the extracted JSON at output/[name]/extracted/[file].json.
-Follow the rubrics/exploration.md instructions to analyze the content.
-Report: key concepts found, relationships, coverage quality (1-5).
+Follow rubrics/exploration.md to analyze the content.
+Write your analysis as a JSON object with keys: section_count, key_concepts (list), quality (1-5), notes.
+Return the JSON object (do NOT write to disk — the main agent will merge).
 ```
 
-## Resumability
+---
 
-Before each step, check if the output already exists:
-- `output/<name>/extracted/*.json` → skip extraction
-- `output/<name>/structure.json` → skip exploration + structuring (ask user if they want to redo)
-- `output/<name>/chunks.json` → skip chunking
-- Manifest always gets regenerated
+## Session Handoff Checklist
 
-If the user says "resume", check what exists and continue from there.
+If you are a NEW agent session resuming this pipeline:
+
+1. Run `uv run python status.py output/<name>/` to see progress
+2. Read `manifest.json` to understand the curriculum
+3. Check which checkpoint files exist
+4. Read the most recent checkpoint to get context
+5. Resume from the next incomplete stage
+6. **Do NOT re-do completed stages** unless the user explicitly asks
+
+If you are ENDING your session before the pipeline is complete:
+
+1. **Save your current work** — write whatever checkpoint you have, even partial
+2. If mid-exploration, write `exploration.json` with whatever `per_source_analysis` you've completed so far
+3. Tell the user which stage you stopped at and what remains
+
+---
 
 ## Error Handling
 
-- **Extraction fails**: Report the error, skip the source, ask user if they want to retry or continue without it
-- **No sections extracted**: The source may be an image-heavy PDF or a binary file. Tell the user and suggest alternatives
-- **Chunking produces 0 chunks**: The structure.json titles likely don't match extracted section titles. Check the mapping and fix structure.json
-- **Upload fails**: Check Supabase credentials in .env. Report the specific error to the user
+- **Extraction fails**: Report the error, skip that source, continue with others
+- **No sections extracted**: The source may be image-heavy or binary. Tell the user
+- **Chunking produces 0 chunks**: Structure titles likely don't match extracted sections — check the mapping
+- **Upload fails**: Check Supabase credentials in `.env`. Report the error
