@@ -44,6 +44,7 @@ Write `output/<name>/manifest.json`:
   "name": "Curriculum Display Name",
   "domain": "domain-slug",
   "description": "One-line description",
+  "sort_order": 3,
   "sources": [
     {"type": "pdf", "path": "/path/to/source.pdf", "title": "Source Title"},
     {"type": "url", "path": "https://example.com/docs", "title": "Online Docs"}
@@ -52,6 +53,8 @@ Write `output/<name>/manifest.json`:
   "created_by": "agent"
 }
 ```
+
+- `sort_order` (optional): Controls display position in the app. Lower numbers appear first. Defaults to 99 if omitted.
 
 **Resume rule**: If `manifest.json` exists, read it to understand the curriculum context. Ask the user if anything changed.
 
@@ -240,16 +243,52 @@ python upload.py \
 python upload.py \
   --input output/<name>/ \
   --owner org --org-id <org-uuid>
+
+# Incremental update (add new topics only, skip existing):
+python upload.py \
+  --input output/<name>/ \
+  --owner user --user-id <uuid> --update
+
+# Incremental update + refresh chunk content for existing topics:
+python upload.py \
+  --input output/<name>/ \
+  --owner user --user-id <uuid> --update --replace-chunks
 ```
 
 **Ask the user** for owner details (user-id, org-id) — never guess.
+
+### Curriculum Levels
+
+The `suggested_level` values in structure.json automatically create `curriculum_levels` rows during upload:
+- Level 1 → "Fundamentals" (definitions, core concepts, basic examples)
+- Level 2 → "Intermediate" (techniques, patterns, comparative analysis)
+- Level 3 → "Advanced" (complex applications, trade-offs, synthesis)
+
+The Flutter app uses these levels to group topics by difficulty tier and guide learning progression from basic to advanced. Without levels, all topics appear in a flat list.
+
+### Update Mode
+
+Use `--update` when expanding an existing curriculum with additional sources:
+- Topics are matched by (title, depth, parent_title) — existing topics are skipped
+- Chunks are matched by (topic_id, chunk_index) — existing chunks are skipped
+- Add `--replace-chunks` to refresh content for existing topics instead of skipping
+
+**Workflow for expanding a curriculum:**
+1. Add new sources to `manifest.json`
+2. Re-run extraction for the new sources only
+3. Re-run exploration, structure, and chunking (the full pipeline)
+4. Upload with `--update` to add only the new content
 
 After successful upload, write `output/<name>/upload_result.json`:
 ```json
 {
   "domain_id": "uuid-here",
   "topics_inserted": 25,
+  "topics_skipped": 0,
   "chunks_inserted": 142,
+  "chunks_skipped": 0,
+  "chunks_replaced": 0,
+  "update_mode": false,
   "target": "default",
   "owner_type": "user",
   "uploaded_at": "2026-03-31T15:00:00Z"

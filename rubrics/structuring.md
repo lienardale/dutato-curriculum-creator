@@ -37,6 +37,8 @@ Guidelines:
 - Level 3 should cover ~30%
 - A topic's level is determined by the _most advanced_ concept it contains
 
+**Database effect**: During upload, `suggested_level` creates `curriculum_levels` rows (Fundamentals / Intermediate / Advanced) and links depth-0 topics via `curriculum_level_id`. The app uses these tiers to group topics and guide learning progression from basic to advanced.
+
 ## Section Mapping
 
 Each leaf topic (no children) must have `source_sections` listing which extracted sections contain its content:
