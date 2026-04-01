@@ -24,7 +24,12 @@ from pathlib import Path
 
 import _compat  # noqa: F401
 
-from chunk import chunk_by_topics, count_tokens
+from chunk import chunk_by_topics, chunk_text, count_tokens
+
+
+def _normalize(text: str) -> str:
+    """Normalize whitespace (including non-breaking spaces) for matching."""
+    return text.replace("\xa0", " ").strip()
 
 
 def _load_extracted_sections(extracted_dir: Path) -> list[dict]:
@@ -40,16 +45,21 @@ def _load_extracted_sections(extracted_dir: Path) -> list[dict]:
     return all_sections
 
 
-def _build_section_index(sections: list[dict]) -> dict[str, str]:
-    """Build a lookup: section_title → section_content."""
-    index = {}
+def _build_section_index(
+    sections: list[dict],
+) -> tuple[dict[str, str], dict[str, str]]:
+    """Build lookups: normalized_title → content, and normalized_title → source_path."""
+    content_index: dict[str, str] = {}
+    source_index: dict[str, str] = {}
     for section in sections:
         title = section.get("title", "")
         if title:
-            index[title] = section.get("content", "")
-            # Also store lowercase version for fuzzy matching
-            index[title.lower()] = section.get("content", "")
-    return index
+            norm = _normalize(title)
+            content_index[norm] = section.get("content", "")
+            content_index[norm.lower()] = section.get("content", "")
+            source_index[norm] = section.get("_source", "")
+            source_index[norm.lower()] = section.get("_source", "")
+    return content_index, source_index
 
 
 def _assign_synthetic_pages(sections: list[dict]) -> list[dict]:
@@ -84,8 +94,12 @@ def _convert_structure_to_topic_tree(
     for item in structure:
         title = item.get("title", "Untitled")
 
-        # Try to find matching section content
-        content = section_index.get(title, "") or section_index.get(title.lower(), "")
+        # Try to find matching section content (normalize for non-breaking spaces)
+        norm_title = _normalize(title)
+        content = (
+            section_index.get(norm_title, "")
+            or section_index.get(norm_title.lower(), "")
+        )
 
         # Calculate page range
         if content:
@@ -160,10 +174,116 @@ def _sections_to_pages(sections: list[dict], tokens_per_page: int = 500) -> list
     return pages
 
 
+def _collect_leaf_topics(
+    structure: list[dict],
+    parent_path: list[str] | None = None,
+) -> list[dict]:
+    """Flatten structure into leaf topics with topic_path and source_sections."""
+    if parent_path is None:
+        parent_path = []
+    leaves = []
+    for item in structure:
+        path = parent_path + [item["title"]]
+        children = item.get("children", [])
+        if children:
+            leaves.extend(_collect_leaf_topics(children, path))
+        else:
+            leaves.append({
+                "topic_path": path,
+                "source_sections": item.get("source_sections", []),
+                "title": item["title"],
+            })
+    return leaves
+
+
+def _has_source_sections(topics: list[dict]) -> bool:
+    """Check if any leaf topic in the structure has source_sections."""
+    for item in topics:
+        children = item.get("children", [])
+        if children:
+            if _has_source_sections(children):
+                return True
+        elif item.get("source_sections"):
+            return True
+    return False
+
+
+def _chunk_by_source_sections(
+    topics: list[dict],
+    section_index: dict[str, str],
+    source_index: dict[str, str],
+) -> list[dict]:
+    """
+    Chunk by directly mapping source_sections to extracted content.
+
+    This approach bypasses the synthetic page system and works correctly
+    regardless of how many sections exist in the extracted data.
+    """
+    leaves = _collect_leaf_topics(topics)
+    all_chunks = []
+
+    for leaf in leaves:
+        parts = []
+        sources = set()
+
+        # Collect content from all source_sections
+        for sec_title in leaf["source_sections"]:
+            norm = _normalize(sec_title)
+            content = (
+                section_index.get(norm)
+                or section_index.get(norm.lower())
+            )
+            if content:
+                parts.append(content)
+                src = (
+                    source_index.get(norm)
+                    or source_index.get(norm.lower(), "")
+                )
+                if src:
+                    sources.add(src)
+
+        # Fallback: try matching the topic title itself
+        if not parts:
+            norm = _normalize(leaf["title"])
+            content = (
+                section_index.get(norm)
+                or section_index.get(norm.lower())
+            )
+            if content:
+                parts.append(content)
+                src = (
+                    source_index.get(norm)
+                    or source_index.get(norm.lower(), "")
+                )
+                if src:
+                    sources.add(src)
+
+        if not parts:
+            continue
+
+        full_text = "\n\n".join(parts)
+        source_path = next(iter(sources), "")
+        chunks = chunk_text(full_text, max_tokens=1500, min_tokens=200)
+
+        for i, chunk in enumerate(chunks):
+            chunk["topic_path"] = leaf["topic_path"]
+            chunk["chunk_index"] = i
+            chunk["page_number"] = 1
+            if source_path:
+                chunk["_source"] = source_path
+            all_chunks.append(chunk)
+
+    return all_chunks
+
+
 def bridge_and_chunk(structure_path: Path, extracted_dir: Path) -> list[dict]:
     """
     Main bridge function: reads structure + extracted data,
     converts formats, runs chunking, returns chunks.
+
+    Uses source_sections-based direct chunking when available (works for
+    any document size). Falls back to synthetic page alignment for legacy
+    structures without source_sections.
     """
     # Load structure
     with open(structure_path, encoding="utf-8") as f:
@@ -174,18 +294,19 @@ def bridge_and_chunk(structure_path: Path, extracted_dir: Path) -> list[dict]:
 
     # Load all extracted sections
     sections = _load_extracted_sections(extracted_dir)
-    section_index = _build_section_index(sections)
+    section_index, source_index = _build_section_index(sections)
 
-    # Convert structure to topic tree format
+    # Prefer source_sections-based chunking (handles large documents correctly)
+    if _has_source_sections(topics):
+        return _chunk_by_source_sections(topics, section_index, source_index)
+
+    # Legacy fallback: synthetic page alignment (for structures without source_sections)
     topic_tree, _ = _convert_structure_to_topic_tree(topics, section_index)
-
-    # Create synthetic pages from sections
     pages = _sections_to_pages(sections)
 
     if not pages:
         return []
 
-    # Run chunking
     chunks = chunk_by_topics(pages, topic_tree)
     return chunks
 

@@ -132,10 +132,38 @@ def insert_topics(
     return path_to_id
 
 
+def insert_books(
+    client,
+    domain_id: str,
+    sources: list[dict],
+) -> dict[str, str]:
+    """Create a book record for each manifest source. Returns source_path → book_id."""
+    source_to_book: dict[str, str] = {}
+
+    for source in sources:
+        book_id = str(uuid.uuid4())
+        source_path = source.get("path", "")
+        file_name = Path(source_path).name if source_path else None
+
+        client.table("books").insert({
+            "id": book_id,
+            "domain_id": domain_id,
+            "title": _sanitize(source.get("title", file_name or "Untitled")),
+            "author": _sanitize(source.get("author")),
+            "file_name": file_name,
+        }).execute()
+
+        source_to_book[source_path] = book_id
+
+    console.print(f"  [green]✓[/] {len(source_to_book)} books created")
+    return source_to_book
+
+
 def insert_chunks(
     client,
     chunks: list[dict],
     path_to_id: dict[str, str],
+    source_to_book: dict[str, str] | None = None,
 ) -> int:
     """Insert content chunks, matching each to its topic. Returns count."""
     inserted = 0
@@ -143,6 +171,13 @@ def insert_chunks(
 
     # Build case-insensitive lookup
     lower_to_id = {k.lower(): v for k, v in path_to_id.items()}
+
+    # Fallback book_id: use the first book if available
+    fallback_book_id = (
+        next(iter(source_to_book.values()))
+        if source_to_book
+        else None
+    )
 
     batch = []
     for chunk in chunks:
@@ -167,6 +202,13 @@ def insert_chunks(
             skipped += 1
             continue
 
+        # Determine book_id from chunk's _source field
+        book_id = fallback_book_id
+        if source_to_book:
+            chunk_source = chunk.get("_source", "")
+            if chunk_source and chunk_source in source_to_book:
+                book_id = source_to_book[chunk_source]
+
         meta = {"has_code": chunk.get("has_code", False)}
         extra = chunk.get("metadata", {})
         if isinstance(extra, dict):
@@ -175,7 +217,7 @@ def insert_chunks(
         batch.append({
             "id": str(uuid.uuid4()),
             "topic_id": topic_id,
-            "book_id": None,
+            "book_id": book_id,
             "chunk_index": chunk.get("chunk_index", 0),
             "content": _sanitize(content),
             "page_number": chunk.get("page_number"),
@@ -257,6 +299,13 @@ def upload_curriculum(
         org_id=org_id if owner_type == "org" else None,
     )
 
+    # Create books from manifest sources
+    sources = manifest.get("sources", [])
+    source_to_book = {}
+    if sources:
+        console.print("  Creating books...")
+        source_to_book = insert_books(client, domain_id, sources)
+
     # Insert topics
     console.print("  Inserting topics...")
     path_to_id = insert_topics(client, domain_id, topics)
@@ -264,7 +313,7 @@ def upload_curriculum(
 
     # Insert chunks
     console.print("  Inserting chunks...")
-    inserted = insert_chunks(client, chunks, path_to_id)
+    inserted = insert_chunks(client, chunks, path_to_id, source_to_book)
     console.print(f"  [green]✓[/] {inserted} chunks inserted")
 
     console.print(f"\n  [bold green]Done![/] Domain ID: {domain_id}")
