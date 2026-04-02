@@ -1,8 +1,12 @@
 # Working directory — generated output per curriculum
 output/*/
 
+# Input directory — curriculum source files
+input/*/
+
 # Keep the directory
 !output/.gitkeep
+!input/.gitkeep
 
 # Python
 __pycache__/
