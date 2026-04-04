@@ -2,7 +2,7 @@
 Semantic chunking: split extracted text into chunks aligned with topic boundaries.
 
 Each chunk is 500-1500 tokens, split at paragraph boundaries, never mid-sentence
-or mid-code-block.
+or mid-code-block.  Headings are kept with their body content.
 """
 
 import json
@@ -15,6 +15,8 @@ import tiktoken
 
 # Use cl100k_base encoding (compatible with Claude's tokenizer)
 _encoder = tiktoken.get_encoding("cl100k_base")
+
+_HEADING_RE = re.compile(r"^#{1,6}\s")
 
 
 def count_tokens(text: str) -> int:
@@ -43,33 +45,63 @@ def is_code_block(text: str) -> bool:
     return code_indicators / max(len(lines), 1) > 0.3
 
 
+def _is_heading(text: str) -> bool:
+    """Check if text starts with a markdown heading."""
+    return bool(_HEADING_RE.match(text.strip()))
+
+
 def split_into_paragraphs(text: str) -> list[str]:
-    """Split text into paragraphs, keeping code blocks together."""
-    # Split on double newlines
-    raw_paragraphs = re.split(r"\n\s*\n", text)
+    """Split text into paragraphs, keeping fenced code blocks intact.
 
-    paragraphs = []
-    code_buffer = []
-    in_code = False
+    Handles two code block formats:
+    - Fenced code blocks (```) are never split, even with internal blank lines
+    - Indentation-based code blocks are grouped via heuristic (legacy)
+    """
+    lines = text.split("\n")
+    paragraphs: list[str] = []
+    current_lines: list[str] = []
+    in_fenced_code = False
 
-    for para in raw_paragraphs:
-        para = para.strip()
-        if not para:
+    for line in lines:
+        stripped = line.strip()
+
+        # Track fenced code block boundaries
+        if stripped.startswith("```"):
+            if in_fenced_code:
+                # Closing fence — end of code block
+                current_lines.append(line)
+                in_fenced_code = False
+                continue
+            else:
+                # Opening fence — flush preceding text first
+                if current_lines:
+                    content = "\n".join(current_lines).strip()
+                    if content:
+                        paragraphs.append(content)
+                    current_lines = []
+                current_lines.append(line)
+                in_fenced_code = True
+                continue
+
+        if in_fenced_code:
+            current_lines.append(line)
             continue
 
-        if is_code_block(para):
-            code_buffer.append(para)
-            in_code = True
+        # Outside code blocks: split on blank lines
+        if not stripped:
+            if current_lines:
+                content = "\n".join(current_lines).strip()
+                if content:
+                    paragraphs.append(content)
+                current_lines = []
         else:
-            if in_code and code_buffer:
-                # Flush code block as single paragraph
-                paragraphs.append("\n\n".join(code_buffer))
-                code_buffer = []
-                in_code = False
-            paragraphs.append(para)
+            current_lines.append(line)
 
-    if code_buffer:
-        paragraphs.append("\n\n".join(code_buffer))
+    # Flush remaining
+    if current_lines:
+        content = "\n".join(current_lines).strip()
+        if content:
+            paragraphs.append(content)
 
     return paragraphs
 
@@ -78,9 +110,14 @@ def chunk_text(
     text: str,
     max_tokens: int = 1500,
     min_tokens: int = 200,
+    split_after_headings: list[str] | None = None,
 ) -> list[dict]:
     """
     Split text into semantic chunks.
+
+    Keeps headings with their body content (never orphaned at chunk end).
+    Fenced code blocks are treated as atomic units.
+    Optional *split_after_headings* forces chunk breaks at specific headings.
 
     Returns list of {content: str, token_count: int, has_code: bool}
     """
@@ -89,42 +126,23 @@ def chunk_text(
         return [{
             "content": text.strip(),
             "token_count": total_tokens,
-            "has_code": is_code_block(text),
+            "has_code": is_code_block(text) or "```" in text,
         }]
 
+    # Normalize split_after_headings for matching
+    _split_set: set[str] | None = None
+    if split_after_headings:
+        _split_set = {h.strip().lower() for h in split_after_headings}
+
     paragraphs = split_into_paragraphs(text)
-    chunks = []
+    chunks: list[dict] = []
     current_parts: list[str] = []
     current_tokens = 0
     current_has_code = False
 
-    for para in paragraphs:
-        para_tokens = count_tokens(para)
-        para_is_code = is_code_block(para)
-
-        # If single paragraph exceeds max, add it as its own chunk
-        if para_tokens > max_tokens:
-            # Flush current buffer first
-            if current_parts:
-                chunks.append({
-                    "content": "\n\n".join(current_parts),
-                    "token_count": current_tokens,
-                    "has_code": current_has_code,
-                })
-                current_parts = []
-                current_tokens = 0
-                current_has_code = False
-
-            # Add oversized paragraph as-is (don't split mid-code-block)
-            chunks.append({
-                "content": para,
-                "token_count": para_tokens,
-                "has_code": para_is_code,
-            })
-            continue
-
-        # If adding this paragraph exceeds max, start new chunk
-        if current_tokens + para_tokens > max_tokens and current_tokens >= min_tokens:
+    def _flush() -> None:
+        nonlocal current_parts, current_tokens, current_has_code
+        if current_parts:
             chunks.append({
                 "content": "\n\n".join(current_parts),
                 "token_count": current_tokens,
@@ -133,6 +151,33 @@ def chunk_text(
             current_parts = []
             current_tokens = 0
             current_has_code = False
+
+    for para in paragraphs:
+        para_tokens = count_tokens(para)
+        para_is_code = is_code_block(para) or para.strip().startswith("```")
+        para_is_heading = _is_heading(para)
+
+        # Force a chunk break before a heading listed in split_after_headings
+        if _split_set and para_is_heading:
+            heading_text = para.strip().lstrip("#").strip().lower()
+            if heading_text in _split_set:
+                _flush()
+
+        # If single paragraph exceeds max, add it as its own chunk
+        if para_tokens > max_tokens:
+            _flush()
+            chunks.append({
+                "content": para,
+                "token_count": para_tokens,
+                "has_code": para_is_code,
+            })
+            continue
+
+        # If adding this paragraph exceeds max, start new chunk —
+        # UNLESS the last buffered part is a heading (keep heading with body)
+        if current_tokens + para_tokens > max_tokens and current_tokens >= min_tokens:
+            if not (current_parts and _is_heading(current_parts[-1])):
+                _flush()
 
         current_parts.append(para)
         current_tokens += para_tokens

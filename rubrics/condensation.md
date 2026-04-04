@@ -137,6 +137,24 @@ Run after writing the plan:
 python condense.py --input output/<name>/ --plan output/<name>/condensation_plan.json
 ```
 
+## Learning Objectives in Variants
+
+- For `keep` topics: objectives are copied automatically from the extensive structure
+- For `merge`/`synthesize` topics: write 1-3 condensed objectives in the plan's `learning_objectives` field
+- If omitted, `condense.py` copies objectives from the original topic by title match
+
+## Prerequisites in Variants
+
+- Prerequisites whose target topic was dropped from the variant are automatically filtered out
+- No manual adjustment needed — `condense.py` handles this
+
+## Exercises in Variants
+
+- **Detailed**: Exercises are copied for kept topics (up to 3 per topic)
+- **Classic**: At most 1 exercise per topic (the most representative one)
+- **Core**: No exercises (too condensed for practice)
+- To provide custom exercises for merged/synthesized topics, add an `exercises` array directly in the plan topic
+
 ## Quality Constraints
 
 1. **Pedagogical ordering preserved**: foundational topics still come before topics that depend on them

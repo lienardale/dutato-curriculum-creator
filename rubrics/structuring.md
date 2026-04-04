@@ -64,6 +64,55 @@ After building the structure, verify:
 4. **Complete coverage**: All extracted sections are mapped somewhere
 5. **No orphan paths**: Every depth-2 topic has a depth-1 parent, every depth-1 has a depth-0 parent
 
+## Learning Objectives
+
+After building the hierarchy, add learning objectives to each topic.
+See `rubrics/learning_objectives.md` for the full rubric.
+
+Each topic gains a `learning_objectives` array:
+```json
+"learning_objectives": [
+  {"text": "Implement binary search on a sorted array", "bloom_level": "apply"},
+  {"text": "Analyze the time complexity of binary search", "bloom_level": "analyze"}
+]
+```
+
+- Leaf topics: 2-5 objectives (required)
+- Parent topics: 1-3 broader objectives (optional)
+- Use Bloom's action verbs matching the topic's level
+
+## Prerequisite Links
+
+After building the hierarchy, add prerequisite links using the prerequisite chains
+from `exploration.json`:
+
+```json
+"prerequisites": [
+  {"topic": "Arrays", "strength": "required"},
+  {"topic": "Sorting Algorithms", "strength": "recommended"}
+]
+```
+
+Rules:
+1. **Intra-curriculum only**: Only reference topics within this structure
+2. **Granularity**: Link at the most specific level possible
+3. **No cycles**: The prerequisite graph must be a DAG
+4. **No transitive links**: If A→B→C, don't also add A→C
+5. **Valid references**: Every `topic` value must match a title in this structure (case-insensitive)
+6. **Ordering consistency**: Prerequisites should have a lower `sort_order` than their dependents
+
+## Split Hints (Optional)
+
+If a source section contains distinct conceptual segments, add `split_after_headings`
+to force chunk breaks at specific headings:
+
+```json
+"split_after_headings": ["Pseudocode", "Complexity Analysis"]
+```
+
+Only use when default heading-based splitting would combine concepts that should be
+separate chunks.
+
 ## structure.json Format
 
 ```json
@@ -74,6 +123,12 @@ After building the structure, verify:
     "sort_order": 0,
     "description": "One-line description",
     "suggested_level": 1,
+    "learning_objectives": [
+      {"text": "Explain the fundamentals of X", "bloom_level": "understand"}
+    ],
+    "prerequisites": [
+      {"topic": "Prerequisite Topic", "strength": "recommended"}
+    ],
     "children": [
       {
         "title": "Subtopic Name",
@@ -81,6 +136,9 @@ After building the structure, verify:
         "sort_order": 0,
         "description": "...",
         "source_sections": ["Extracted Section Title 1", "Extracted Section Title 2"],
+        "learning_objectives": [
+          {"text": "Define key terms of X", "bloom_level": "remember"}
+        ],
         "children": []
       }
     ]

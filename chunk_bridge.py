@@ -192,6 +192,7 @@ def _collect_leaf_topics(
                 "topic_path": path,
                 "source_sections": item.get("source_sections", []),
                 "title": item["title"],
+                "split_after_headings": item.get("split_after_headings"),
             })
     return leaves
 
@@ -263,7 +264,12 @@ def _chunk_by_source_sections(
 
         full_text = "\n\n".join(parts)
         source_path = next(iter(sources), "")
-        chunks = chunk_text(full_text, max_tokens=1500, min_tokens=200)
+        chunks = chunk_text(
+            full_text,
+            max_tokens=1500,
+            min_tokens=200,
+            split_after_headings=leaf.get("split_after_headings"),
+        )
 
         for i, chunk in enumerate(chunks):
             chunk["topic_path"] = leaf["topic_path"]

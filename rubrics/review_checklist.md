@@ -21,11 +21,35 @@ Before uploading, verify all quality gates pass.
 - [ ] **No empty chunks**: No chunks with empty or whitespace-only content
 - [ ] **Readable**: Spot-check 5-10 chunks — content should be coherent and self-contained
 
+## Learning Objectives Quality
+
+- [ ] **Coverage**: Every leaf topic has 2-5 learning objectives
+- [ ] **Bloom's alignment**: Objectives use appropriate action verbs for their Bloom's level
+- [ ] **Specificity**: No vague or unmeasurable objectives ("understand databases" → too broad)
+- [ ] **Source fidelity**: Objectives don't promise content not in the sources
+
+## Prerequisite Quality
+
+- [ ] **No cycles**: Prerequisite graph is a directed acyclic graph
+- [ ] **Valid references**: Every prerequisite topic title exists in structure.json
+- [ ] **No transitive redundancy**: No unnecessary indirect links (A→B→C, no A→C)
+- [ ] **Ordering consistency**: Prerequisites appear before dependents in sort_order
+
+## Exercise Quality
+
+- [ ] **Coverage**: At least one exercise per depth-0 topic group
+- [ ] **Bloom's alignment**: Exercise bloom_level matches topic difficulty
+- [ ] **Hint quality**: Each exercise has 3 progressive hints
+- [ ] **Solution correctness**: Expected solutions are accurate
+- [ ] **Common mistakes**: Realistic and pedagogically valuable
+- [ ] **Grounded**: Problems answerable from curriculum content alone
+
 ## Metadata Quality
 
 - [ ] **manifest.json exists**: Has name, domain, description, sources list
 - [ ] **structure.json valid**: Valid JSON, matches expected format
 - [ ] **chunks.json valid**: Valid JSON, array of chunk objects
+- [ ] **exercises.json valid**: Valid JSON, array of topic exercise entries
 
 ## Statistics to Report
 

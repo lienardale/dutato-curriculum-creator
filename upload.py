@@ -346,6 +346,201 @@ def insert_books(
     return source_to_book
 
 
+def _walk_topics(topics: list[dict], parent_path: list[str] | None = None):
+    """Yield (topic_dict, topic_path) for every node in the tree."""
+    if parent_path is None:
+        parent_path = []
+    for item in topics:
+        path = parent_path + [item["title"]]
+        yield item, path
+        yield from _walk_topics(item.get("children", []), path)
+
+
+def insert_learning_objectives(
+    client,
+    path_to_id: dict[str, str],
+    topics: list[dict],
+) -> int:
+    """Insert topic_learning_objectives from structure.json.  Returns count inserted."""
+    lower_to_id = {k.lower(): v for k, v in path_to_id.items()}
+    batch: list[dict] = []
+
+    for topic, _ in _walk_topics(topics):
+        objectives = topic.get("learning_objectives", [])
+        if not objectives:
+            continue
+
+        title = topic["title"]
+        topic_id = path_to_id.get(title) or lower_to_id.get(title.lower())
+        if not topic_id:
+            continue
+
+        for i, obj in enumerate(objectives):
+            batch.append({
+                "id": str(uuid.uuid4()),
+                "topic_id": topic_id,
+                "objective_text": _sanitize(obj["text"]),
+                "bloom_level": obj.get("bloom_level", "understand"),
+                "sort_order": i,
+            })
+
+    # Insert in batches of 50
+    inserted = 0
+    for i in range(0, len(batch), 50):
+        sub = batch[i:i + 50]
+        client.table("topic_learning_objectives").insert(sub).execute()
+        inserted += len(sub)
+
+    return inserted
+
+
+def insert_prerequisites(
+    client,
+    path_to_id: dict[str, str],
+    topics: list[dict],
+) -> int:
+    """Insert topic_prerequisites from structure.json.  Returns count inserted."""
+    lower_to_id = {k.lower(): v for k, v in path_to_id.items()}
+
+    # Collect all prerequisite edges
+    edges: list[dict] = []
+    for topic, _ in _walk_topics(topics):
+        prereqs = topic.get("prerequisites", [])
+        if not prereqs:
+            continue
+
+        title = topic["title"]
+        topic_id = path_to_id.get(title) or lower_to_id.get(title.lower())
+        if not topic_id:
+            continue
+
+        for prereq in prereqs:
+            prereq_title = prereq["topic"]
+            prereq_id = path_to_id.get(prereq_title) or lower_to_id.get(prereq_title.lower())
+            if not prereq_id or prereq_id == topic_id:
+                continue
+            edges.append({
+                "id": str(uuid.uuid4()),
+                "topic_id": topic_id,
+                "prerequisite_topic_id": prereq_id,
+                "strength": prereq.get("strength", "recommended"),
+            })
+
+    # Simple cycle detection (topological sort)
+    from collections import defaultdict, deque
+
+    graph: dict[str, set[str]] = defaultdict(set)
+    in_degree: dict[str, int] = defaultdict(int)
+    all_nodes: set[str] = set()
+    for edge in edges:
+        src = edge["prerequisite_topic_id"]
+        dst = edge["topic_id"]
+        if src not in graph[dst]:  # avoid double-counting
+            graph[dst].add(src)
+        all_nodes.update([src, dst])
+
+    for node in all_nodes:
+        in_degree.setdefault(node, 0)
+    for node, deps in graph.items():
+        for dep in deps:
+            in_degree[node] = in_degree.get(node, 0)  # ensure key exists
+
+    # BFS topo sort to detect cycles
+    adj: dict[str, set[str]] = defaultdict(set)
+    deg: dict[str, int] = defaultdict(int)
+    for edge in edges:
+        src = edge["prerequisite_topic_id"]
+        dst = edge["topic_id"]
+        adj[src].add(dst)
+        deg[dst] = deg.get(dst, 0) + 1
+        deg.setdefault(src, 0)
+
+    queue = deque(n for n, d in deg.items() if d == 0)
+    visited = 0
+    while queue:
+        node = queue.popleft()
+        visited += 1
+        for neighbor in adj.get(node, set()):
+            deg[neighbor] -= 1
+            if deg[neighbor] == 0:
+                queue.append(neighbor)
+
+    if visited < len(deg):
+        console.print(
+            "[yellow]Warning:[/] Prerequisite graph has cycles — "
+            "skipping prerequisite insertion to avoid data inconsistency"
+        )
+        return 0
+
+    # Insert in batches
+    inserted = 0
+    for i in range(0, len(edges), 50):
+        sub = edges[i:i + 50]
+        client.table("topic_prerequisites").insert(sub).execute()
+        inserted += len(sub)
+
+    return inserted
+
+
+def insert_exercises(
+    client,
+    exercises: list[dict],
+    path_to_id: dict[str, str],
+    source_to_book: dict[str, str] | None = None,
+) -> int:
+    """Insert exercises as content_chunks with exercise metadata.  Returns count inserted."""
+    lower_to_id = {k.lower(): v for k, v in path_to_id.items()}
+    fallback_book_id = next(iter(source_to_book.values()), None) if source_to_book else None
+
+    batch: list[dict] = []
+    for entry in exercises:
+        topic_path = entry.get("topic_path", [])
+        topic_id = None
+        for title in reversed(topic_path):
+            topic_id = path_to_id.get(title) or lower_to_id.get(title.lower())
+            if topic_id:
+                break
+        if not topic_id:
+            continue
+
+        for j, ex in enumerate(entry.get("exercises", [])):
+            content = _sanitize(ex.get("problem_statement", ""))
+            if not content:
+                continue
+
+            meta = {
+                "type": "exercise",
+                "has_code": bool(ex.get("expected_solution") and "```" in ex["expected_solution"]),
+                "exercise": {
+                    "title": ex.get("title", ""),
+                    "hints": ex.get("hints", []),
+                    "expected_solution": ex.get("expected_solution", ""),
+                    "common_mistakes": ex.get("common_mistakes", []),
+                    "bloom_level": ex.get("bloom_level", "apply"),
+                    "difficulty": ex.get("difficulty", 1),
+                },
+            }
+
+            batch.append({
+                "id": str(uuid.uuid4()),
+                "topic_id": topic_id,
+                "book_id": fallback_book_id,
+                "chunk_index": 1000 + j,  # offset to separate from regular chunks
+                "content": content,
+                "page_number": None,
+                "token_count": len(content.split()),  # rough estimate
+                "metadata": json.dumps(meta),
+            })
+
+    inserted = 0
+    for i in range(0, len(batch), 50):
+        sub = batch[i:i + 50]
+        client.table("content_chunks").insert(sub).execute()
+        inserted += len(sub)
+
+    return inserted
+
+
 def insert_chunks(
     client,
     chunks: list[dict],
@@ -587,6 +782,38 @@ def upload_curriculum(
     console.print(f"  [green]✓[/] {chunks_inserted} chunks inserted")
     if chunks_replaced:
         console.print(f"  [yellow]↻[/] {chunks_replaced} chunks replaced")
+
+    # Insert learning objectives (if present in structure)
+    objectives_inserted = 0
+    has_objectives = any(
+        t.get("learning_objectives") for t, _ in _walk_topics(topics)
+    )
+    if has_objectives:
+        console.print("  Inserting learning objectives...")
+        objectives_inserted = insert_learning_objectives(client, path_to_id, topics)
+        console.print(f"  [green]✓[/] {objectives_inserted} objectives inserted")
+
+    # Insert prerequisites (if present in structure)
+    prerequisites_inserted = 0
+    has_prereqs = any(
+        t.get("prerequisites") for t, _ in _walk_topics(topics)
+    )
+    if has_prereqs:
+        console.print("  Inserting prerequisite links...")
+        prerequisites_inserted = insert_prerequisites(client, path_to_id, topics)
+        console.print(f"  [green]✓[/] {prerequisites_inserted} prerequisite links inserted")
+
+    # Insert exercises (if exercises.json exists)
+    exercises_inserted = 0
+    exercises_path = input_dir / "exercises.json"
+    if exercises_path.exists():
+        with open(exercises_path, encoding="utf-8") as f:
+            exercises = json.load(f)
+        console.print("  Inserting exercises...")
+        exercises_inserted = insert_exercises(
+            client, exercises, path_to_id, source_to_book,
+        )
+        console.print(f"  [green]✓[/] {exercises_inserted} exercises inserted")
 
     console.print(f"\n  [bold green]Done![/] Domain ID: {domain_id}")
     return domain_id

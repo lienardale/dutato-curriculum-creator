@@ -44,14 +44,21 @@ TIER_DESCRIPTIONS = {
 # Load inputs
 # ---------------------------------------------------------------------------
 
-def load_curriculum(input_dir: Path) -> tuple[dict, list[dict], list[dict]]:
-    """Load manifest, structure, and chunks from the output directory."""
+def load_curriculum(
+    input_dir: Path,
+) -> tuple[dict, list[dict], list[dict], list[dict] | None]:
+    """Load manifest, structure, chunks, and optional exercises from the output directory."""
     manifest = json.loads((input_dir / "manifest.json").read_text(encoding="utf-8"))
     structure = json.loads((input_dir / "structure.json").read_text(encoding="utf-8"))
     chunks = json.loads((input_dir / "chunks.json").read_text(encoding="utf-8"))
 
+    exercises = None
+    exercises_path = input_dir / "exercises.json"
+    if exercises_path.exists():
+        exercises = json.loads(exercises_path.read_text(encoding="utf-8"))
+
     topics = structure if isinstance(structure, list) else structure.get("topics", [])
-    return manifest, topics, chunks
+    return manifest, topics, chunks, exercises
 
 
 def compute_stats(topics: list[dict], chunks: list[dict]) -> dict:
@@ -83,6 +90,33 @@ def build_chunk_index(chunks: list[dict]) -> dict[str, list[dict]]:
     return index
 
 
+def build_exercise_index(exercises: list[dict] | None) -> dict[str, list[dict]]:
+    """Map leaf topic title (last of topic_path) to its exercises."""
+    index: dict[str, list[dict]] = {}
+    if not exercises:
+        return index
+    for entry in exercises:
+        path = entry.get("topic_path", [])
+        if path:
+            key = path[-1]
+            index.setdefault(key, []).extend(entry.get("exercises", []))
+    return index
+
+
+def _remap_prerequisites(
+    prereqs: list[dict] | None,
+    kept_titles: set[str],
+) -> list[dict]:
+    """Filter prerequisites to only reference topics that exist in the variant."""
+    if not prereqs:
+        return []
+    kept_lower = {t.lower() for t in kept_titles}
+    return [
+        p for p in prereqs
+        if p.get("topic", "").lower() in kept_lower
+    ]
+
+
 # ---------------------------------------------------------------------------
 # Assemble a single tier from the plan
 # ---------------------------------------------------------------------------
@@ -94,13 +128,38 @@ def assemble_tier(
     tier: str,
     original_stats: dict,
     output_dir: Path,
+    original_structure: list[dict] | None = None,
+    exercises: list[dict] | None = None,
 ) -> dict:
     """Assemble output files for one condensed tier from a plan."""
     console.print(f"\n[bold cyan]--- Assembling {tier} variant ---[/]")
 
     chunk_index = build_chunk_index(chunks)
+    exercise_index = build_exercise_index(exercises)
     condensed_chunks: list[dict] = []
+    condensed_exercises: list[dict] = []
     output_structure: list[dict] = []
+
+    # Build a lookup of objectives from the original structure (by title)
+    original_objectives: dict[str, list[dict]] = {}
+    if original_structure:
+        def _index_objectives(topics: list[dict]) -> None:
+            for t in topics:
+                objs = t.get("learning_objectives")
+                if objs:
+                    original_objectives[t["title"].lower()] = objs
+                _index_objectives(t.get("children", []))
+        _index_objectives(original_structure)
+
+    # Collect all topic titles in this tier for prerequisite filtering
+    tier_titles: set[str] = set()
+    for topic in plan_tier:
+        tier_titles.add(topic["title"])
+        for child in topic.get("children", []):
+            tier_titles.add(child["title"])
+
+    # Max exercises per topic varies by tier
+    max_exercises = {"detailed": 3, "classic": 1, "core": 0}.get(tier, 3)
 
     for i, topic in enumerate(plan_tier):
         children_out = []
@@ -111,30 +170,68 @@ def assemble_tier(
             _collect_chunks_for_leaf(
                 topic, chunk_index, [topic["title"]], condensed_chunks,
             )
+            # Collect exercises
+            if max_exercises > 0:
+                _collect_exercises_for_leaf(
+                    topic, exercise_index, [topic["title"]],
+                    condensed_exercises, max_exercises,
+                )
         else:
             for j, child in enumerate(topic_children):
-                children_out.append({
+                # Propagate objectives from plan or original
+                child_objectives = (
+                    child.get("learning_objectives")
+                    or original_objectives.get(child["title"].lower(), [])
+                )
+                child_entry: dict = {
                     "title": child["title"],
                     "depth": 1,
                     "sort_order": j,
                     "description": child.get("description", ""),
                     "source_sections": child.get("source_children", [child["title"]]),
                     "children": [],
-                })
+                }
+                if child_objectives:
+                    child_entry["learning_objectives"] = child_objectives
+
+                children_out.append(child_entry)
                 _collect_chunks_for_leaf(
                     child, chunk_index,
                     [topic["title"], child["title"]],
                     condensed_chunks,
                 )
+                if max_exercises > 0:
+                    _collect_exercises_for_leaf(
+                        child, exercise_index,
+                        [topic["title"], child["title"]],
+                        condensed_exercises, max_exercises,
+                    )
 
-        output_structure.append({
+        # Propagate objectives from plan or original
+        topic_objectives = (
+            topic.get("learning_objectives")
+            or original_objectives.get(topic["title"].lower(), [])
+        )
+        # Filter prerequisites to kept topics
+        topic_prereqs = _remap_prerequisites(
+            topic.get("prerequisites"),
+            tier_titles,
+        )
+
+        topic_entry: dict = {
             "title": topic["title"],
             "depth": 0,
             "sort_order": i,
             "description": topic.get("description", ""),
             "suggested_level": topic.get("suggested_level", 1),
             "children": children_out,
-        })
+        }
+        if topic_objectives:
+            topic_entry["learning_objectives"] = topic_objectives
+        if topic_prereqs:
+            topic_entry["prerequisites"] = topic_prereqs
+
+        output_structure.append(topic_entry)
 
     condensed_stats = compute_stats(output_structure, condensed_chunks)
 
@@ -179,9 +276,16 @@ def assemble_tier(
     (variant_dir / "chunks.json").write_text(
         json.dumps(condensed_chunks, indent=2, ensure_ascii=False), encoding="utf-8",
     )
+    if condensed_exercises:
+        (variant_dir / "exercises.json").write_text(
+            json.dumps(condensed_exercises, indent=2, ensure_ascii=False), encoding="utf-8",
+        )
 
     console.print(f"  Topics: {condensed_stats['total_topics']}")
     console.print(f"  Chunks: {condensed_stats['total_chunks']}")
+    if condensed_exercises:
+        total_ex = sum(len(e.get("exercises", [])) for e in condensed_exercises)
+        console.print(f"  Exercises: {total_ex}")
     console.print(f"  Tokens: {condensed_stats['total_tokens']:,}")
     console.print(f"  [green]Written to {variant_dir}/[/]")
 
@@ -251,6 +355,29 @@ def _collect_chunks_for_leaf(
                 f"'{strategy}' but no inline content provided — "
                 f"falling back to concatenation ({tokens:,} tokens)"
             )
+
+
+def _collect_exercises_for_leaf(
+    leaf: dict,
+    exercise_index: dict[str, list[dict]],
+    topic_path: list[str],
+    out: list[dict],
+    max_exercises: int = 3,
+) -> None:
+    """Collect exercises for one leaf topic from the original exercises."""
+    # Check plan-provided exercises first
+    if "exercises" in leaf:
+        out.append({"topic_path": topic_path, "exercises": leaf["exercises"][:max_exercises]})
+        return
+
+    # Otherwise copy from original exercises
+    source_keys = leaf.get("source_children", leaf.get("source_topics", [leaf["title"]]))
+    collected: list[dict] = []
+    for key in source_keys:
+        collected.extend(exercise_index.get(key, []))
+
+    if collected:
+        out.append({"topic_path": topic_path, "exercises": collected[:max_exercises]})
 
 
 # ---------------------------------------------------------------------------
@@ -328,7 +455,7 @@ def main():
 
     # Load curriculum
     console.print(f"[bold blue]Loading curriculum from:[/] {input_dir}")
-    manifest, structure, chunks = load_curriculum(input_dir)
+    manifest, structure, chunks, exercises = load_curriculum(input_dir)
     original_stats = compute_stats(structure, chunks)
     console.print(
         f"  Extensive: {original_stats['depth0_topics']} depth-0 topics, "
@@ -336,6 +463,9 @@ def main():
         f"{original_stats['total_chunks']} chunks, "
         f"{original_stats['total_tokens']:,} tokens"
     )
+    if exercises:
+        total_ex = sum(len(e.get("exercises", [])) for e in exercises)
+        console.print(f"  Exercises: {total_ex}")
 
     # Assemble each tier
     all_stats: dict[str, dict] = {
@@ -350,6 +480,7 @@ def main():
     for tier in tiers:
         tier_stats = assemble_tier(
             plan[tier], chunks, manifest, tier, original_stats, input_dir,
+            original_structure=structure, exercises=exercises,
         )
         all_stats[tier] = tier_stats
 

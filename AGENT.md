@@ -24,10 +24,11 @@ This shows which stages are complete and where to resume. If the output director
 1. MANIFEST    → manifest.json         (curriculum metadata)
 2. EXTRACT     → extracted/*.json      (one per source)
 3. EXPLORE     → exploration.json      (concept analysis — MUST be saved)
-4. STRUCTURE   → structure.json        (topic hierarchy)
+4. STRUCTURE   → structure.json        (topic hierarchy + objectives + prerequisites)
 5. CHUNK       → chunks.json           (content chunks)
-6. REVIEW      → review.json           (quality report)
-7. UPLOAD      → upload_result.json    (domain ID + stats)
+6. EXERCISES   → exercises.json        (practice problems)
+7. REVIEW      → review.json           (quality report)
+8. UPLOAD      → upload_result.json    (domain ID + stats)
 ```
 
 Every stage has a checkpoint file. **Do NOT proceed to the next stage until the checkpoint is written to disk.**
@@ -163,6 +164,13 @@ Write `output/<name>/structure.json`:
     "sort_order": 0,
     "description": "What this covers",
     "suggested_level": 1,
+    "learning_objectives": [
+      {"text": "Explain the core concepts of X", "bloom_level": "understand"},
+      {"text": "Implement X in a real scenario", "bloom_level": "apply"}
+    ],
+    "prerequisites": [
+      {"topic": "Foundational Topic", "strength": "required"}
+    ],
     "children": [
       {
         "title": "Subtopic",
@@ -170,6 +178,9 @@ Write `output/<name>/structure.json`:
         "sort_order": 0,
         "description": "...",
         "source_sections": ["Section Title From Extracted JSON"],
+        "learning_objectives": [
+          {"text": "Define the key terms of X", "bloom_level": "remember"}
+        ],
         "children": []
       }
     ]
@@ -182,6 +193,33 @@ Rules:
 - Each leaf topic maps to 1-5 extracted sections via `source_sections`
 - Order: foundational → advanced
 - Assign `suggested_level` (1 = beginner, 2 = intermediate, 3 = advanced)
+
+### Learning Objectives
+
+For each topic, generate 2-5 learning objectives following `rubrics/learning_objectives.md`:
+- Use the stem "By the end of this topic, you will be able to..."
+- Each objective needs a specific, measurable action verb + content
+- Assign a Bloom's level: `remember`, `understand`, `apply`, `analyze`, `evaluate`, `create`
+- Only promise knowledge that the source material actually covers
+
+### Prerequisite Links
+
+Using the prerequisite chains identified in `exploration.json`, add explicit `prerequisites` to topics that depend on prior knowledge from another topic in this curriculum:
+- `topic`: title of the prerequisite topic (must match exactly, case-insensitive)
+- `strength`: `"required"` (cannot proceed without) or `"recommended"` (helpful but not blocking)
+- Only link to topics within this curriculum
+- Avoid transitive redundancy: if A requires B and B requires C, don't also add A→C
+- The prerequisite graph must be a DAG (no cycles)
+
+### Split Hints (Optional)
+
+If a source section contains distinct conceptual segments, add `split_after_headings` to the leaf topic — a list of heading texts where the chunker should force a boundary:
+
+```json
+"split_after_headings": ["Pseudocode", "Complexity Analysis"]
+```
+
+Only use this when the default heading-based splitting would combine concepts that should be separate chunks.
 
 **Present the structure to the user** for review. Iterate if needed — overwrite `structure.json` with updates.
 
@@ -199,13 +237,59 @@ python chunk_bridge.py \
   -o output/<name>/chunks.json
 ```
 
-Verify: read `chunks.json` and check token counts are in the 500-1500 range.
+Verify: read `chunks.json` and check token counts are in the 500-1500 range. The chunker respects markdown heading boundaries and keeps fenced code blocks intact. If you added `split_after_headings` to leaf topics in structure.json, verify those splits occurred.
 
 **Resume rule**: If `chunks.json` exists and `structure.json` hasn't changed, skip. If the structure was modified, re-run chunking.
 
 ---
 
-## Stage 6: REVIEW (checkpoint: `review.json`)
+## Stage 6: EXERCISES (checkpoint: `exercises.json`)
+
+Generate practice problems for each leaf topic (or a subset of the most important topics).
+
+### Process
+
+1. Read `structure.json` and `chunks.json` to understand each topic's content
+2. Follow `rubrics/exercises.md` for exercise design guidelines
+3. For each leaf topic, generate 1-3 exercises:
+   - At least one exercise per depth-0 topic group
+   - Focus on topics where hands-on practice is most valuable
+   - Skip purely definitional or reference-style topics
+
+### Write `output/<name>/exercises.json`:
+```json
+[
+  {
+    "topic_path": ["SQL Fundamentals", "Querying a Table"],
+    "exercises": [
+      {
+        "title": "Filter with WHERE Clause",
+        "problem_statement": "Write a SQL query that selects all rows from the 'weather' table where the temperature is above 30 degrees.",
+        "hints": [
+          "Start with SELECT * FROM weather",
+          "Add a WHERE clause to filter rows",
+          "Use the > operator to compare the temp column"
+        ],
+        "expected_solution": "SELECT * FROM weather WHERE temp > 30;",
+        "common_mistakes": [
+          "Forgetting the semicolon",
+          "Using = instead of > for 'above'"
+        ],
+        "bloom_level": "apply",
+        "difficulty": 1
+      }
+    ]
+  }
+]
+```
+
+Exercises are uploaded as `content_chunks` with `metadata.type = "exercise"` and exercise details in `metadata.exercise`. They appear alongside regular content with a `chunk_index` offset of 1000.
+
+**Resume rule**: If `exercises.json` exists, read it. Check which topics already have exercises. Only generate exercises for topics that are missing them.
+
+---
+
+## Stage 7: REVIEW (checkpoint: `review.json`)
 
 Follow `rubrics/review_checklist.md` to verify quality. **Save the review results.**
 
@@ -214,11 +298,15 @@ Write `output/<name>/review.json`:
 {
   "total_topics": 25,
   "total_chunks": 142,
+  "total_exercises": 35,
   "total_tokens": 95000,
   "avg_tokens_per_chunk": 669,
   "chunks_per_topic": {"min": 1, "max": 15, "avg": 5.7},
   "empty_topics": [],
   "orphan_chunks": 0,
+  "objectives_coverage": "24/25 topics have objectives",
+  "prerequisites_count": 12,
+  "exercises_coverage": "18/25 leaf topics have exercises",
   "quality_concerns": ["Topic 'Advanced Patterns' has only 1 chunk"],
   "approved": false,
   "reviewed_at": "2026-03-31T14:00:00Z"
@@ -231,7 +319,7 @@ Present the summary to the user. Set `"approved": true` once the user approves.
 
 ---
 
-## Stage 7: UPLOAD (checkpoint: `upload_result.json`)
+## Stage 8: UPLOAD (checkpoint: `upload_result.json`)
 
 After user approval:
 ```bash
@@ -299,7 +387,7 @@ After successful upload, write `output/<name>/upload_result.json`:
 
 ---
 
-## Stage 8 (Optional): CONDENSE (checkpoint: `condensation_plan.json`)
+## Stage 9 (Optional): CONDENSE (checkpoint: `condensation_plan.json`)
 
 After the extensive curriculum is uploaded, the user may ask for condensed variants: **detailed** (~10x shorter), **classic** (~100x shorter), **core** (~1000x shorter).
 

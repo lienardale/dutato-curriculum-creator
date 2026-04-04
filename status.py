@@ -21,6 +21,7 @@ STAGES = [
     ("explore", "exploration.json", "Content explored"),
     ("structure", "structure.json", "Topic hierarchy built"),
     ("chunk", "chunks.json", "Content chunked"),
+    ("exercises", "exercises.json", "Practice exercises generated"),
     ("review", "review.json", "Quality reviewed"),
     ("upload", "upload_result.json", "Uploaded to Supabase"),
     ("condense", "condensation_plan.json", "Condensed variants planned (optional)"),

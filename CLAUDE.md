@@ -39,11 +39,12 @@ python upload.py --input output/<name>/ --owner user --user-id <uuid>
 1. **Manifest** → `manifest.json` (agent writes metadata)
 2. **Extract** → `extracted/*.json` (scripts extract, one per source)
 3. **Explore** → `exploration.json` (agent analyzes content)
-4. **Structure** → `structure.json` (agent designs topic hierarchy)
-5. **Chunk** → `chunks.json` (script splits content into chunks)
-6. **Review** → `review.json` (agent validates quality)
-7. **Upload** → `upload_result.json` (script uploads to Supabase)
-8. **Condense** (optional) → `condensation_plan.json` + `variants/` (agent writes plan, script assembles)
+4. **Structure** → `structure.json` (agent designs topic hierarchy + learning objectives + prerequisites)
+5. **Chunk** → `chunks.json` (script splits content into semantic chunks)
+6. **Exercises** → `exercises.json` (agent generates practice problems)
+7. **Review** → `review.json` (agent validates quality)
+8. **Upload** → `upload_result.json` (script uploads to Supabase)
+9. **Condense** (optional) → `condensation_plan.json` + `variants/` (agent writes plan, script assembles)
 
 Each stage writes a checkpoint file. Sessions can resume from any stage.
 
