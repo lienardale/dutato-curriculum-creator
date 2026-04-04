@@ -819,6 +819,192 @@ def upload_curriculum(
     return domain_id
 
 
+def _resolve_domain_id(client, input_dir: Path, manifest: dict) -> str | None:
+    """Resolve the domain ID for an existing curriculum.
+
+    Checks (in order): upload_result.json, manifest exported_domain_id, slug lookup.
+    """
+    # 1. upload_result.json
+    upload_result_path = input_dir / "upload_result.json"
+    if upload_result_path.exists():
+        with open(upload_result_path, encoding="utf-8") as f:
+            data = json.load(f)
+        domain_id = data.get("domain_id")
+        if domain_id:
+            return domain_id
+
+    # 2. manifest exported_domain_id
+    domain_id = manifest.get("exported_domain_id")
+    if domain_id:
+        return domain_id
+
+    # 3. Slug-based lookup
+    slug = manifest.get("domain", "").lower().replace(" ", "-")
+    if slug:
+        result = client.table("domains").select("id").eq("slug", slug).execute()
+        if result.data:
+            return result.data[0]["id"]
+
+    return None
+
+
+def clear_enrichment_data(client, domain_id: str) -> dict[str, int]:
+    """Delete all enrichment data (objectives, prerequisites, exercise chunks) for a domain.
+
+    Returns counts of deleted items.
+    """
+    # Get all topic IDs for this domain
+    result = (
+        client.table("topics")
+        .select("id")
+        .eq("domain_id", domain_id)
+        .execute()
+    )
+    topic_ids = [row["id"] for row in result.data]
+    if not topic_ids:
+        return {"objectives": 0, "prerequisites": 0, "exercises": 0}
+
+    deleted = {"objectives": 0, "prerequisites": 0, "exercises": 0}
+
+    # Delete in batches of 50 topic IDs
+    for i in range(0, len(topic_ids), 50):
+        sub_ids = topic_ids[i:i + 50]
+
+        # Objectives
+        result = (
+            client.table("topic_learning_objectives")
+            .delete()
+            .in_("topic_id", sub_ids)
+            .execute()
+        )
+        deleted["objectives"] += len(result.data)
+
+        # Prerequisites (both as topic and as prerequisite)
+        result = (
+            client.table("topic_prerequisites")
+            .delete()
+            .in_("topic_id", sub_ids)
+            .execute()
+        )
+        deleted["prerequisites"] += len(result.data)
+
+        # Exercise chunks (metadata->>'type' = 'exercise')
+        result = (
+            client.table("content_chunks")
+            .delete()
+            .in_("topic_id", sub_ids)
+            .gte("chunk_index", 1000)
+            .execute()
+        )
+        deleted["exercises"] += len(result.data)
+
+    return deleted
+
+
+def enrich_curriculum(
+    input_dir: Path,
+    target: str = "default",
+    db_url: str | None = None,
+    db_key: str | None = None,
+):
+    """Enrich an existing curriculum with objectives, prerequisites, and exercises.
+
+    This mode does NOT create domains, topics, or content chunks. It only adds
+    enrichment data to an already-uploaded curriculum.
+    """
+    # Load manifest
+    manifest_path = input_dir / "manifest.json"
+    if not manifest_path.exists():
+        console.print("[red]Error:[/] manifest.json not found in input directory")
+        sys.exit(1)
+
+    with open(manifest_path, encoding="utf-8") as f:
+        manifest = json.load(f)
+
+    # Load structure
+    structure_path = input_dir / "structure.json"
+    if not structure_path.exists():
+        console.print("[red]Error:[/] structure.json not found")
+        sys.exit(1)
+
+    with open(structure_path, encoding="utf-8") as f:
+        structure = json.load(f)
+
+    topics = structure if isinstance(structure, list) else structure.get("topics", [])
+
+    # Connect
+    client = get_client(target, db_url, db_key)
+
+    name = manifest.get("name", input_dir.name)
+    console.print(f"\n[bold blue]Enriching curriculum:[/] {name}")
+
+    # Resolve domain ID
+    domain_id = _resolve_domain_id(client, input_dir, manifest)
+    if not domain_id:
+        console.print("[red]Error:[/] Could not resolve domain ID. Ensure the curriculum has been uploaded.")
+        sys.exit(1)
+    console.print(f"  Domain ID: {domain_id}")
+
+    # Fetch existing topics and build path_to_id
+    existing_topics, id_to_title = find_existing_topics(client, domain_id)
+    # Convert (lower_title, depth, parent_title) -> id to simple title -> id
+    path_to_id: dict[str, str] = {}
+    for (lower_title, _depth, _parent), topic_id in existing_topics.items():
+        # Use original case from id_to_title
+        original_title = id_to_title.get(topic_id, lower_title)
+        path_to_id[original_title] = topic_id
+
+    console.print(f"  Found {len(path_to_id)} existing topics")
+
+    # Clear existing enrichment data (idempotent)
+    console.print("  Clearing existing enrichment data...")
+    cleared = clear_enrichment_data(client, domain_id)
+    if any(v > 0 for v in cleared.values()):
+        console.print(
+            f"    Cleared: {cleared['objectives']} objectives, "
+            f"{cleared['prerequisites']} prerequisites, "
+            f"{cleared['exercises']} exercises"
+        )
+
+    # Insert learning objectives
+    objectives_inserted = 0
+    has_objectives = any(
+        t.get("learning_objectives") for t, _ in _walk_topics(topics)
+    )
+    if has_objectives:
+        console.print("  Inserting learning objectives...")
+        objectives_inserted = insert_learning_objectives(client, path_to_id, topics)
+        console.print(f"  [green]✓[/] {objectives_inserted} objectives inserted")
+
+    # Insert prerequisites
+    prerequisites_inserted = 0
+    has_prereqs = any(
+        t.get("prerequisites") for t, _ in _walk_topics(topics)
+    )
+    if has_prereqs:
+        console.print("  Inserting prerequisite links...")
+        prerequisites_inserted = insert_prerequisites(client, path_to_id, topics)
+        console.print(f"  [green]✓[/] {prerequisites_inserted} prerequisite links inserted")
+
+    # Insert exercises
+    exercises_inserted = 0
+    exercises_path = input_dir / "exercises.json"
+    if exercises_path.exists():
+        with open(exercises_path, encoding="utf-8") as f:
+            exercises = json.load(f)
+        console.print("  Inserting exercises...")
+        exercises_inserted = insert_exercises(client, exercises, path_to_id)
+        console.print(f"  [green]✓[/] {exercises_inserted} exercises inserted")
+
+    console.print(f"\n  [bold green]Done![/] Domain ID: {domain_id}")
+    console.print(
+        f"  Enriched: {objectives_inserted} objectives, "
+        f"{prerequisites_inserted} prerequisites, "
+        f"{exercises_inserted} exercises"
+    )
+    return domain_id
+
+
 def _count_topics(topics: list[dict]) -> int:
     """Count total topics including children."""
     count = 0
@@ -843,7 +1029,19 @@ def main():
                         help="Incremental update: skip existing topics, add only new ones")
     parser.add_argument("--replace-chunks", action="store_true",
                         help="With --update: replace chunk content for existing topics")
+    parser.add_argument("--enrich", action="store_true",
+                        help="Enrich an existing curriculum with objectives, prerequisites, "
+                             "and exercises (idempotent: clears old enrichment data first)")
     args = parser.parse_args()
+
+    if args.enrich:
+        enrich_curriculum(
+            input_dir=Path(args.input),
+            target=args.target,
+            db_url=args.db_url,
+            db_key=args.db_key,
+        )
+        return
 
     if args.owner == "org" and not args.org_id:
         console.print("[red]Error:[/] --org-id required when --owner org")

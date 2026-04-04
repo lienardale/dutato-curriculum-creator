@@ -367,6 +367,32 @@ Use `--update` when expanding an existing curriculum with additional sources:
 3. Re-run exploration, structure, and chunking (the full pipeline)
 4. Upload with `--update` to add only the new content
 
+### Enrich Mode
+
+Use `--enrich` to retroactively add learning objectives, prerequisites, and exercises to an existing curriculum that was uploaded before these features existed.
+
+```bash
+python upload.py --input output/<name>/ --enrich
+```
+
+This mode:
+- Resolves the domain ID from `upload_result.json`, `manifest.json`, or by slug lookup
+- **Clears** existing objectives, prerequisites, and exercise chunks (idempotent)
+- Inserts new data from the enriched `structure.json` and `exercises.json`
+- Does NOT touch domains, topics, or regular content chunks
+
+**Workflow for enriching an existing curriculum:**
+1. Read `structure.json` and `chunks.json` to understand the curriculum
+2. Add `learning_objectives` to each topic in `structure.json` (follow `rubrics/learning_objectives.md`)
+3. Add `prerequisites` to topics that depend on others (follow `rubrics/structuring.md`)
+4. Generate `exercises.json` (follow `rubrics/exercises.md`)
+5. Run `python upload.py --input output/<name>/ --enrich`
+6. If variants exist, re-run `python condense.py` to propagate, then enrich each variant:
+   ```bash
+   python upload.py --input output/<name>/variants/detailed/ --enrich
+   python upload.py --input output/<name>/variants/classic/ --enrich
+   ```
+
 After successful upload, write `output/<name>/upload_result.json`:
 ```json
 {
