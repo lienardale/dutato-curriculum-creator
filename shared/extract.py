@@ -14,6 +14,67 @@ from pathlib import Path
 import fitz  # pymupdf
 
 
+def extract_pdf_images(
+    pdf_path: Path,
+    images_dir: str,
+) -> list[dict]:
+    """Extract images from a PDF file and write them to disk.
+
+    Returns a list of image registry entries:
+        [{"id": "p3_img0", "local_path": "images/p3_img0.png",
+          "mime_type": "image/png", "size_bytes": 1234,
+          "width": 800, "height": 600, "page": 3}]
+    """
+    out = Path(images_dir)
+    out.mkdir(parents=True, exist_ok=True)
+
+    doc = fitz.open(str(pdf_path))
+    registry: list[dict] = []
+    seen_xrefs: set[int] = set()
+
+    for page_num in range(len(doc)):
+        page = doc[page_num]
+        image_list = page.get_images(full=True)
+        for img_idx, img_info in enumerate(image_list):
+            xref = img_info[0]
+            if xref in seen_xrefs:
+                continue
+            seen_xrefs.add(xref)
+
+            try:
+                extracted = doc.extract_image(xref)
+            except Exception:
+                continue
+            if not extracted or not extracted.get("image"):
+                continue
+
+            img_bytes = extracted["image"]
+            # Skip tiny images (likely decorative)
+            if len(img_bytes) < 2048:
+                continue
+
+            ext = extracted.get("ext", "png")
+            mime = f"image/{ext}" if ext != "jpg" else "image/jpeg"
+            img_id = f"p{page_num + 1}_img{img_idx}"
+            filename = f"{img_id}.{ext}"
+            filepath = out / filename
+
+            filepath.write_bytes(img_bytes)
+
+            registry.append({
+                "id": img_id,
+                "local_path": f"images/{filename}",
+                "mime_type": mime,
+                "size_bytes": len(img_bytes),
+                "width": extracted.get("width", 0),
+                "height": extracted.get("height", 0),
+                "page": page_num + 1,
+            })
+
+    doc.close()
+    return registry
+
+
 def extract_pdf(pdf_path: Path) -> dict:
     """Extract text and TOC from a PDF file."""
     doc = fitz.open(str(pdf_path))

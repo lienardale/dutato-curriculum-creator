@@ -12,4 +12,8 @@ dependencies = [
     "python-pptx>=1.0.0",
     "python-dotenv>=1.1.0",
     "trafilatura>=2.0.0",
+    "notion-client>=2.0.0",
 ]
+
+[project.optional-dependencies]
+ocr = ["easyocr>=1.7.0"]

@@ -9,7 +9,7 @@ from pathlib import Path
 # Ensure pdf_pipeline or shared/ is importable
 import _compat  # noqa: F401
 
-from extract import extract_pdf as _raw_extract_pdf
+from extract import extract_pdf as _raw_extract_pdf, extract_pdf_images
 from build_topic_tree import build_topic_tree
 
 
@@ -38,8 +38,14 @@ def _get_text_for_pages(pages: list[dict], start: int, end: int) -> str:
     return "\n\n".join(texts)
 
 
-def extract_pdf(source: str) -> dict:
-    """Extract a PDF file to the unified intermediate format."""
+def extract_pdf(source: str, *, images_dir: str | None = None, ocr: bool = True) -> dict:
+    """Extract a PDF file to the unified intermediate format.
+
+    Args:
+        source: Path to the PDF file.
+        images_dir: If provided, extract images to this directory.
+        ocr: If True, run OCR on pages that appear scanned/image-based.
+    """
     file_path = Path(source)
     if not file_path.exists():
         raise FileNotFoundError(f"PDF not found: {file_path}")
@@ -49,9 +55,56 @@ def extract_pdf(source: str) -> dict:
     pages = raw["pages"]
     metadata = raw["metadata"]
 
+    # OCR scanned pages when text extraction yields little/no content
+    ocr_pages = 0
+    if ocr:
+        try:
+            from ocr import is_ocr_available, is_scanned_page, ocr_pdf_page
+            if is_ocr_available():
+                import fitz
+                doc = fitz.open(str(file_path))
+                total_pages = len(doc)
+
+                # Build a set of pages that already have good text
+                pages_with_text = {p["page"] for p in pages}
+
+                for page_num in range(total_pages):
+                    pg_1indexed = page_num + 1
+                    existing = next(
+                        (p for p in pages if p["page"] == pg_1indexed), None
+                    )
+                    existing_text = existing["text"] if existing else ""
+
+                    if is_scanned_page(existing_text):
+                        ocr_text = ocr_pdf_page(doc, page_num)
+                        if ocr_text and len(ocr_text.strip()) > len(existing_text.strip()):
+                            if existing:
+                                existing["text"] = ocr_text
+                            else:
+                                pages.append({"page": pg_1indexed, "text": ocr_text})
+                            ocr_pages += 1
+
+                doc.close()
+                # Re-sort pages after OCR additions
+                if ocr_pages:
+                    pages.sort(key=lambda p: p["page"])
+        except ImportError:
+            pass  # OCR not available — continue without
+
+    # Extract images if images_dir provided
+    image_registry: list[dict] = []
+    if images_dir:
+        image_registry = extract_pdf_images(file_path, images_dir)
+
     # Build topic tree from TOC/headings
     topic_tree = build_topic_tree(raw, book_title=metadata.get("title"))
     flat_topics = _flatten_topics(topic_tree)
+
+    # Index images by page for assignment to sections
+    images_by_page: dict[int, list[dict]] = {}
+    for img in image_registry:
+        pg = img.get("page", 0)
+        images_by_page.setdefault(pg, []).append(img)
 
     # Convert to sections by attaching page text to each topic
     sections = []
@@ -64,7 +117,19 @@ def extract_pdf(source: str) -> dict:
         elif pg_start:
             content = _get_text_for_pages(pages, pg_start, pg_start)
 
-        sections.append({
+        # Collect images that fall within this section's page range
+        section_images: list[dict] = []
+        if pg_start and pg_end:
+            for pg in range(pg_start, pg_end + 1):
+                for img in images_by_page.get(pg, []):
+                    section_images.append({
+                        "id": img["id"],
+                        "local_path": img["local_path"],
+                        "alt_text": "",
+                        "context": f"page:{pg}",
+                    })
+
+        section: dict = {
             "title": topic["title"],
             "content": content,
             "depth": topic["depth"],
@@ -72,7 +137,10 @@ def extract_pdf(source: str) -> dict:
                 "page_start": pg_start,
                 "page_end": pg_end,
             },
-        })
+        }
+        if section_images:
+            section["images"] = section_images
+        sections.append(section)
 
     # Count tokens
     try:
@@ -82,7 +150,7 @@ def extract_pdf(source: str) -> dict:
     except ImportError:
         total_tokens = sum(len(s["content"].split()) for s in sections if s["content"])
 
-    return {
+    result: dict = {
         "source_type": "pdf",
         "source_path": str(file_path.resolve()),
         "title": metadata.get("title", file_path.stem),
@@ -92,8 +160,13 @@ def extract_pdf(source: str) -> dict:
             "total_sections": len(sections),
             "total_tokens": total_tokens,
             "total_pages": metadata.get("total_pages", len(pages)),
+            "total_images": len(image_registry),
+            "ocr_pages": ocr_pages,
         },
     }
+    if image_registry:
+        result["images"] = image_registry
+    return result
 
 
 if __name__ == "__main__":

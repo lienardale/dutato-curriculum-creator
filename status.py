@@ -18,6 +18,7 @@ from pathlib import Path
 STAGES = [
     ("manifest", "manifest.json", "Manifest created"),
     ("extract", "extracted/", "Sources extracted"),
+    ("analyze_images", "image_analysis.json", "Images analyzed (optional)"),
     ("explore", "exploration.json", "Content explored"),
     ("structure", "structure.json", "Topic hierarchy built"),
     ("chunk", "chunks.json", "Content chunked"),
@@ -53,6 +54,15 @@ def check_status(output_dir: Path) -> dict:
                 files = list(artifact_path.glob("*.json"))
                 detail["file_count"] = len(files)
                 detail["files"] = [f.name for f in sorted(files)]
+                # Count images
+                images_dir = artifact_path / "images"
+                if images_dir.is_dir():
+                    img_files = [
+                        f for f in images_dir.iterdir()
+                        if f.suffix.lower() in (".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg")
+                    ]
+                    if img_files:
+                        detail["image_count"] = len(img_files)
         else:
             exists = artifact_path.exists()
             detail = {}
@@ -77,7 +87,10 @@ def check_status(output_dir: Path) -> dict:
         if exists:
             status["current_stage"] = stage_name
         elif status["next_stage"] is None:
-            status["next_stage"] = stage_name
+            # Optional stages don't block progression
+            optional_stages = {"analyze_images", "exercises", "condense"}
+            if stage_name not in optional_stages:
+                status["next_stage"] = stage_name
 
     return status
 
@@ -112,7 +125,10 @@ def print_status(output_dir: Path):
         # Add detail
         if stage["complete"]:
             if "file_count" in stage:
-                line += f" ({stage['file_count']} files)"
+                line += f" ({stage['file_count']} files"
+                if "image_count" in stage:
+                    line += f", {stage['image_count']} images"
+                line += ")"
             elif "count" in stage:
                 line += f" ({stage['count']} items)"
 

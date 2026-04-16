@@ -33,7 +33,11 @@ def _normalize(text: str) -> str:
 
 
 def _load_extracted_sections(extracted_dir: Path) -> list[dict]:
-    """Load and merge all extracted intermediate JSONs."""
+    """Load and merge all extracted intermediate JSONs.
+
+    Preserves the ``images`` list on each section (if present) so that
+    downstream chunking can propagate image references into chunks.
+    """
     all_sections = []
     for json_file in sorted(extracted_dir.glob("*.json")):
         with open(json_file, encoding="utf-8") as f:
@@ -41,16 +45,18 @@ def _load_extracted_sections(extracted_dir: Path) -> list[dict]:
         source_path = data.get("source_path", str(json_file))
         for section in data.get("sections", []):
             section["_source"] = source_path
+            # images list is preserved as-is (may be absent)
             all_sections.append(section)
     return all_sections
 
 
 def _build_section_index(
     sections: list[dict],
-) -> tuple[dict[str, str], dict[str, str]]:
-    """Build lookups: normalized_title → content, and normalized_title → source_path."""
+) -> tuple[dict[str, str], dict[str, str], dict[str, list[dict]]]:
+    """Build lookups: normalized_title → content, source_path, and images."""
     content_index: dict[str, str] = {}
     source_index: dict[str, str] = {}
+    images_index: dict[str, list[dict]] = {}
     for section in sections:
         title = section.get("title", "")
         if title:
@@ -59,7 +65,11 @@ def _build_section_index(
             content_index[norm.lower()] = section.get("content", "")
             source_index[norm] = section.get("_source", "")
             source_index[norm.lower()] = section.get("_source", "")
-    return content_index, source_index
+            imgs = section.get("images", [])
+            if imgs:
+                images_index[norm] = imgs
+                images_index[norm.lower()] = imgs
+    return content_index, source_index, images_index
 
 
 def _assign_synthetic_pages(sections: list[dict]) -> list[dict]:
@@ -213,6 +223,7 @@ def _chunk_by_source_sections(
     topics: list[dict],
     section_index: dict[str, str],
     source_index: dict[str, str],
+    images_index: dict[str, list[dict]] | None = None,
 ) -> list[dict]:
     """
     Chunk by directly mapping source_sections to extracted content.
@@ -222,10 +233,12 @@ def _chunk_by_source_sections(
     """
     leaves = _collect_leaf_topics(topics)
     all_chunks = []
+    images_index = images_index or {}
 
     for leaf in leaves:
         parts = []
         sources = set()
+        leaf_images: list[dict] = []
 
         # Collect content from all source_sections
         for sec_title in leaf["source_sections"]:
@@ -242,6 +255,12 @@ def _chunk_by_source_sections(
                 )
                 if src:
                     sources.add(src)
+                # Collect images from this section
+                imgs = (
+                    images_index.get(norm)
+                    or images_index.get(norm.lower(), [])
+                )
+                leaf_images.extend(imgs)
 
         # Fallback: try matching the topic title itself
         if not parts:
@@ -258,6 +277,11 @@ def _chunk_by_source_sections(
                 )
                 if src:
                     sources.add(src)
+                imgs = (
+                    images_index.get(norm)
+                    or images_index.get(norm.lower(), [])
+                )
+                leaf_images.extend(imgs)
 
         if not parts:
             continue
@@ -278,6 +302,11 @@ def _chunk_by_source_sections(
             if source_path:
                 chunk["_source"] = source_path
             all_chunks.append(chunk)
+
+        # Attach images: first chunk gets all images (best-effort distribution)
+        if leaf_images and chunks:
+            first_chunk = all_chunks[len(all_chunks) - len(chunks)]
+            first_chunk["images"] = leaf_images
 
     return all_chunks
 
@@ -300,11 +329,11 @@ def bridge_and_chunk(structure_path: Path, extracted_dir: Path) -> list[dict]:
 
     # Load all extracted sections
     sections = _load_extracted_sections(extracted_dir)
-    section_index, source_index = _build_section_index(sections)
+    section_index, source_index, images_index = _build_section_index(sections)
 
     # Prefer source_sections-based chunking (handles large documents correctly)
     if _has_source_sections(topics):
-        return _chunk_by_source_sections(topics, section_index, source_index)
+        return _chunk_by_source_sections(topics, section_index, source_index, images_index)
 
     # Legacy fallback: synthetic page alignment (for structures without source_sections)
     topic_tree, _ = _convert_structure_to_topic_tree(topics, section_index)

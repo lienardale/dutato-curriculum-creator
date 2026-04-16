@@ -9,8 +9,10 @@ the entry page is a table of contents linking to subpages.
 import re
 import sys
 from collections import deque
+from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
+from urllib.request import urlopen, Request
 
 
 # ---------------------------------------------------------------------------
@@ -205,6 +207,100 @@ def _crawl_subpages(
 
 
 # ---------------------------------------------------------------------------
+# Image extraction from HTML
+# ---------------------------------------------------------------------------
+
+class _ImgTagParser(HTMLParser):
+    """Extract <img> src and alt attributes from HTML."""
+
+    def __init__(self):
+        super().__init__()
+        self.images: list[dict] = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "img":
+            attr_dict = dict(attrs)
+            src = attr_dict.get("src", "")
+            if src:
+                self.images.append({
+                    "src": src,
+                    "alt": attr_dict.get("alt", ""),
+                })
+
+
+def _download_image(
+    url: str,
+    images_dir: Path,
+    img_id: str,
+) -> dict | None:
+    """Download an image URL and return a registry entry, or None on failure."""
+    try:
+        req = Request(url, headers={"User-Agent": "DuTaTo-Extractor/1.0"})
+        with urlopen(req, timeout=10) as resp:
+            content_type = resp.headers.get("Content-Type", "image/png")
+            if "image" not in content_type:
+                return None
+            data = resp.read(10 * 1024 * 1024)  # 10MB max
+            if len(data) < 5120:  # Skip icons/spacers
+                return None
+
+            ext = content_type.split("/")[-1].split(";")[0].replace("jpeg", "jpg")
+            if ext not in ("png", "jpg", "gif", "webp", "svg+xml"):
+                ext = "png"
+            ext = ext.replace("svg+xml", "svg")
+            filename = f"{img_id}.{ext}"
+            filepath = images_dir / filename
+            filepath.write_bytes(data)
+
+            return {
+                "id": img_id,
+                "local_path": f"images/{filename}",
+                "mime_type": content_type.split(";")[0],
+                "size_bytes": len(data),
+                "width": 0,
+                "height": 0,
+            }
+    except Exception:
+        return None
+
+
+def _extract_web_images(
+    html: str,
+    source_url: str,
+    images_dir: str,
+) -> list[dict]:
+    """Extract images from HTML, download them, and return registry entries."""
+    out = Path(images_dir)
+    out.mkdir(parents=True, exist_ok=True)
+
+    parser = _ImgTagParser()
+    parser.feed(html)
+
+    source_origin = urlparse(source_url)
+    registry: list[dict] = []
+    seen_srcs: set[str] = set()
+
+    for idx, img in enumerate(parser.images):
+        src = img["src"]
+        # Skip data URIs
+        if src.startswith("data:"):
+            continue
+        # Resolve relative URLs
+        abs_url = urljoin(source_url, src)
+        if abs_url in seen_srcs:
+            continue
+        seen_srcs.add(abs_url)
+
+        img_id = f"web_img{idx}"
+        entry = _download_image(abs_url, out, img_id)
+        if entry:
+            entry["alt_text"] = img.get("alt", "")
+            registry.append(entry)
+
+    return registry
+
+
+# ---------------------------------------------------------------------------
 # Main extraction entry point
 # ---------------------------------------------------------------------------
 
@@ -215,6 +311,7 @@ def extract_web(
     max_pages: int = 50,
     max_depth: int = 1,
     max_tokens: int = 200_000,
+    images_dir: str | None = None,
 ) -> dict:
     """
     Extract content from a URL.
@@ -226,6 +323,7 @@ def extract_web(
         max_pages: Maximum number of subpages to crawl.
         max_depth: Maximum link-following depth (1 = direct links only).
         max_tokens: Stop crawling when accumulated tokens exceed this.
+        images_dir: If provided, download images to this directory.
     """
     import trafilatura
 
@@ -245,6 +343,11 @@ def extract_web(
 
     if not text:
         raise RuntimeError(f"No extractable content at: {source}")
+
+    # Extract images from the HTML
+    image_registry: list[dict] = []
+    if images_dir:
+        image_registry = _extract_web_images(downloaded, source, images_dir)
 
     # Try to get metadata
     metadata_result = trafilatura.extract(
@@ -271,6 +374,31 @@ def extract_web(
     # Split entry page text into sections
     sections = _split_into_sections(text, title)
 
+    # Distribute images across sections (best-effort by order)
+    if image_registry and sections:
+        per_section = max(1, len(image_registry) // len(sections))
+        img_iter = iter(image_registry)
+        for sec in sections:
+            sec_images = []
+            for _ in range(per_section):
+                img = next(img_iter, None)
+                if img:
+                    sec_images.append({
+                        "id": img["id"],
+                        "local_path": img["local_path"],
+                        "alt_text": img.get("alt_text", ""),
+                        "context": f"url:{source}",
+                    })
+            if sec_images:
+                sec["images"] = sec_images
+        remaining = list(img_iter)
+        if remaining and sections:
+            sections[-1].setdefault("images", []).extend(
+                {"id": img["id"], "local_path": img["local_path"],
+                 "alt_text": img.get("alt_text", ""), "context": f"url:{source}"}
+                for img in remaining
+            )
+
     # Crawl subpages if requested
     pages_crawled = 1
     crawl_limited_by = "none"
@@ -285,7 +413,6 @@ def extract_web(
         )
         if sub_sections:
             sections.extend(sub_sections)
-            # Count subpages (chapter headings have depth 0 and empty content)
             pages_crawled += sum(
                 1 for s in sub_sections
                 if s["depth"] == 0 and not s["content"]
@@ -293,7 +420,7 @@ def extract_web(
 
     total_tokens = sum(len(s["content"].split()) for s in sections if s["content"])
 
-    result = {
+    result: dict = {
         "source_type": "url",
         "source_path": source,
         "title": title,
@@ -302,10 +429,13 @@ def extract_web(
         "metadata": {
             "total_sections": len(sections),
             "total_tokens": total_tokens,
+            "total_images": len(image_registry),
             "url": source,
         },
     }
 
+    if image_registry:
+        result["images"] = image_registry
     if crawl:
         result["metadata"]["pages_crawled"] = pages_crawled
         result["metadata"]["crawl_limited_by"] = crawl_limited_by

@@ -292,6 +292,18 @@ def assemble_tier(
     return condensed_manifest["condensation_stats"]
 
 
+def _collect_images_from_chunks(chunks: list[dict]) -> list[dict]:
+    """Gather all images from a list of chunks (deduped by id)."""
+    seen: set[str] = set()
+    images: list[dict] = []
+    for chunk in chunks:
+        for img in chunk.get("images", []):
+            if img["id"] not in seen:
+                seen.add(img["id"])
+                images.append(img)
+    return images
+
+
 def _collect_chunks_for_leaf(
     leaf: dict,
     chunk_index: dict[str, list[dict]],
@@ -305,14 +317,18 @@ def _collect_chunks_for_leaf(
     if "content" in leaf:
         content = leaf["content"]
         tokens = count_tokens(content)
-        out.append({
+        chunk_entry: dict = {
             "content": content,
             "token_count": tokens,
             "topic_path": topic_path,
             "chunk_index": len([c for c in out if c.get("topic_path") == topic_path]),
             "page_number": 1,
             "metadata": {"has_code": "```" in content},
-        })
+        }
+        # Agent can specify which images to keep in the plan
+        if "images" in leaf:
+            chunk_entry["images"] = leaf["images"]
+        out.append(chunk_entry)
         return
 
     # Otherwise, copy chunks from original sources
@@ -322,16 +338,19 @@ def _collect_chunks_for_leaf(
         source_chunks.extend(chunk_index.get(key, []))
 
     if strategy == "keep":
-        # Copy original chunks as-is
+        # Copy original chunks as-is (including images)
         for ci, chunk in enumerate(source_chunks):
-            out.append({
+            entry: dict = {
                 "content": chunk["content"],
                 "token_count": chunk.get("token_count", count_tokens(chunk["content"])),
                 "topic_path": topic_path,
                 "chunk_index": ci,
                 "page_number": chunk.get("page_number", 1),
                 "metadata": chunk.get("metadata", {"has_code": False}),
-            })
+            }
+            if "images" in chunk:
+                entry["images"] = chunk["images"]
+            out.append(entry)
     elif strategy in ("merge", "synthesize"):
         # For merge/synthesize the agent must provide "content" above.
         # If missing, fall back to concatenating sources (best effort).
@@ -342,14 +361,19 @@ def _collect_chunks_for_leaf(
                 c.get("has_code", False) or (c.get("metadata") or {}).get("has_code", False)
                 for c in source_chunks
             )
-            out.append({
+            entry = {
                 "content": merged,
                 "token_count": tokens,
                 "topic_path": topic_path,
                 "chunk_index": 0,
                 "page_number": 1,
                 "metadata": {"has_code": has_code},
-            })
+            }
+            # Carry forward all images from merged chunks
+            merged_images = _collect_images_from_chunks(source_chunks)
+            if merged_images:
+                entry["images"] = merged_images
+            out.append(entry)
             console.print(
                 f"  [yellow]Warning:[/] '{topic_path[-1]}' uses strategy "
                 f"'{strategy}' but no inline content provided — "

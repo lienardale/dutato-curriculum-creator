@@ -3,14 +3,26 @@ Extractor registry — auto-detect source type and dispatch to the right extract
 
 All extractors produce a unified intermediate format:
 {
-    "source_type": "pdf|docx|pptx|url|code|csv|notion",
+    "source_type": "pdf|docx|pptx|url|code|csv|notion|notion_api",
     "source_path": "/path/or/url",
     "title": "...",
     "author": "...",
     "sections": [
-        {"title": "...", "content": "...", "depth": 0, "metadata": {}}
+        {
+            "title": "...", "content": "...", "depth": 0, "metadata": {},
+            "images": [                          # optional
+                {"id": "img_001", "local_path": "images/img_001.png",
+                 "alt_text": "", "context": "after:paragraph:2"}
+            ]
+        }
     ],
-    "metadata": {"total_sections": N, "total_tokens": N, "extracted_at": "ISO8601"}
+    "images": [                                  # optional — master registry
+        {"id": "img_001", "local_path": "images/img_001.png",
+         "mime_type": "image/png", "size_bytes": 45230,
+         "width": 800, "height": 600}
+    ],
+    "metadata": {"total_sections": N, "total_tokens": N, "total_images": 0,
+                 "extracted_at": "ISO8601"}
 }
 """
 
@@ -31,7 +43,14 @@ _EXTENSION_MAP = {
 
 def _detect_source_type(source: str) -> str:
     """Detect the source type from a path or URL."""
+    # Notion API sources: notion:// scheme or www.notion.so URLs
+    if source.startswith("notion://"):
+        return "notion_api"
     if source.startswith("http://") or source.startswith("https://"):
+        from urllib.parse import urlparse
+        host = urlparse(source).netloc
+        if host in ("www.notion.so", "notion.so"):
+            return "notion_api"
         return "web"
 
     path = Path(source)
@@ -44,7 +63,7 @@ def _detect_source_type(source: str) -> str:
 
     raise ValueError(
         f"Cannot detect source type for: {source}\n"
-        f"Supported: {', '.join(sorted(_EXTENSION_MAP.keys()))}, URLs, directories"
+        f"Supported: {', '.join(sorted(_EXTENSION_MAP.keys()))}, URLs, directories, Notion URLs"
     )
 
 
@@ -68,6 +87,9 @@ def _get_extractor(source_type: str):
     elif source_type == "notion":
         from extractors.notion import extract_notion
         return extract_notion
+    elif source_type == "notion_api":
+        from extractors.notion_api import extract_notion_api
+        return extract_notion_api
     else:
         raise ValueError(f"Unknown source type: {source_type}")
 
@@ -80,14 +102,22 @@ def extract_source(source: str, output_dir: str | None = None, **kwargs) -> dict
         source: File path, URL, or directory path.
         output_dir: If provided, save the intermediate JSON there.
         **kwargs: Extra arguments forwarded to the extractor (e.g. crawl
-                  params for the web extractor).
+                  params for the web extractor, images_dir for image
+                  extraction).
 
     Returns:
         The intermediate JSON dict.
     """
     source_type = _detect_source_type(source)
     extractor = _get_extractor(source_type)
-    if source_type == "web" and kwargs:
+
+    # Default images_dir to <output_dir>/images/ when output_dir is provided
+    if output_dir and "images_dir" not in kwargs:
+        kwargs["images_dir"] = str(Path(output_dir) / "images")
+
+    # Extractors that accept kwargs
+    _kwarg_extractors = {"web", "notion_api", "pdf", "office", "notion"}
+    if source_type in _kwarg_extractors and kwargs:
         result = extractor(source, **kwargs)
     else:
         result = extractor(source)
@@ -95,14 +125,14 @@ def extract_source(source: str, output_dir: str | None = None, **kwargs) -> dict
     # Ensure metadata has extracted_at timestamp
     result.setdefault("metadata", {})
     result["metadata"]["extracted_at"] = datetime.now(timezone.utc).isoformat()
+    result["metadata"].setdefault("total_images", len(result.get("images", [])))
 
     if output_dir:
         out_path = Path(output_dir)
         out_path.mkdir(parents=True, exist_ok=True)
 
         # Generate filename from source
-        if source_type == "web":
-            # Use URL domain + path as filename
+        if source_type in ("web", "notion_api"):
             from urllib.parse import urlparse
             parsed = urlparse(source)
             safe_name = f"{parsed.netloc}{parsed.path}".replace("/", "_").strip("_")

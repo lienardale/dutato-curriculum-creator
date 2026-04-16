@@ -541,6 +541,106 @@ def insert_exercises(
     return inserted
 
 
+CURRICULUM_IMAGES_BUCKET = "curriculum-images"
+
+
+def _ensure_storage_bucket(client) -> None:
+    """Ensure the curriculum-images storage bucket exists."""
+    try:
+        client.storage.get_bucket(CURRICULUM_IMAGES_BUCKET)
+    except Exception:
+        try:
+            client.storage.create_bucket(
+                CURRICULUM_IMAGES_BUCKET,
+                options={"public": True, "file_size_limit": 10 * 1024 * 1024},
+            )
+            console.print(f"  [green]✓[/] Created storage bucket: {CURRICULUM_IMAGES_BUCKET}")
+        except Exception as e:
+            # Bucket may already exist — ignore
+            if "already exists" not in str(e).lower():
+                console.print(f"  [yellow]Warning:[/] Could not create storage bucket: {e}")
+
+
+def upload_chunk_images(
+    client,
+    chunks: list[dict],
+    domain_slug: str,
+    extracted_dir: Path | None = None,
+) -> int:
+    """Upload images referenced in chunks to Supabase Storage.
+
+    Replaces ``local_path`` with ``url`` on each image entry.
+    Also injects ``![alt](url)`` markdown into chunk content at image positions.
+    Returns count of images uploaded.
+    """
+    # Collect all chunks that have images
+    has_images = any(chunk.get("images") for chunk in chunks)
+    if not has_images:
+        return 0
+
+    _ensure_storage_bucket(client)
+    bucket = client.storage.from_(CURRICULUM_IMAGES_BUCKET)
+
+    uploaded = 0
+    for chunk in chunks:
+        images = chunk.get("images", [])
+        if not images:
+            continue
+
+        md_inserts: list[str] = []
+        for img in images:
+            local_path = img.get("local_path", "")
+            if not local_path:
+                continue
+
+            # Resolve the actual file path
+            file_path = None
+            if extracted_dir:
+                candidate = extracted_dir / local_path
+                if candidate.exists():
+                    file_path = candidate
+                else:
+                    # Try parent of extracted dir (output/<name>/)
+                    candidate = extracted_dir.parent / local_path
+                    if candidate.exists():
+                        file_path = candidate
+
+            if not file_path or not file_path.exists():
+                continue
+
+            storage_path = f"{domain_slug}/{img['id']}{file_path.suffix}"
+
+            try:
+                with open(file_path, "rb") as f:
+                    data = f.read()
+                mime = img.get("mime_type", "image/png")
+                bucket.upload(
+                    storage_path,
+                    data,
+                    {"content-type": mime},
+                )
+                public_url = bucket.get_public_url(storage_path)
+                img["url"] = public_url
+                uploaded += 1
+
+                alt = img.get("alt_text", "")
+                md_inserts.append(f"\n\n![{alt}]({public_url})\n\n")
+            except Exception as e:
+                if "already exists" in str(e).lower() or "Duplicate" in str(e):
+                    public_url = bucket.get_public_url(storage_path)
+                    img["url"] = public_url
+                    alt = img.get("alt_text", "")
+                    md_inserts.append(f"\n\n![{alt}]({public_url})\n\n")
+                else:
+                    console.print(f"    [yellow]Warning:[/] Failed to upload {img['id']}: {e}")
+
+        # Inject image markdown at the end of chunk content
+        if md_inserts:
+            chunk["content"] = chunk.get("content", "") + "".join(md_inserts)
+
+    return uploaded
+
+
 def insert_chunks(
     client,
     chunks: list[dict],
@@ -601,6 +701,15 @@ def insert_chunks(
         extra = chunk.get("metadata", {})
         if isinstance(extra, dict):
             meta.update(extra)
+
+        # Include image URLs in metadata (if present after upload_chunk_images)
+        chunk_images = chunk.get("images", [])
+        if chunk_images:
+            meta["images"] = [
+                {k: v for k, v in img.items() if k in ("url", "alt_text", "id")}
+                for img in chunk_images
+                if img.get("url")
+            ]
 
         batch.append({
             "id": str(uuid.uuid4()),
@@ -772,6 +881,15 @@ def upload_curriculum(
     console.print(f"  [green]✓[/] {topics_inserted} topics inserted")
     if topics_skipped:
         console.print(f"  [yellow]→[/] {topics_skipped} topics already existed")
+
+    # Upload images to Supabase Storage (before inserting chunks)
+    extracted_dir = input_dir / "extracted"
+    images_uploaded = upload_chunk_images(
+        client, chunks, slug,
+        extracted_dir=extracted_dir if extracted_dir.exists() else None,
+    )
+    if images_uploaded:
+        console.print(f"  [green]✓[/] {images_uploaded} images uploaded to Storage")
 
     # Insert chunks
     console.print("  Inserting chunks...")
