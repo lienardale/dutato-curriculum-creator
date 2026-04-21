@@ -21,14 +21,15 @@ This shows which stages are complete and where to resume. If the output director
 ## Pipeline Overview
 
 ```
-1. MANIFEST    → manifest.json         (curriculum metadata)
-2. EXTRACT     → extracted/*.json      (one per source)
-3. EXPLORE     → exploration.json      (concept analysis — MUST be saved)
-4. STRUCTURE   → structure.json        (topic hierarchy + objectives + prerequisites)
-5. CHUNK       → chunks.json           (content chunks)
-6. EXERCISES   → exercises.json        (practice problems)
-7. REVIEW      → review.json           (quality report)
-8. UPLOAD      → upload_result.json    (domain ID + stats)
+1. MANIFEST     → manifest.json         (curriculum metadata)
+2. EXTRACT      → extracted/*.json      (one per source)
+2b. NORMALIZE   → (in-place title cleanup of extracted/*.json)
+3. EXPLORE      → exploration.json      (concept analysis — MUST be saved)
+4. STRUCTURE    → structure.json        (topic hierarchy + objectives + prerequisites)
+5. CHUNK        → chunks.json           (content chunks)
+6. EXERCISES    → exercises.json        (practice problems)
+7. REVIEW       → review.json           (quality report)
+8. UPLOAD       → upload_result.json    (domain ID + stats)
 ```
 
 Every stage has a checkpoint file. **Do NOT proceed to the next stage until the checkpoint is written to disk.**
@@ -119,9 +120,48 @@ Safety limits (all configurable):
 Only links sharing the entry URL's path prefix are followed (e.g. for
 `/docs/current/tutorial.html`, only `/docs/current/tutorial-*.html` pages).
 
+If the index page links outside its own path prefix (e.g. a `/categories/foo/`
+page linking to articles at `/blog/YYYY-MM-DD-*`), pass
+`--include-paths /blog/` (repeatable) to allow additional same-origin prefixes.
+Manifest entries can declare this as `"include_paths": ["/blog/"]` alongside
+`"crawl": true`.
+
 **Parallelization**: For 3+ sources, spawn one sub-agent per source.
 
 **Resume rule**: Check which source files already have a corresponding JSON in `extracted/`. Only extract missing ones.
+
+---
+
+## Stage 2b: NORMALIZE TITLES (required, in-place rewrite)
+
+Extraction almost always surfaces titles that leak book/publication structure into the curriculum: `Chapter 4: Working with Images`, `1. Meet Kafka`, `Part II: Designing Systems`, `Cover`, `Foreword`, `Who Should Read This Book?`, end-of-chapter `Questions`/`Summary`, etc. The learning app should show semantic topics, not book TOC entries — so we strip these prefixes and drop book-meta sections **before** authoring `structure.json`.
+
+Run once after extraction completes, before starting exploration:
+
+```bash
+python normalize_titles.py output/<name>/
+```
+
+This rewrites `output/<name>/extracted/*.json` in place and prints a diff. Idempotent — safe to re-run if new sources are added.
+
+**Edge case — bare "Chapter N" titles.** Some PDF extractions lose the semantic chapter title and leave only `Chapter 1` … `Chapter N` (no trailing text). In that case, consult the book's TOC and pass an explicit remap:
+
+```bash
+python normalize_titles.py output/<name>/ --remap remap.json
+```
+
+```json
+{
+  "Docker_up_and_running.json": {
+    "Chapter 1": "Introduction to Docker",
+    "Chapter 4": "Working with Docker Images"
+  }
+}
+```
+
+**Why this step exists:** `source_sections` in `structure.json` is a title-match lookup the chunker uses to pull content. Without normalization, the agent either has to reference book-meta strings (leaking into the curriculum) OR drop the source entirely. See `rubrics/structuring.md` for the full rule set.
+
+**Resume rule**: Re-running on already-normalized files is a no-op. Safe to include unconditionally.
 
 ---
 

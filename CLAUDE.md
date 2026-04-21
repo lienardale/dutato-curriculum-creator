@@ -20,6 +20,7 @@ When adding a new pipeline stage, follow this pattern:
 - `status.py` — Pipeline progress checker (agent runs this first on session start)
 - `upload.py` — Uploads curriculum output to Supabase (including images to Storage)
 - `chunk_bridge.py` — Converts structure + extracted content into semantic chunks
+- `normalize_titles.py` — **Required post-extraction pass.** Strips book-structure prefixes (`Chapter N:`, `N.`, `Part I`, …) from section titles and drops book-meta sections (Cover, Foreword, Index, Acknowledgements, end-of-chapter Questions/Summary, …) from extracted JSONs, so the chunker and the authored `source_sections` stay clean of TOC leakage.
 - `condense.py` — Assembles condensed variants from a condensation plan
 - `analyze_images.py` — Image analysis utilities (prepare work list, run OCR, apply descriptions)
 - `extractors/video.py` — YouTube / Vimeo / Twitch / local video extractor (captions → Whisper fallback)
@@ -31,7 +32,9 @@ When adding a new pipeline stage, follow this pattern:
 ```bash
 uv sync                        # Install dependencies
 source .venv/bin/activate      # Activate venv
-python status.py output/<name>/  # Check pipeline progress
+python status.py output/<name>/                         # Check pipeline progress
+python normalize_titles.py output/<name>/                # Post-extract: strip chapter prefixes + drop book-meta
+python normalize_titles.py output/<name>/ --remap remap.json  # With explicit Chapter N -> semantic title map
 python chunk_bridge.py --structure output/<name>/structure.json --extracted output/<name>/extracted/ -o output/<name>/chunks.json
 python condense.py --input output/<name>/ --plan output/<name>/condensation_plan.json
 python upload.py --input output/<name>/ --owner user --user-id <uuid>
@@ -54,6 +57,7 @@ python -m extractors.video https://youtu.be/<id> --whisper-model base -o output/
 
 1. **Manifest** → `manifest.json` (agent writes metadata)
 2. **Extract** → `extracted/*.json` + `extracted/images/` (scripts extract, one per source; images extracted automatically; scanned PDFs OCR'd)
+2b. **Normalize titles** → in-place rewrite of `extracted/*.json`. Script strips `Chapter N:` / `N.` / `Part I` prefixes and drops book-meta sections (Cover, Foreword, Index, Acknowledgements, end-of-chapter Questions/Summary …). Idempotent. Required before `structure.json` so `source_sections` don't leak book TOC.
 3. **Analyze Images** (if images exist) → `image_analysis.json` (script prepares list + runs OCR; agent describes each image and sets `educational_value`)
 4. **Explore** → `exploration.json` (agent analyzes content, including image descriptions)
 5. **Structure** → `structure.json` (agent designs topic hierarchy + learning objectives + prerequisites)

@@ -49,10 +49,12 @@ def _extract_links_from_html(
     html: str,
     source_url: str,
     path_prefix: str,
+    include_paths: list[str] | None = None,
 ) -> list[str]:
     """Extract and filter links from raw HTML.
 
-    Returns only same-origin links whose path starts with *path_prefix*,
+    Returns only same-origin links whose path starts with *path_prefix*
+    OR with any of the additional *include_paths* (if provided),
     excluding the entry URL itself and fragment-only anchors.
     """
     from courlan import extract_links as courlan_extract
@@ -69,14 +71,16 @@ def _extract_links_from_html(
     # Normalize entry URL (strip fragment)
     entry_normalized = f"{source_origin}{parsed_source.path}"
 
+    allowed_prefixes = [path_prefix, *(include_paths or [])]
+
     filtered: list[str] = []
     for link in all_links:
         parsed = urlparse(link)
         # Same origin only
         if f"{parsed.scheme}://{parsed.netloc}" != source_origin:
             continue
-        # Must match path prefix
-        if not parsed.path.startswith(path_prefix):
+        # Must match entry path prefix or one of the include paths
+        if not any(parsed.path.startswith(p) for p in allowed_prefixes):
             continue
         # Normalize (strip fragment)
         normalized = f"{source_origin}{parsed.path}"
@@ -98,6 +102,7 @@ def _crawl_subpages(
     max_pages: int = 50,
     max_depth: int = 1,
     max_tokens: int = 200_000,
+    include_paths: list[str] | None = None,
 ) -> tuple[list[dict], str]:
     """BFS crawl of subpages linked from the entry page.
 
@@ -107,7 +112,9 @@ def _crawl_subpages(
     import trafilatura
 
     path_prefix = _compute_path_prefix(entry_url)
-    seed_links = _extract_links_from_html(entry_html, entry_url, path_prefix)
+    seed_links = _extract_links_from_html(
+        entry_html, entry_url, path_prefix, include_paths=include_paths,
+    )
 
     if not seed_links:
         return [], "none"
@@ -198,7 +205,9 @@ def _crawl_subpages(
 
         # If depth allows, discover more links from this subpage
         if depth < max_depth:
-            sub_links = _extract_links_from_html(downloaded, url, path_prefix)
+            sub_links = _extract_links_from_html(
+                downloaded, url, path_prefix, include_paths=include_paths,
+            )
             for sub_link in sub_links:
                 if urlparse(sub_link).path not in visited:
                     queue.append((sub_link, depth + 1))
@@ -312,6 +321,7 @@ def extract_web(
     max_depth: int = 1,
     max_tokens: int = 200_000,
     images_dir: str | None = None,
+    include_paths: list[str] | None = None,
 ) -> dict:
     """
     Extract content from a URL.
@@ -324,6 +334,10 @@ def extract_web(
         max_depth: Maximum link-following depth (1 = direct links only).
         max_tokens: Stop crawling when accumulated tokens exceed this.
         images_dir: If provided, download images to this directory.
+        include_paths: Extra same-origin URL path prefixes to follow
+            during crawl, in addition to the entry URL's path prefix.
+            Useful for category-index pages that link outside the
+            index's own path (e.g. /categories/foo/ → /blog/*).
     """
     import trafilatura
 
@@ -410,6 +424,7 @@ def extract_web(
             max_pages=max_pages,
             max_depth=max_depth,
             max_tokens=max_tokens,
+            include_paths=include_paths,
         )
         if sub_sections:
             sections.extend(sub_sections)
@@ -530,6 +545,11 @@ if __name__ == "__main__":
     parser.add_argument("--max-pages", type=int, default=50, help="Max subpages to crawl (default: 50)")
     parser.add_argument("--max-depth", type=int, default=1, help="Max link-following depth (default: 1)")
     parser.add_argument("--max-tokens", type=int, default=200_000, help="Token budget for crawling (default: 200000)")
+    parser.add_argument(
+        "--include-paths", action="append", default=None,
+        help="Extra URL path prefix to follow during crawl (repeatable, e.g. --include-paths /blog/). "
+             "In addition to the entry URL's own path prefix.",
+    )
     args = parser.parse_args()
 
     from extractors import extract_source
@@ -540,6 +560,7 @@ if __name__ == "__main__":
         max_pages=args.max_pages,
         max_depth=args.max_depth,
         max_tokens=args.max_tokens,
+        include_paths=args.include_paths,
     )
     if not args.output_dir:
         print(json.dumps(result, indent=2, ensure_ascii=False))

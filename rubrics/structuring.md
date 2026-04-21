@@ -15,6 +15,9 @@ Rules for building the topic hierarchy (structure.json) from exploration finding
 - Use noun phrases or "What is X?" form
 - Bad: "Chapter 3", "Section 2.1", "3.2.1"
 - Good: "Sorting Algorithms", "Binary Search Trees", "What is Big-O Notation?"
+- **No source branding** in topic titles. Strip parentheticals that name a book, author, publisher, or video channel. The learning app shows standalone topics; users don't need to know which book a chapter came from.
+  - Bad: "Bootstrapping a Cluster (The Hard Way)", "Production Chart Patterns (Bitnami examples)", "Docker Internals (Poulton)".
+  - Good: "Bootstrapping a Cluster from Scratch", "Production Chart Patterns — NGINX".
 
 ### Ordering
 - Within each parent: foundational → specific → advanced
@@ -54,6 +57,57 @@ Rules:
 - Every extracted section must appear in at least one topic's `source_sections`
 - A section can appear in multiple topics if it covers multiple concepts
 - If a section doesn't fit any topic, either create a topic for it or confirm with the user it should be excluded
+
+### source_sections must be clean of book-meta
+
+Extraction often captures TOC entries, preamble, end-matter, and "Chapter N" chapter markers. These leak book structure into the curriculum and have zero educational value. Before authoring `source_sections`, **always run the normalizer:**
+
+```bash
+python normalize_titles.py output/<name>/
+```
+
+This strips chapter-number prefixes (`Chapter N:`, `N.`, `N:`, `Part I`, `Section N`, etc.) and drops book-meta sections (Cover, Credits, Foreword, Dedication, Index, "Who Should Read This Book?", "How This Book Is Organized", "Technical Requirements", end-of-chapter "Questions"/"Summary", Acknowledgements, etc.) directly in the extracted JSONs.
+
+For low-fidelity PDF extractions that collapsed chapters into bare "Chapter N" titles (no trailing semantic name), provide an explicit per-file remap so the normalizer can rewrite them using the book's TOC:
+
+```bash
+python normalize_titles.py output/<name>/ --remap remap.json
+```
+
+```json
+{
+  "Docker_up_and_running.json": {
+    "Chapter 1": "Introduction to Docker",
+    "Chapter 4": "Working with Docker Images"
+  }
+}
+```
+
+After normalization, `source_sections` strings must:
+- **Not** contain `Chapter N`, `Part I`, `Section N`, or `N: / N. / N.N` prefixes.
+- **Not** include book preamble / end-matter (see deny list in `normalize_titles.py :: BOOK_META_RE`).
+- Match an actual section title in an extracted JSON (otherwise the chunker pulls nothing).
+
+A **stale-ref audit** after structure authoring:
+
+```python
+import json, pathlib
+titles = set()
+for p in pathlib.Path('output/<name>/extracted').glob('*.json'):
+    titles.update((s.get('title') or '').strip() for s in json.loads(p.read_text()).get('sections',[]))
+with open('output/<name>/structure.json') as f:
+    structure = json.load(f)
+def check(items, path=''):
+    for it in items:
+        p = path + '/' + it['title']
+        for s in it.get('source_sections', []):
+            if s not in titles and s.lower() not in {t.lower() for t in titles}:
+                print(f'STALE: {p} references {s!r}')
+        check(it.get('children', []), p)
+check(structure)
+```
+
+Any `STALE:` line means that topic will get zero content from that entry — either fix the title to match a real extracted section or drop it.
 
 ## Balance Checks
 
