@@ -77,7 +77,31 @@ python -m extractors.code ./my-repo/ -o output/<name>/extracted/
 python -m extractors.office /path/to/slides.pptx -o output/<name>/extracted/
 python -m extractors.tabular /path/to/data.csv -o output/<name>/extracted/
 python -m extractors.notion /path/to/export.zip -o output/<name>/extracted/
+python -m extractors.video https://youtu.be/<id> -o output/<name>/extracted/
+python -m extractors.video "https://www.youtube.com/playlist?list=<id>" -o output/<name>/extracted/
 ```
+
+**Video sources** (YouTube, Vimeo, Twitch, local video files): Captions are
+fetched first (fast); if unavailable, falls back to local Whisper transcription
+(requires `uv sync --extra video-heavy`). Sections are split by chapter markers
+when present, otherwise into fixed 5-minute windows.
+
+```bash
+# Whisper fallback (slow — use for videos without captions):
+python -m extractors.video https://youtu.be/<id> --whisper-model base -o output/<name>/extracted/
+# Non-English captions (try Arabic first, then English):
+python -m extractors.video https://youtu.be/<id> --lang ar --lang en -o output/<name>/extracted/
+# Cap a playlist to the first N videos:
+python -m extractors.video "https://www.youtube.com/playlist?list=<id>" --max-videos 10 -o output/<name>/extracted/
+# Error instead of fall back to Whisper:
+python -m extractors.video https://youtu.be/<id> --no-whisper -o output/<name>/extracted/
+```
+
+Heavy video sources (multi-hour live streams, auto-caption-only content) tend
+to produce noisy transcripts. During **Exploration**, flag sources whose
+`metadata.transcript_source == "whisper"` or `metadata.is_auto_generated ==
+true` as lower-quality and weight the written sources more heavily when
+resolving conflicts.
 
 **Multi-page web sources** (documentation sites, tutorials with subpages):
 When a URL points to a table-of-contents or index page, use `--crawl` to follow

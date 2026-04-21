@@ -3,7 +3,7 @@ Extractor registry — auto-detect source type and dispatch to the right extract
 
 All extractors produce a unified intermediate format:
 {
-    "source_type": "pdf|docx|pptx|url|code|csv|notion|notion_api",
+    "source_type": "pdf|docx|pptx|url|code|csv|notion|notion_api|video|video_playlist",
     "source_path": "/path/or/url",
     "title": "...",
     "author": "...",
@@ -38,7 +38,21 @@ _EXTENSION_MAP = {
     ".csv": "tabular",
     ".tsv": "tabular",
     ".zip": "notion",
+    ".mp4": "video",
+    ".m4a": "video",
+    ".mkv": "video",
+    ".webm": "video",
+    ".mov": "video",
+    ".mp3": "video",
+    ".wav": "video",
 }
+
+_VIDEO_HOSTS = frozenset({
+    "www.youtube.com", "youtube.com", "youtu.be",
+    "m.youtube.com", "music.youtube.com",
+    "www.vimeo.com", "vimeo.com", "player.vimeo.com",
+    "www.twitch.tv", "twitch.tv",
+})
 
 
 def _detect_source_type(source: str) -> str:
@@ -48,9 +62,11 @@ def _detect_source_type(source: str) -> str:
         return "notion_api"
     if source.startswith("http://") or source.startswith("https://"):
         from urllib.parse import urlparse
-        host = urlparse(source).netloc
+        host = urlparse(source).netloc.lower()
         if host in ("www.notion.so", "notion.so"):
             return "notion_api"
+        if host in _VIDEO_HOSTS:
+            return "video"
         return "web"
 
     path = Path(source)
@@ -90,6 +106,9 @@ def _get_extractor(source_type: str):
     elif source_type == "notion_api":
         from extractors.notion_api import extract_notion_api
         return extract_notion_api
+    elif source_type == "video":
+        from extractors.video import extract_video
+        return extract_video
     else:
         raise ValueError(f"Unknown source type: {source_type}")
 
@@ -116,7 +135,7 @@ def extract_source(source: str, output_dir: str | None = None, **kwargs) -> dict
         kwargs["images_dir"] = str(Path(output_dir) / "images")
 
     # Extractors that accept kwargs
-    _kwarg_extractors = {"web", "notion_api", "pdf", "office", "notion"}
+    _kwarg_extractors = {"web", "notion_api", "pdf", "office", "notion", "video"}
     if source_type in _kwarg_extractors and kwargs:
         result = extractor(source, **kwargs)
     else:
@@ -139,6 +158,19 @@ def extract_source(source: str, output_dir: str | None = None, **kwargs) -> dict
             filename = f"{safe_name}.json"
         elif source_type == "code":
             filename = f"{Path(source).name}.json"
+        elif source_type == "video":
+            # Use video/playlist ID for URL-based videos so multiple videos from
+            # the same host don't collide (e.g. youtube.com/watch?v=...).
+            video_id = (
+                result.get("metadata", {}).get("video_id")
+                or result.get("metadata", {}).get("playlist_id")
+                or ""
+            )
+            if video_id:
+                prefix = "playlist" if result.get("source_type") == "video_playlist" else "video"
+                filename = f"{prefix}_{video_id}.json"
+            else:
+                filename = f"{Path(source).stem}.json"
         else:
             filename = f"{Path(source).stem}.json"
 

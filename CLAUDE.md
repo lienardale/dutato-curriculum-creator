@@ -22,6 +22,7 @@ When adding a new pipeline stage, follow this pattern:
 - `chunk_bridge.py` — Converts structure + extracted content into semantic chunks
 - `condense.py` — Assembles condensed variants from a condensation plan
 - `analyze_images.py` — Image analysis utilities (prepare work list, run OCR, apply descriptions)
+- `extractors/video.py` — YouTube / Vimeo / Twitch / local video extractor (captions → Whisper fallback)
 - `shared/chunk.py` — Low-level chunking utilities (paragraph splitting, token counting)
 - `shared/ocr.py` — OCR utility using EasyOCR (optional dep) for scanned content
 
@@ -43,6 +44,10 @@ python -m extractors.notion /path/to/export.zip -o output/name/extracted/
 python -m extractors.notion_api https://www.notion.so/My-Page-abc123 -o output/name/extracted/
 python -m extractors.notion_api <page_id> --token <token> -o output/name/extracted/
 python -m extractors.notion_api <page_id> --oauth -o output/name/extracted/
+python -m extractors.video https://youtu.be/<id> -o output/name/extracted/
+python -m extractors.video "https://www.youtube.com/playlist?list=<id>" --max-videos 10 -o output/name/extracted/
+python -m extractors.video https://youtu.be/<id> --lang ar --lang en -o output/name/extracted/  # non-English captions
+python -m extractors.video https://youtu.be/<id> --whisper-model base -o output/name/extracted/  # Whisper fallback
 ```
 
 ## Pipeline Stages
@@ -70,6 +75,7 @@ All extractors support optional image extraction. When `-o` is provided, images 
 - **Web**: HTML `<img>` tag parsing + download
 - **Notion ZIP**: Image files extracted from the ZIP archive, markdown `![alt](path)` refs resolved
 - **Notion API**: `image` blocks downloaded from Notion S3 URLs
+- **Video**: No images extracted (videos are temporal). Transcript text is chunked into sections by chapter markers or fixed time windows.
 
 Images flow through: extractors → `analyze_images.py` (OCR + agent descriptions) → `chunk_bridge.py` (attached to chunks) → `upload.py` (uploaded to Supabase Storage `curriculum-images` bucket, markdown `![alt](url)` injected into chunk content). The Flutter app renders images via `ChunkImageBuilder` (cached, tap-to-expand).
 
@@ -103,6 +109,16 @@ OCR is optional — install with `uv sync --extra ocr` (adds EasyOCR + PyTorch).
 - **Scanned PDFs**: Auto-detected during extraction. Pages with < 50 chars of text are rendered to images and OCR'd at 200 DPI.
 - **Image OCR**: `analyze_images.py ocr` runs OCR on all extracted images, filling `ocr_text` field.
 - **Graceful degradation**: If EasyOCR is not installed, OCR is silently skipped — text extraction still works for non-scanned content.
+
+## Video Transcripts
+
+The video extractor (`extractors/video.py`) fetches transcripts from YouTube, Vimeo, Twitch, and any other yt-dlp-supported URL — plus local video files. Install `uv sync --extra video-heavy` for Whisper fallback when captions are absent.
+
+Transcript resolution order per video: manual captions in `--lang` → auto-generated in `--lang` → any available transcript → local Whisper transcription (if the `video-heavy` extra is installed). If all paths fail the extractor raises a clear error.
+
+Section boundaries: yt-dlp-reported chapters when present, else fixed windows via `--window-seconds` (default 300). Section titles are time-range-prefixed (`[MM:SS-MM:SS] …`) and carry `start_seconds`/`end_seconds` in `metadata`, so `chunk_bridge.py` matches them by title and the Flutter app can deep-link to a timestamp.
+
+Playlists are handled as a single intermediate JSON with `source_type: "video_playlist"`; section titles are episode-qualified (`Ep 03 — <video title>: [MM:SS-MM:SS] <chapter>`) to stay unique across the playlist.
 
 ## Notion API
 
