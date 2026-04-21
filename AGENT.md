@@ -45,6 +45,8 @@ Write `output/<name>/manifest.json`:
 {
   "name": "Curriculum Display Name",
   "domain": "domain-slug",
+  "domain_family": "domain-slug",
+  "variant": "extensive",
   "description": "One-line description",
   "sort_order": 3,
   "sources": [
@@ -57,6 +59,10 @@ Write `output/<name>/manifest.json`:
 ```
 
 - `sort_order` (optional): Controls display position in the app. Lower numbers appear first. Defaults to 99 if omitted.
+- `domain_family` (**required**, default = `domain`): groups the extensive curriculum with its condensed variants (detailed/classic/core) under one app card. Always set to the same slug as `domain` for the extensive — condense.py will emit variants with matching `domain_family` + `variant=detailed|classic|core`.
+- `variant` (**required**, must be one of `extensive`/`detailed`/`classic`/`core`): the extensive curriculum is always `"extensive"`. Variants are assigned by `condense.py`.
+
+> If you omit `domain_family`/`variant`, `upload.py` now back-fills them to `domain`/`"extensive"` as a safety net, but **always set them explicitly in the manifest** — that's what makes the files self-documenting and lets a reviewer see at a glance that the extensive will group with its variants.
 
 **Resume rule**: If `manifest.json` exists, read it to understand the curriculum context. Ask the user if anything changed.
 

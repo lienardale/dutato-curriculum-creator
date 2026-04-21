@@ -76,12 +76,39 @@ def create_domain(
     domain_family: str | None = None,
     variant: str | None = None,
 ) -> str:
-    """Create a new domain or return existing ID."""
+    """Create a new domain or return its ID if one with this slug already exists.
+
+    If the domain already exists but is missing ``domain_family`` / ``variant``,
+    back-fill those columns from the arguments. This is the fix for the bug
+    where an extensive curriculum uploaded without family/variant ends up
+    orphaned — then later variants upload with family=<slug>, and the Flutter
+    app can't group them all under one card because the extensive row's
+    ``domain_family`` is still NULL. See migration 029 and the "Family/variant
+    must be set on every domain" project memory.
+    """
     # Check if domain already exists by slug
-    result = client.table("domains").select("id").eq("slug", slug).execute()
+    result = (
+        client.table("domains")
+        .select("id, domain_family, variant")
+        .eq("slug", slug)
+        .execute()
+    )
     if result.data:
-        domain_id = result.data[0]["id"]
-        console.print(f"  [yellow]→[/] Domain '{slug}' already exists ({domain_id})")
+        row = result.data[0]
+        domain_id = row["id"]
+        update: dict[str, str] = {}
+        if domain_family and not row.get("domain_family"):
+            update["domain_family"] = _sanitize(domain_family)
+        if variant and not row.get("variant"):
+            update["variant"] = variant
+        if update:
+            client.table("domains").update(update).eq("id", domain_id).execute()
+            console.print(
+                f"  [yellow]→[/] Domain '{slug}' already existed ({domain_id}); "
+                f"back-filled {', '.join(update.keys())}"
+            )
+        else:
+            console.print(f"  [yellow]→[/] Domain '{slug}' already exists ({domain_id})")
         return domain_id
 
     domain_id = str(uuid.uuid4())
@@ -819,13 +846,18 @@ def upload_curriculum(
     slug = manifest.get("domain", input_dir.name).lower().replace(" ", "-")
     description = manifest.get("description", "")
     sort_order = manifest.get("sort_order", 99)
-    domain_family = manifest.get("domain_family")
-    variant = manifest.get("variant")
+    # Every domain gets a family and a variant, even if the manifest omitted
+    # them. A standalone "extensive" curriculum IS its own family; adding
+    # condensed variants later naturally joins them. Without these defaults,
+    # an extensive uploaded before condense.py runs ends up with NULL family
+    # and gets orphaned from its own variants in the UI. (See migration 029
+    # and the project memory on family/variant discipline.)
+    domain_family = manifest.get("domain_family") or slug
+    variant = manifest.get("variant") or "extensive"
 
     console.print(f"\n[bold blue]Uploading curriculum:[/] {name}")
     console.print(f"  Domain: {slug}")
-    if variant:
-        console.print(f"  Variant: {variant} (family: {domain_family})")
+    console.print(f"  Variant: {variant} (family: {domain_family})")
     console.print(f"  Topics: {_count_topics(topics)}")
     console.print(f"  Chunks: {len(chunks)}")
 

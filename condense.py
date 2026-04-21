@@ -480,6 +480,30 @@ def main():
     # Load curriculum
     console.print(f"[bold blue]Loading curriculum from:[/] {input_dir}")
     manifest, structure, chunks, exercises = load_curriculum(input_dir)
+
+    # Back-fill family/variant on the extensive manifest so it joins the
+    # same family as the variants we're about to produce. Without this, an
+    # extensive uploaded before condense.py ran ends up with NULL family
+    # and gets orphaned from its own variants in the Flutter app grouping.
+    # (upload.py also defaults these, but persisting to disk keeps the file
+    # self-consistent for later inspection and re-uploads.)
+    slug = manifest.get("domain", input_dir.name).lower().replace(" ", "-")
+    changed = False
+    if not manifest.get("domain_family"):
+        manifest["domain_family"] = slug
+        changed = True
+    if not manifest.get("variant"):
+        manifest["variant"] = "extensive"
+        changed = True
+    if changed:
+        (input_dir / "manifest.json").write_text(
+            json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8",
+        )
+        console.print(
+            f"  [yellow]→[/] Back-filled domain_family={slug!r}, variant='extensive' "
+            f"in {input_dir}/manifest.json"
+        )
+
     original_stats = compute_stats(structure, chunks)
     console.print(
         f"  Extensive: {original_stats['depth0_topics']} depth-0 topics, "
