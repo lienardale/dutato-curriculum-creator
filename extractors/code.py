@@ -37,9 +37,13 @@ _SOURCE_EXTENSIONS = {
 _MAX_FILE_SIZE = 100_000  # 100KB
 
 
-def _should_skip_dir(name: str) -> bool:
+def _should_skip_dir(name: str, extra_skip: set[str] | None = None) -> bool:
     """Check if a directory should be skipped."""
-    return name in _SKIP_DIRS or name.startswith(".")
+    if name in _SKIP_DIRS or name.startswith("."):
+        return True
+    if extra_skip and name in extra_skip:
+        return True
+    return False
 
 
 def _is_source_file(path: Path) -> bool:
@@ -71,8 +75,17 @@ def _detect_language(path: Path) -> str:
     return lang_map.get(path.suffix.lower(), "text")
 
 
-def extract_code(source: str) -> dict:
-    """Extract a codebase directory to the unified intermediate format."""
+def extract_code(
+    source: str,
+    extra_skip: set[str] | None = None,
+    images_dir: str | None = None,
+) -> dict:
+    """Extract a codebase directory to the unified intermediate format.
+
+    `images_dir` is accepted for dispatcher compatibility but ignored — the
+    code extractor does not extract images.
+    """
+    del images_dir
     root = Path(source).resolve()
     if not root.is_dir():
         raise NotADirectoryError(f"Not a directory: {root}")
@@ -102,7 +115,7 @@ def extract_code(source: str) -> dict:
 
         # Skip if any parent dir is in skip list
         rel_parts = path.relative_to(root).parts
-        if any(_should_skip_dir(part) for part in rel_parts[:-1]):
+        if any(_should_skip_dir(part, extra_skip) for part in rel_parts[:-1]):
             continue
 
         # Skip non-source files
@@ -148,7 +161,7 @@ def extract_code(source: str) -> dict:
             })
 
     # 4. Generate file tree as a metadata section
-    tree_lines = _build_tree(root)
+    tree_lines = _build_tree(root, extra_skip=extra_skip)
     if tree_lines:
         sections.insert(1 if sections else 0, {
             "title": "File Structure",
@@ -173,7 +186,7 @@ def extract_code(source: str) -> dict:
     }
 
 
-def _build_tree(root: Path, max_depth: int = 3) -> list[str]:
+def _build_tree(root: Path, max_depth: int = 3, extra_skip: set[str] | None = None) -> list[str]:
     """Build a simple file tree representation."""
     lines = [root.name + "/"]
 
@@ -181,7 +194,7 @@ def _build_tree(root: Path, max_depth: int = 3) -> list[str]:
         if depth > max_depth:
             return
         entries = sorted(path.iterdir(), key=lambda p: (not p.is_dir(), p.name))
-        entries = [e for e in entries if not _should_skip_dir(e.name)]
+        entries = [e for e in entries if not _should_skip_dir(e.name, extra_skip)]
         for i, entry in enumerate(entries):
             is_last = i == len(entries) - 1
             connector = "└── " if is_last else "├── "
@@ -201,13 +214,23 @@ if __name__ == "__main__":
     import json
 
     if len(sys.argv) < 2:
-        print("Usage: python -m extractors.code <directory> [-o output_dir]")
+        print("Usage: python -m extractors.code <directory> [-o output_dir] "
+              "[--exclude NAME ...]")
         sys.exit(1)
 
     from extractors import extract_source
     dir_path = sys.argv[1]
     output_dir = sys.argv[sys.argv.index("-o") + 1] if "-o" in sys.argv else None
-    result = extract_source(dir_path, output_dir)
+    exclude: set[str] = set()
+    i = 2
+    while i < len(sys.argv):
+        if sys.argv[i] == "--exclude" and i + 1 < len(sys.argv):
+            exclude.add(sys.argv[i + 1])
+            i += 2
+        else:
+            i += 1
+    extra_skip = exclude or None
+    result = extract_source(dir_path, output_dir, extra_skip=extra_skip)
     if not output_dir:
         print(json.dumps(result, indent=2, ensure_ascii=False))
     else:

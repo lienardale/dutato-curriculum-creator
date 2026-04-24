@@ -135,7 +135,7 @@ def extract_source(source: str, output_dir: str | None = None, **kwargs) -> dict
         kwargs["images_dir"] = str(Path(output_dir) / "images")
 
     # Extractors that accept kwargs
-    _kwarg_extractors = {"web", "notion_api", "pdf", "office", "notion", "video"}
+    _kwarg_extractors = {"web", "notion_api", "pdf", "office", "notion", "video", "code"}
     if source_type in _kwarg_extractors and kwargs:
         result = extractor(source, **kwargs)
     else:
