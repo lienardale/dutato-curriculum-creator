@@ -65,6 +65,10 @@ EXACT_META: set[str] = {
     "about packt", "about the publisher", "about the author",
     "about this book", "about the book", "about the cover",
     "book forum", "back of the book",
+    "preface", "copyright", "about the reviewers",
+    "other books you may enjoy",
+    # NOTE: "appendix" and "glossary" are deliberately NOT here — they often
+    # contain real teaching content. The validator flags them for review.
 }
 
 PHRASE_META_RE = re.compile(
@@ -78,6 +82,9 @@ PHRASE_META_RE = re.compile(
     r"|further reading"
     r"|technical requirements"
     r"|what you.?ll need"
+    r"|what this book covers"
+    r"|download(ing)? the (example|color) (code|images)"
+    r"|share your thoughts"
     r")\b"
 )
 
