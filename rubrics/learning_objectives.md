@@ -39,6 +39,11 @@ Use the correct action verbs for each level:
 3. **Specific**: "Implement binary search" not "Understand searching"
 4. **Progressive**: Within a topic, order objectives from lower Bloom's levels to higher
 5. **Non-redundant**: Sibling topics should not repeat the same objective
+6. **Answerable**: A learner must be able to achieve the objective from the
+   topic's chunks alone. The review stage checks every objective against the
+   topic's content (see the Objective Answerability Protocol in
+   `rubrics/review_checklist.md`) — if no chunk teaches it, rewrite the
+   objective or fix the topic's `source_sections`
 
 ## Bloom's Level Guidelines
 

@@ -1,55 +1,114 @@
 # Review Checklist
 
-Before uploading, verify all quality gates pass.
+Before uploading, verify all quality gates pass. The gates split into two
+groups: **machine-checked** gates enforced by `validate.py`, and
+**judgment** gates that only the reviewing agent can assess.
 
-## Structure Quality
+## Part 1: Machine-Checked Gates
 
-- [ ] **Hierarchy depth**: No topic deeper than depth 2
-- [ ] **Balanced breadth**: 5-15 depth-0 topics (not 2, not 50)
-- [ ] **Balanced children**: Each parent has 2-8 children (not 1, not 20)
-- [ ] **No empty topics**: Every leaf topic maps to at least one source section
-- [ ] **No giant topics**: No topic has more than 10 mapped source sections
-- [ ] **Clear naming**: Titles are descriptive noun phrases, not chapter numbers
-- [ ] **Ordering**: Topics flow from foundational to advanced
-- [ ] **Level assignment**: Levels 1-3 are distributed roughly 30/40/30
+Run the validator first and write the report:
 
-## Content Quality
+```bash
+python validate.py output/<name>/ --json
+```
 
-- [ ] **Full coverage**: Every extracted section appears in at least one topic
-- [ ] **No orphan chunks**: After chunking, no chunks have unmatched topic paths
-- [ ] **Token range**: Most chunks are 500-1500 tokens
-- [ ] **No empty chunks**: No chunks with empty or whitespace-only content
-- [ ] **Readable**: Spot-check 5-10 chunks — content should be coherent and self-contained
+- **All errors must be fixed** before review can be approved. Errors mean
+  broken artifacts: content that will be silently dropped, references that
+  resolve to nothing, or data the app cannot render.
+- **Every warning must be either fixed or individually acknowledged** in
+  `review.json` → `quality_concerns` (one entry per acknowledged warning,
+  with a short reason it is acceptable).
 
-## Learning Objectives Quality
+The former manual checkboxes map to validator check IDs:
 
-- [ ] **Coverage**: Every leaf topic has 2-5 learning objectives
-- [ ] **Bloom's alignment**: Objectives use appropriate action verbs for their Bloom's level
-- [ ] **Specificity**: No vague or unmeasurable objectives ("understand databases" → too broad)
-- [ ] **Source fidelity**: Objectives don't promise content not in the sources
+| Former checkbox | Check ID(s) | Severity |
+|-----------------|-------------|----------|
+| Hierarchy depth ≤ 2 | `structure.invalid_depth` | error |
+| Balanced breadth (5-15 depth-0) | `structure.breadth` | warning |
+| Balanced children (2-8 per parent) | `structure.children_count` | warning |
+| No empty topics | `structure.empty_leaf`, `chunks.empty_topic` | error |
+| No giant topics (≤10 sections) | `structure.giant_topic` | warning |
+| Level assignment 30/40/30 | `structure.missing_level`, `structure.invalid_level`, `structure.level_distribution` | mixed |
+| Full coverage of extracted sections | `structure.orphan_section` | warning |
+| No stale section references | `structure.stale_ref` | error |
+| No orphan chunks | `chunks.unknown_topic_path` | error |
+| Token range 500-1500 | `chunks.token_range` | warning (error outside 50-2500) |
+| No empty chunks | `chunks.empty_content` | error |
+| Objectives coverage (2-5 per leaf) | `structure.objective_count` | warning |
+| Bloom's enum valid | `structure.invalid_bloom`, `exercises.invalid_bloom` | error |
+| Prerequisites: no cycles | `structure.prereq_cycle` | error |
+| Prerequisites: valid references | `structure.prereq_unknown_topic` | error |
+| Prerequisites: no transitive redundancy | `structure.prereq_transitive` | warning |
+| Prerequisites: ordering consistency | `structure.prereq_order` | warning |
+| Exercise hints (3 progressive) | `exercises.few_hints` | warning |
+| Exercises grounded to topics | `exercises.unknown_topic_path` | error |
+| manifest.json valid | `manifest.*` | mixed |
+| JSON files well-formed | `*.invalid_json`, `*.file_missing` | error |
 
-## Prerequisite Quality
+## Part 2: Judgment Gates (agent review)
 
-- [ ] **No cycles**: Prerequisite graph is a directed acyclic graph
-- [ ] **Valid references**: Every prerequisite topic title exists in structure.json
-- [ ] **No transitive redundancy**: No unnecessary indirect links (A→B→C, no A→C)
-- [ ] **Ordering consistency**: Prerequisites appear before dependents in sort_order
+The validator cannot assess meaning. Check these yourself:
 
-## Exercise Quality
-
-- [ ] **Coverage**: At least one exercise per depth-0 topic group
-- [ ] **Bloom's alignment**: Exercise bloom_level matches topic difficulty
-- [ ] **Hint quality**: Each exercise has 3 progressive hints
-- [ ] **Solution correctness**: Expected solutions are accurate
+- [ ] **Readable**: Spot-check 5-10 chunks — content is coherent,
+  self-contained, and doesn't start or end mid-thought
+- [ ] **Clear naming**: Titles are descriptive noun phrases; no chapter
+  numbers, no source branding
+- [ ] **Ordering**: Topics flow foundational → advanced; siblings are
+  similar in scope
+- [ ] **Bloom's alignment**: Objective verbs actually match their declared
+  level (the validator only checks the enum)
+- [ ] **Solution correctness**: Exercise expected solutions are accurate
 - [ ] **Common mistakes**: Realistic and pedagogically valuable
-- [ ] **Grounded**: Problems answerable from curriculum content alone
+- [ ] **Exercise grounding**: Problems are answerable from curriculum
+  content alone
 
-## Metadata Quality
+### Objective Answerability Protocol
 
-- [ ] **manifest.json exists**: Has name, domain, description, sources list
-- [ ] **structure.json valid**: Valid JSON, matches expected format
-- [ ] **chunks.json valid**: Valid JSON, array of chunk objects
-- [ ] **exercises.json valid**: Valid JSON, array of topic exercise entries
+For **every leaf topic**, read its learning objectives against its chunks
+(in `chunks.json`) and verify a learner could actually achieve each
+objective from that content:
+
+1. For each objective, find the chunk(s) that teach it.
+2. If no chunk enables the objective, it is **unanswerable** — either
+   rewrite the objective to match what the content covers, or fix the
+   topic's `source_sections` so the supporting content is included.
+3. List any objectives you could not ground (and what you did about them)
+   in `review.json` → `quality_concerns`.
+
+## review.json Contract
+
+`review.json` must embed the validator's summary under the `"validation"`
+key (copy the `summary` block from `validation_report.json`):
+
+```json
+{
+  "total_topics": 25,
+  "total_chunks": 142,
+  "total_exercises": 35,
+  "total_tokens": 95000,
+  "avg_tokens_per_chunk": 669,
+  "chunks_per_topic": {"min": 1, "max": 15, "avg": 5.7},
+  "objectives_coverage": "24/25 topics have objectives",
+  "prerequisites_count": 12,
+  "exercises_coverage": "18/25 leaf topics have exercises",
+  "validation": {
+    "checked_at": "2026-03-31T14:00:00+00:00",
+    "stage": "all",
+    "errors": 0,
+    "warnings": 2,
+    "by_check": {"structure.breadth": 1, "exercises.few_hints": 1}
+  },
+  "quality_concerns": [
+    "structure.breadth: 16 depth-0 topics — accepted, the domain genuinely has 16 major areas",
+    "exercises.few_hints: 'Filter with WHERE' has 2 hints — third hint would give away the answer"
+  ],
+  "approved": false,
+  "reviewed_at": "2026-03-31T14:00:00Z"
+}
+```
+
+`upload.py` re-runs the validator automatically and **blocks on errors**
+(override with `--skip-validation` only when the user explicitly asks).
 
 ## Statistics to Report
 
@@ -64,6 +123,7 @@ Present these to the user before upload:
 | Avg tokens/chunk | N |
 | Sources represented | N/M |
 | Coverage % | N% |
+| Validation | N errors / N warnings |
 
 ### Per-Topic Distribution
 
