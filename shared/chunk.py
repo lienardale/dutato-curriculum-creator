@@ -13,15 +13,36 @@ from pathlib import Path
 import tiktoken
 
 
-# Use cl100k_base encoding (compatible with Claude's tokenizer)
-_encoder = tiktoken.get_encoding("cl100k_base")
+# Use cl100k_base encoding (compatible with Claude's tokenizer).
+# Loaded lazily: the first use downloads the BPE file (cached afterwards).
+_encoder = None
+_encoder_failed = False
 
 _HEADING_RE = re.compile(r"^#{1,6}\s")
 
 
+def _get_encoder():
+    global _encoder, _encoder_failed
+    if _encoder is None and not _encoder_failed:
+        try:
+            _encoder = tiktoken.get_encoding("cl100k_base")
+        except Exception as e:  # e.g. offline and BPE file not cached
+            _encoder_failed = True
+            print(
+                f"warning: tiktoken encoding unavailable ({e}); "
+                f"falling back to word-based token estimates",
+                file=sys.stderr,
+            )
+    return _encoder
+
+
 def count_tokens(text: str) -> int:
-    """Count tokens using tiktoken."""
-    return len(_encoder.encode(text))
+    """Count tokens using tiktoken (word-based estimate if unavailable)."""
+    encoder = _get_encoder()
+    if encoder is not None:
+        return len(encoder.encode(text))
+    # ~1.3 tokens per English word (same ratio used elsewhere in the pipeline)
+    return max(1, int(len(text.split()) * 1.3)) if text else 0
 
 
 def is_code_block(text: str) -> bool:
