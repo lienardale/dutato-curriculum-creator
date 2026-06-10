@@ -17,16 +17,14 @@ import json
 import sys
 from pathlib import Path
 
-import tiktoken
 from rich.console import Console
 from rich.table import Table
 
+import _compat  # noqa: F401
+
+from chunk import count_tokens
+
 console = Console()
-_encoder = tiktoken.get_encoding("cl100k_base")
-
-
-def count_tokens(text: str) -> int:
-    return len(_encoder.encode(text))
 
 
 # ---------------------------------------------------------------------------
