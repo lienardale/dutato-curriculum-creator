@@ -42,6 +42,8 @@ _ALERT_PATTERN = re.compile(r"\[!(NOTE|TIP|WARNING|IMPORTANT|CAUTION)\]")
 _ATTR_PATTERN = re.compile(r"(\w[\w-]*)=\"([^\"]*)\"")
 _SETEXT_H1_PATTERN = re.compile(r"^([^\s#>|-][^\n]*)\n=+[ \t]*$", re.MULTILINE)
 _SETEXT_H2_PATTERN = re.compile(r"^([^\s#>|-][^\n]*)\n-{2,}[ \t]*$", re.MULTILINE)
+_REF_IMAGE_PATTERN = re.compile(r"!\[([^\]]*)\]\[([^\]]+)\]")
+_REF_DEF_PATTERN = re.compile(r"^\[([^\]]+)\]:\s*(\S+)[ \t]*$", re.MULTILINE)
 
 
 def _clean_markdown(text: str) -> str:
@@ -63,6 +65,15 @@ def _clean_markdown(text: str) -> str:
     # Setext headings (Title\n====) → ATX so the heading splitter sees them
     text = _SETEXT_H1_PATTERN.sub(lambda m: f"# {m.group(1).strip()}", text)
     text = _SETEXT_H2_PATTERN.sub(lambda m: f"## {m.group(1).strip()}", text)
+    # Reference-style images → inline so image extraction sees them
+    ref_defs = dict(_REF_DEF_PATTERN.findall(text))
+    if ref_defs:
+        text = _REF_DEF_PATTERN.sub("", text)
+        text = _REF_IMAGE_PATTERN.sub(
+            lambda m: f"![{m.group(1)}]({ref_defs[m.group(2)]})"
+            if m.group(2) in ref_defs else m.group(0),
+            text,
+        )
     return text
 
 
