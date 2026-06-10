@@ -1,0 +1,1118 @@
+{
+  "source_type": "markdown",
+  "source_path": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/microservices",
+  "title": "Microservices Design Guide (Azure Architecture Center)",
+  "author": "",
+  "sections": [
+    {
+      "title": "CI/CD for microservices",
+      "content": "Faster release cycles are a major advantage of microservices architectures. Without a reliable continuous integration and continuous delivery (CI/CD) process, you lose the agility that microservices provide. This article outlines common CI/CD challenges in microservices architectures and recommends approaches to build, validate, secure, and deploy services independently.",
+      "depth": 0,
+      "metadata": {
+        "file_path": "ci-cd.md"
+      }
+    },
+    {
+      "title": "What is CI/CD?",
+      "content": "CI/CD refers to several related processes: continuous integration, continuous delivery, and continuous deployment.\n\n- **Continuous integration (CI):** Code changes are frequently merged into the main branch. Automated build and test processes ensure that code in the main branch is always production quality.\n\n- **Continuous delivery (CD):** Code changes that pass the CI process are automatically published to a production-like environment. Deployment into the live production environment might require manual approval, but is otherwise automated. The goal is that your code is always *ready* to deploy to production.\n\n- **Continuous deployment:** Code changes that pass the previous two steps are automatically deployed *into production*.\n\nConsider the following goals of a robust CI/CD process for a microservices architecture:\n\n- Each team can build and deploy the services that it owns independently, without affecting or disrupting other teams.\n\n- Before a new version of a service is deployed to production, it's deployed to dev/test and QA environments for validation. Quality gates are enforced at each stage.\n\n- A new version of a service can be deployed side by side with the previous version.\n\n- Sufficient access control policies are in place. Pipelines authenticate to Azure with federated, short-lived credentials instead of long-lived secrets.\n\n- For containerized workloads, you can trust the container images that are deployed to production. That trust is established through signed images, software bill of materials (SBOM) attestations, and vulnerability scanning enforced in the pipeline.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "ci-cd.md",
+        "parent_title": "CI/CD for microservices"
+      }
+    },
+    {
+      "title": "Why a robust CI/CD pipeline matters",
+      "content": "In a traditional monolithic application, a single build pipeline produces the application executable. All development work feeds into this pipeline. If the team finds a high-priority bug, the fix must be integrated, tested, and published, which can delay the release of new features. You can reduce these problems by using well-factored modules and feature branches to limit the effect of code changes. But as the application grows more complex and more features are added, the release process for a monolith tends to become more complicated and likely to fail.\n\nAccording to the microservices philosophy, there should never be a long release train where every team has to get in line. The team that builds service A can release an update when it chooses and doesn't have to wait for changes in service B to merge, test, and deploy.\n\n[IMAGE: md_microservices_img000]\n   The diagram shows two sections: monolith and microservices. The monolith section shows teams A, B, C, and D. Arrows point from the teams to the release candidate. An arrow points from the release candidate to production. Xs mark team B, the release candidate, and the arrow that points to production. The microservices section shows teams A, B, C, and D. Arrows point from the teams to individual release sections. Arrows point from the release sections to production. Xs mark the arrows in the team B flow. In the monolith section, team B's failure blocks the entire release path, while in the microservices section, team B's failure affects only its own service's path to production.\n\n\nTo achieve a high release velocity, your release pipeline must be automated and highly reliable to minimize risk. If you release to production one or more times daily, regressions or service disruptions must be rare. At the same time, if you deploy a bad update, you must have a reliable way to quickly roll back or roll forward to a previous version of a service.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "ci-cd.md",
+        "parent_title": "CI/CD for microservices"
+      },
+      "images": [
+        {
+          "id": "md_microservices_img000",
+          "local_path": "images/md_microservices_img000.png",
+          "alt_text": "Comparison of release flows: in a monolith, Teams A-D all feed one release candidate where any team's failure blocks production, while with microservices each team has its own independent release-to-production pipeline so only Team B's release is blocked.",
+          "context": "markdown_ref:./images/cicd-monolith.png"
+        }
+      ]
+    },
+    {
+      "title": "CI/CD for microservices: Challenges",
+      "content": "- **Many small independent code bases:** Each team is responsible for building its own service, with its own build pipeline. In some organizations, teams might use separate code repositories. Separate repositories can scatter the knowledge of how to build the system across teams. As a result, nobody in the organization knows how to deploy the entire application.\n\n   **Mitigation:** Have a unified and automated pipeline or at least common pipeline infrastructure to build and deploy services so that this knowledge isn't hidden within each team. Reusable pipeline templates, like [GitHub Actions reusable workflows](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows) or [Azure Pipelines templates](/azure/devops/pipelines/process/templates), help standardize the build, test, scan, and deploy steps across every service.\n\n- **Multiple languages and frameworks:** Each team uses its own mix of technologies, so it can be difficult to create a single build process that works across the workload. The build process must be flexible enough that every team can adapt it for their chosen language or framework.\n\n   **Mitigation:** Containerize the build process for each service so that the build system only needs to run the containers. Platforms like GitHub Actions, Azure Pipelines, and [Azure Container Registry tasks](/azure/container-registry/container-registry-tasks-overview) can build and publish container images consistently regardless of the source language.\n\n- **Integration and load testing:** Teams release updates at their own pace, so it can be challenging to design robust end-to-end testing, especially when services have dependencies on other services. Running a full production cluster can be costly, so it's unlikely that every team runs its own full cluster at production scale only for testing.\n\n   **Mitigation:** Use ephemeral preview environments, like per-pull-request namespaces in Kubernetes or [Azure Container Apps environments](/azure/container-apps/environment) that are created on demand. Use contract tests so that you surface integration problems early without requiring a full-scale duplicate of production.\n\n- **Release management:** Every team should be able to deploy an update to production. That requirement doesn't mean that every team member has permissions to deploy. A centralized release manager role can reduce deployment velocity.\n\n    **Mitigation:** The more your CI/CD process is automated and reliable, the less you need a central authority. You might still have different policies for releasing major feature updates versus minor bug fixes. A decentralized approach doesn't mean zero governance. Enforce approvals by using [Azure Pipelines environments and approvals](/azure/devops/pipelines/process/environments) or [GitHub Actions deployment environments and required reviewers](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments), and codify cluster-side policy by using [Azure Policy for Azure Kubernetes Service (AKS)](/azure/governance/policy/concepts/policy-for-kubernetes) or [OPA Gatekeeper](https://open-policy-agent.github.io/gatekeeper/website/).\n\n- **Service updates:** When you update a service to a new version, the update shouldn't cause other services that depend on it to fail.\n\n   **Mitigation:** Use deployment techniques like blue-green or canary releases for nonbreaking changes. For breaking API changes, deploy the new version side by side with the previous version. With this approach, services that consume the previous API can be updated and tested for the new API. For more information, see [Update services](#update-services).\n\n- **Pipeline identity and secret management:** Long-lived service principal secrets stored in pipelines are a frequent source of compromise and operational work. Service principal secrets expire, can leak, and require rotation across many independent microservice pipelines.\n\n   **Mitigation:** Authenticate pipelines to Azure with workload identity federation, which uses OpenID Connect (OIDC), so no client secret is stored in the pipeline. For more information, see [Workload identities for Azure Pipelines](/azure/devops/pipelines/release/configure-workload-identity) and [Configure OpenID Connect in Azure for GitHub Actions](https://docs.github.com/en/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-azure). Store any remaining secrets in [Azure Key Vault](/azure/key-vault/general/overview) and reference them at runtime.\n\n- **Supply-chain security:** Everything that you ship to production must be traceable to the code and dependencies that it was built from. Microservices increase the number of images, registries, and pipelines, which increases your supply-chain attack surface.\n\n  **Mitigation:** Sign container images by using [Notation and Key Vault](/azure/container-registry/container-registry-tutorial-sign-build-push), and verify signatures at admission time by using [AKS image integrity](/azure/aks/image-integrity) or [Ratify](https://ratify.dev/). Generate an SBOM as a build artifact. Scan code, dependencies, and pipelines by using [Microsoft Defender for Cloud DevOps security](/azure/defender-for-cloud/defender-for-devops-introduction) and [GitHub Advanced Security](https://docs.github.com/en/code-security). Scan runtime images by using [Microsoft Defender for Containers](/azure/defender-for-cloud/defender-for-containers-introduction). Require all scans to pass before a release can proceed.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "ci-cd.md",
+        "parent_title": "CI/CD for microservices"
+      }
+    },
+    {
+      "title": "Monorepo vs. multirepo",
+      "content": "Before you create a CI/CD workflow, you must know how the code base is structured and managed, including:\n\n- Whether teams work in separate repositories or a monorepo.\n- Your branching strategy.\n- Who can push code to production and whether a release manager exists.\n\nTeams widely use both approaches in production. Your choice depends on team topology, tooling maturity, and how much code is shared across services.\n\n| &nbsp; | Monorepo | Multiple repos |\n| --- | --- | --- |\n| **Advantages** | - Code sharing<br><br>- Easier to standardize code and tooling<br><br>- Easier to refactor code<br><br>- Discoverability (a single view of the code) | - Clear ownership per team<br><br>- Potentially fewer merge conflicts<br><br>- Helps enforce microservice decoupling |\n| **Challenges** | - Changes to shared code can affect multiple microservices<br><br>- Greater potential for merge conflicts<br><br>- Tooling must scale to a large code base<br><br>- Access control<br><br>- More complex deployment process | - Harder to share code<br><br>- Harder to enforce coding standards<br><br>- Dependency management<br><br>- Diffuse code base, poor discoverability<br><br>- Lack of shared infrastructure |\n\nRegardless of the model that you choose, use path-scoped triggers in your pipelines, like [path filters in GitHub Actions](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow) or [trigger paths in Azure Pipelines](/azure/devops/pipelines/build/triggers). Path-scoped triggers help ensure that only affected microservices rebuild and redeploy on each commit.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "ci-cd.md",
+        "parent_title": "CI/CD for microservices"
+      }
+    },
+    {
+      "title": "Update services",
+      "content": "There are various strategies for updating a service that's already in production, including rolling update, blue-green deployment, and canary release. These patterns are often coordinated through a GitOps workflow. For more information, see [GitOps and progressive delivery](#progressive-delivery-and-gitops).",
+      "depth": 1,
+      "metadata": {
+        "file_path": "ci-cd.md",
+        "parent_title": "CI/CD for microservices"
+      }
+    },
+    {
+      "title": "Rolling updates",
+      "content": "In a rolling update, you deploy new instances of a service, and the new instances start to receive requests immediately. As the new instances become ready, the previous instances are removed.\n\n**Example in Kubernetes:** In Kubernetes, rolling updates are the default behavior when you update the pod spec for a [deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/). The deployment controller creates a new ReplicaSet for the updated pods. Then it scales up the new ReplicaSet while scaling down the previous ReplicaSet to maintain the desired replica count. It doesn't delete previous pods until the new pods are ready. Kubernetes keeps a history of the update, so you can roll back an update if needed.\n\n**Example in Container Apps:** Container Apps uses [revisions](/azure/container-apps/revisions) to manage rolling updates. When you deploy a new revision, Container Apps can gradually shift traffic from the previous revision to the new revision by using traffic-splitting rules. If the new revision encounters problems, you can roll back by redirecting traffic to the previous revision. You can configure multiple active revisions simultaneously and control the percentage of traffic each revision receives.\n\nOne challenge of rolling updates is that during the update process, a mix of previous and new versions run and receive traffic. During this period, the system can route any request to either version.\n\nFor breaking API changes, a good practice is to support both versions side by side, until all clients of the previous version are updated. For more information, see [API versioning](./design/api-design.md#api-versioning).",
+      "depth": 2,
+      "metadata": {
+        "file_path": "ci-cd.md",
+        "parent_title": "Update services"
+      }
+    },
+    {
+      "title": "Blue-green deployment",
+      "content": "In a blue-green deployment, you deploy the new version alongside the previous version. After you validate the new version, you switch all traffic at once from the previous version to the new version. After the switch, you monitor the application for any problems. If there's a problem, you can switch traffic back to the previous version. If there are no problems, you can delete the previous version.\n\nWith a more traditional monolithic or N-tier application, blue-green deployment generally means that you create two identical environments. You deploy the new version to a staging environment and then redirect client traffic to that environment, like by swapping a virtual IP address. In a microservices architecture, updates occur at the microservice level, so you typically deploy the update into the same environment and use a service discovery mechanism to switch traffic.\n\n**Example in Kubernetes:** In Kubernetes, you don't need to create a separate cluster to do blue-green deployments. Instead, you can take advantage of selectors. Create a new [deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) resource with a new pod spec and a different set of labels. Create this deployment, but don't delete the previous deployment or modify the service that points to it. After the new pods run, you can update the service's selector to match the new deployment.\n\nOne drawback of blue-green deployment is that during the update, you run twice as many pods for the service (current and next). If the pods use substantial CPU or memory resources, you might need to scale out the cluster temporarily to meet the higher resource demand.",
+      "depth": 2,
+      "metadata": {
+        "file_path": "ci-cd.md",
+        "parent_title": "Update services"
+      }
+    },
+    {
+      "title": "Canary release",
+      "content": "In a canary release, you deploy an updated version to a small subset of clients and then monitor the behavior of the new service before you roll it out to all clients. With this approach, you can roll out gradually in a controlled way, monitor real data, and identify problems before they affect all customers.\n\nA canary release is more complex to manage than either a blue-green or rolling update because you must route requests dynamically to different versions of the service.\n\n**Example in Kubernetes:** In Kubernetes, you can configure a [service](https://kubernetes.io/docs/concepts/services-networking/service/) to span two replica sets (one for each version) and adjust the replica counts manually. However, this approach is coarse-grained because of how Kubernetes load balances across pods. For example, if you have a total of 10 replicas, you can only shift traffic in 10% increments. If you use a service mesh, you can use the service mesh routing rules to implement a more sophisticated canary release strategy.\n\n**Example in Container Apps:** In Container Apps, you can use [traffic split](/azure/container-apps/traffic-splitting) to send a defined percentage of traffic to a new revision (like 10% to `v2` while 90% remains on `v1`) and shift the weights as confidence grows, with no external service mesh required.",
+      "depth": 2,
+      "metadata": {
+        "file_path": "ci-cd.md",
+        "parent_title": "Update services"
+      }
+    },
+    {
+      "title": "Progressive delivery and GitOps",
+      "content": "For teams that operate many microservices on Kubernetes, a GitOps pull-based model complements the earlier push-based examples. The desired cluster state lives in Git, and an in-cluster operator reconciles the cluster to that state. CI builds, tests, scans, signs, and pushes the image. CD reconciles the cluster to the manifest. This separation gives you audit trails and easier disaster recovery (DR). It also removes the need for the CI runner to hold direct cluster credentials.",
+      "depth": 2,
+      "metadata": {
+        "file_path": "ci-cd.md",
+        "parent_title": "Update services"
+      }
+    },
+    {
+      "title": "API design",
+      "content": "A microservices architecture requires good API design because all data exchange between services occurs either through messages or API calls. Efficient APIs help prevent [chatty input/output (I/O)](../../antipatterns/chatty-io/index.md). Independent teams design services, so you must define API semantics and versioning schemes clearly to avoid breaking other services when you update a service.\n\n[IMAGE: md_microservices_img001]\nThe diagram shows a flow between a client and three back-end services through a central scheduler service. An arrow labeled HTTP POST points from the client to the scheduler service, with a response code 202 (Accepted) next to the arrow. From the scheduler service, three arrows point to separate services on the right. The top arrow points to user accounts service, labeled HTTP GET, with a response code 200 (OK). The middle arrow points to package service, labeled HTTP PUT, with a response code 201 (Created). The bottom arrow points to delivery service, also labeled HTTP PUT, with a response code 201 (Created).\n\n\nYou must distinguish between the two types of APIs:\n\n- Public APIs that client applications call\n- Back-end APIs for interservice communication\n\nThese two types have different requirements. A public API must be compatible with client applications, like browser applications or native mobile applications. Most public APIs use REST over HTTP. But back-end APIs must account for network performance. Depending on the granularity of your services, interservice communication can result in too much network traffic. Services can quickly become I/O bound, so considerations like serialization speed and payload size become more important. Some popular alternatives to REST over HTTP include gRPC Remote Procedure Call (gRPC), Apache Avro, and Apache Thrift. These protocols support binary serialization and improve efficiency compared to HTTP.",
+      "depth": 0,
+      "metadata": {
+        "file_path": "design/api-design.md"
+      },
+      "images": [
+        {
+          "id": "md_microservices_img001",
+          "local_path": "images/md_microservices_img001.png",
+          "alt_text": "Sequence-style diagram of a client device sending HTTP POST (202 Accepted) to a Scheduler service, which orchestrates HTTP GET to a User Accounts service (200 OK) and HTTP PUT to Package and Delivery services (201 Created).",
+          "context": "markdown_ref:../images/api-design.png"
+        }
+      ]
+    },
+    {
+      "title": "API design: Considerations",
+      "content": "Consider the following factors when you decide how to implement an API:\n\n- **REST versus Remote Procedure Call (RPC):** Consider the trade-offs between a REST-style interface versus an RPC-style interface.\n\n  - REST models resources, which provides an intuitive way to express the domain model. It defines a uniform interface based on HTTP verbs, which encourages evolvability. It includes well-defined semantics for idempotency, side effects, and response codes. REST also enforces stateless communication, which improves scalability.\n\n  - RPC focuses on operations or commands. RPC interfaces resemble local method calls, so they can lead to overly chatty APIs. But RPC doesn't require chatty communication. To avoid that outcome, you must carefully design the interface.\n\n  For a RESTful interface, most teams choose REST over HTTP via JSON. For an RPC-style interface, popular frameworks include gRPC, Avro, and Thrift.\n\n- **Efficiency:** Consider efficiency in terms of speed, memory, and payload size. Typically a gRPC-based interface is faster than REST over HTTP.\n\n- **Interface definition language (IDL):** Use an IDL to define the methods, parameters, and return values of an API. An IDL can generate client code, serialization code, and API documentation. API testing tools consume IDLs. Frameworks like gRPC, Avro, and Thrift define their own IDL specifications. REST over HTTP doesn't have a standard IDL format, but a common choice is OpenAPI (formerly Swagger). You can also create an HTTP REST API without using a formal definition language, but you lose the benefits of code generation and testing.\n\n- **Serialization:** Choose how to serialize objects over the wire. Options include text-based formats like JSON and binary formats like protocol buffer. Binary formats are faster than text-based formats. But JSON provides broader interoperability because most languages and frameworks support JSON serialization. Some serialization formats require a fixed schema or a compiled schema definition file. In those cases, you must incorporate this step into your build process. For more information, see [Message encoding best practices](/azure/architecture/best-practices/message-encode).\n\n- **Framework and language support:** Nearly every framework and language supports HTTP. Avro, gRPC, and Thrift provide libraries for C++, C#, Java, and Python. Thrift and gRPC also support Go.\n\n- **Compatibility and interoperability:** If you choose a protocol like gRPC, you might need a protocol translation layer between the public API and the back end. A [gateway](./gateway.yml) can perform that function. If you use a service mesh, check protocol compatibility with the service mesh. For example, Linkerd has built-in support for HTTP, Thrift, and gRPC.\n\nUse REST over HTTP unless you need the performance benefits of a binary protocol. REST over HTTP doesn't require special libraries and creates minimal coupling because callers don't need a client stub to communicate with the service. The REST ecosystem includes tools to support schema definitions, testing, and monitoring of RESTful HTTP endpoints. HTTP also works with browser clients, so you don't need a protocol translation layer between the client and the back end.\n\nIf you choose REST over HTTP, do performance and load testing early in the development process to check whether it performs adequately for your scenario.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/api-design.md",
+        "parent_title": "API design"
+      }
+    },
+    {
+      "title": "RESTful API design",
+      "content": "The following resources can help you design RESTful APIs:\n\n- [API design](../../best-practices/api-design.md)\n- [API implementation](../../best-practices/api-implementation.md)\n- [Microsoft REST API guidelines](https://github.com/Microsoft/api-guidelines)\n\nConsider the following factors:\n\n- Avoid APIs that expose internal implementation details or mirror an internal database schema. The API should model the domain and serve as a contract between services. Ideally, you should only change the API when you add new functionality, not when you refactor code or change the database schema.\n\n- Different types of client, like mobile applications and desktop web browsers, might require different payload sizes or interaction patterns. Consider using the [Backends for Frontends pattern](../../patterns/backends-for-frontends.md) to create separate back ends for each client. Each back end exposes an optimal interface for that client.\n\n- For operations that cause side effects, consider making them idempotent and implementing them as `PUT` methods. This approach enables safe retries and improves resiliency. For more information, see [Interservice communication](./interservice-communication.yml).\n\n- HTTP methods can have asynchronous semantics, where the method returns a response immediately but the service carries out the operation asynchronously. In that case, the method should return an [HTTP 202](https://www.rfc-editor.org/rfc/rfc9110.html#section-15.3.3) response code. This code indicates that the request was accepted for processing but not yet processed. For more information, see [Asynchronous Request-Reply pattern](../../patterns/asynchronous-request-reply.md).",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/api-design.md",
+        "parent_title": "API design"
+      }
+    },
+    {
+      "title": "Generic data access APIs: OData and GraphQL considerations",
+      "content": "REST APIs provide a structured approach to expose resources, but some scenarios require more flexible data access patterns. Query-oriented APIs like OData and GraphQL provide alternatives that let clients specify exactly what data they need. This approach can potentially reduce over-fetching and improve performance. These types of APIs prioritize read operations. Mutation operations, like create, update, and delete, can be more complex to implement, but various frameworks can manage these operations effectively.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/api-design.md",
+        "parent_title": "API design"
+      }
+    },
+    {
+      "title": "When to consider generic data access APIs",
+      "content": "Use a generic data access pattern in the following situations:\n\n- Clients have diverse data requirements that result in many specialized REST endpoints or specialized behavior.\n\n- You need to support complex querying, filtering, and sorting operations across multiple data entities.\n- Over-fetching is a significant performance concern, especially for mobile or bandwidth-constrained clients.\n\nAvoid generic data access APIs in the following situations:\n\n- Your microservices architecture emphasizes strict service boundaries and domain encapsulation.\n\n- You need fine-grained control over data access patterns and security policies.\n- Your APIs primarily support simple create, read, update, and delete (CRUD) operations or well-defined business workflows.\n- REST already meets your network performance and payload requirements.\n- Security requirements demand explicit endpoint definitions to minimize attack surfaces.\n- Your team lacks experience with query language implementation and optimization.",
+      "depth": 2,
+      "metadata": {
+        "file_path": "design/api-design.md",
+        "parent_title": "Generic data access APIs: OData and GraphQL considerations"
+      }
+    },
+    {
+      "title": "Map REST to DDD patterns",
+      "content": "Patterns like entity, aggregate, and value object define constraints for objects in a domain model. Many domain-driven design (DDD) discussions describe these patterns by using object-oriented (OO) language concepts like constructors or property getters and setters. For example, *value objects* are supposed to be immutable. In an OO programming language, you enforce this constraint by assigning the values in the constructor and making the properties read-only:\n\n```ts\nexport class Location {\n    readonly latitude: number;\n    readonly longitude: number;\n\n    constructor(latitude: number, longitude: number) {\n        if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90) {\n            throw new RangeError('latitude must be between -90 and 90');\n        }\n        if (!Number.isFinite(latitude) || longitude < -180 || longitude > 180) {\n            throw new RangeError('longitude must be between -180 and 180');\n        }\n        this.latitude = latitude;\n        this.longitude = longitude;\n    }\n}\n```\n\nThese coding practices play an important role in building a traditional monolithic application. In a large code base, many subsystems might use the `Location` object, so the object must enforce the correct behavior.\n\nThe Repository pattern provides another example. This pattern ensures that other parts of the application don't make direct reads or writes to the data store.\n\n[IMAGE: md_microservices_img002]\nThe diagram shows the data flow between a drone entity, a drone repository, and a data store. An arrow labeled GetDrone() points from the drone entity toward the drone repository, which indicates a request to retrieve drone data. Another arrow points back from the drone repository to the drone entity, which shows the return of the requested data. Two other arrows connect the drone repository to the data store. Two arrows indicate bidirectional communication between the data store and the drone repository.\n\n\nIn a microservices architecture, services don't share the same code base or a data store. Instead, they communicate through APIs. For example, a scheduler service might request information about a drone from a drone service. The drone service defines its internal drone model through code. But the scheduler can't access these details directly. Instead, the scheduler receives a *representation* of the drone entity—like a JSON object in an HTTP response.\n\nThis example applies well to the aircraft and aerospace industries.\n\n[IMAGE: md_microservices_img003]\nThe diagram shows the interaction between a scheduler service and a drone service, which communicates with a data store. On the left, a scheduler service sends an HTTP GET request to the drone service with the endpoint /api/drone. An arrow points back to the scheduler service, labeled with a response that contains JSON followed by three periods. The drone service contains an HTTP request handler and a repository. The HTTP request handler receives the GET request. The repository connects to the data store. Two arrows indicate bidirectional communication between the repository and the data store. Inside the drone service, two arrows indicate bidirectional communication between the HTTP request handler and the repository. The arrow from the repository to the HTTP request handler is labeled drone (entity), which represents the domain object returned by the repository.\n\n\nThe scheduler service can't modify the drone service's internal models or write to the drone service's data store. So the code that implements the drone service has a smaller exposed surface area compared to code in a traditional monolith. If the drone service defines a `Location` class, the scope of that class is limited—no other service directly consumes the class.\n\nFor these reasons, this guidance doesn't focus much on coding practices related to tactical DDD patterns. But you can model many DDD patterns through REST APIs.\n\nThe following examples show how REST concepts align with common DDD constructs:\n\n- Aggregates map naturally to resources in REST. For example, a delivery API might expose a delivery aggregate as a resource.\n\n- Aggregates define consistency boundaries. Operations on aggregates shouldn't leave an aggregate in an inconsistent state. Avoid creating APIs that let a client manipulate the internal state of an aggregate. Instead, favor coarse-grained APIs that expose aggregates as resources.\n\n- Entities have unique identities. In REST, resources have unique identifiers in the form of URLs. Create resource URLs that correspond to an entity's domain identity. The mapping from URL to domain identity may be opaque to clients.\n\n- Child entities of an aggregate can be reached from the root entity. If you follow [hypermedia as the engine of application state (HATEOAS)](https://en.wikipedia.org/wiki/HATEOAS) principles, child entities can be reached via links in the representation of the parent entity.\n\n- Value objects are immutable. To do updates, replace the entire value object. In REST, implement updates through `PUT` or `PATCH` requests.\n\n- A repository lets clients query, add, or remove objects in a collection. The repository abstracts the details of the underlying data store. In REST, a collection can be a distinct resource that includes methods for querying the collection or adding new entities to the collection.\n\nWhen you design APIs, think about how they express the domain model, not only the data inside the model. Also consider the business operations and the constraints on the data.\n\n| DDD concept | REST equivalent | Example |\n|-------------|-----------------|---------|\n| Aggregate | Resource | `{ \"1\":1234, \"status\":\"pending\"... }` |\n| Identity | URL | `https://delivery-service/deliveries/1` |\n| Child entities | Links | `{ \"href\": \"/deliveries/1/confirmation\" }` |\n| Update value objects | `PUT` or `PATCH` | `PUT https://delivery-service/deliveries/1/dropoff` |\n| Repository | Collection | `https://delivery-service/deliveries?status=pending` |",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/api-design.md",
+        "parent_title": "API design"
+      },
+      "images": [
+        {
+          "id": "md_microservices_img002",
+          "local_path": "images/md_microservices_img002.png",
+          "alt_text": "Simple diagram of the repository pattern: a GetDrone() call goes to a Drone Repository which reads from a data store and returns a Drone domain entity.",
+          "context": "markdown_ref:../images/repository.png"
+        },
+        {
+          "id": "md_microservices_img003",
+          "local_path": "images/md_microservices_img003.png",
+          "alt_text": "Diagram of the Scheduler Service calling GET /api/drone on the Drone Service, whose internal HTTP request handler and repository fetch the Drone entity from a data store and return it serialized as JSON over the service boundary.",
+          "context": "markdown_ref:../images/ddd-rest.png"
+        }
+      ]
+    },
+    {
+      "title": "API versioning",
+      "content": "An API serves as a contract between a service and clients or consumers of that service. API changes can break external clients or microservices that depend on the API. Minimize the number of API changes that you make. Changes in the underlying implementation often don't require changes to the API. But at some point, you likely want to add new features or new capabilities that require changing an existing API.\n\nMake API changes backward compatible when possible. For example, avoid removing a field from a model. That change can break clients that expect the field to exist. Adding a field doesn't break compatibility because clients should ignore fields that they don't recognize in a response. But the service must handle requests from older clients that omit the new field.\n\nSupport versioning in your API contract. If you introduce a breaking API change, introduce a new API version. Continue to support the previous version, and let clients select which version to call. One way to do versioning is to expose both versions in the same service. Another option is to run two versions of the service side-by-side and route requests to one or the other version based on HTTP routing rules.\n\n[IMAGE: md_microservices_img004]\nThe diagram has two parts. The left side shows a service that supports two versions. The v1 client and the v2 client both point to one service. The right side shows a side-by-side deployment. The v1 client points to a v1 service, and the v2 client points to a v2 service.\n\n\nMultiple versions add cost in terms of developer time, testing, and operational overhead. Deprecate old versions as quickly as possible. For internal APIs, the team that owns the API can work with other teams to help them migrate to the new version. Cross-team governance process is useful here. External (public) APIs can be harder to deprecate an API version, especially if external or native client applications consume the API.\n\nWhen a service implementation changes, tag the change with a version. The version provides important information to help troubleshoot errors. This approach supports root cause analysis because you know which version of the service is called. Consider using [semantic versioning](https://semver.org/) for service versions. Semantic versioning uses a *MAJOR.MINOR.PATCH* format. But clients should only select an API by the major version number, or by the minor version if there are significant but nonbreaking changes between minor versions. For example, clients might choose between version 1 and version 2 of an API, but they shouldn't choose version 2.1.3. If you allow that level of granularity, you risk having to support too many versions.\n\nFor more information, see [Implement versioning for a RESTful web API](../../best-practices/api-design.md#implement-versioning).",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/api-design.md",
+        "parent_title": "API design"
+      },
+      "images": [
+        {
+          "id": "md_microservices_img004",
+          "local_path": "images/md_microservices_img004.png",
+          "alt_text": "Two API versioning strategies side by side: a single service exposing both v1 and v2 interfaces to v1 and v2 clients, versus side-by-side deployment where separate v1 and v2 service instances each serve their matching client.",
+          "context": "markdown_ref:../images/versioning.png"
+        }
+      ]
+    },
+    {
+      "title": "Idempotent operations",
+      "content": "An operation is idempotent if you can call it multiple times without producing more side effects after the first call. Idempotency serves as a useful resiliency strategy because it lets an upstream service to safely invoke an operation multiple times. For more information, see [Distributed transactions](./interservice-communication.yml#distributed-transactions).\n\nThe HTTP specification states that `GET`, `PUT`, and `DELETE` methods must be idempotent. `POST` methods aren't guaranteed to be idempotent. If a `POST` method creates a new resource, there's generally no guarantee that this operation is idempotent. The specification defines idempotent in the following way:\n\n> A request method is considered *idempotent* if the intended effect on the server of multiple identical requests with that method is the same as the effect for a single such request. ([RFC 7231](https://tools.ietf.org/html/rfc7231#section-4))\n\nUnderstand the difference between `PUT` and `POST` semantics when you create a new entity. In both cases, the client sends a representation of an entity in the request body. But the meaning of the uniform resource identifier (URI) is different.\n\n- For a `POST` method, the URI represents a parent resource of the new entity, like a collection. For example, to create a new delivery, the URI might be `/api/deliveries`. The server creates the entity and assigns it a new URI, like `/api/deliveries/39660`. This URI is returned in the `Location` header of the response. Each time the client sends a request, the server creates a new entity that has a new URI.\n\n- For a `PUT` method, the URI identifies the entity. If an existing entity has that URI, the server replaces the existing entity with the version in the request. If no entity uses that URI, the server creates one. For example, suppose the client sends a `PUT` request to `api/deliveries/39660`. If no delivery resource uses that URI, the server creates a new one. If the client sends the same request again, the server replaces the existing entity.\n\nThe delivery service uses the following code to implement the `PUT` method:\n\n```csharp\n[HttpPut(\"{id}\")]\n[ProducesResponseType<Delivery>(StatusCodes.Status201Created)]\n[ProducesResponseType(StatusCodes.Status204NoContent)]\npublic async Task<IActionResult> Put([FromBody]Delivery delivery, string id)\n{\n    logger.LogInformation(\"In Put action with delivery {Id}: {@DeliveryInfo}\", id, delivery.ToLogInfo());\n    try\n    {\n        var internalDelivery = delivery.ToInternal();\n\n        // Create the new delivery entity.\n        await deliveryRepository.CreateAsync(internalDelivery);\n\n        // Create a delivery status event.\n        var deliveryStatusEvent = new DeliveryStatusEvent { DeliveryId = delivery.Id, Stage = DeliveryEventType.Created };\n        await deliveryStatusEventRepository.AddAsync(deliveryStatusEvent);\n\n        // Return HTTP 201 (Created)\n        return CreatedAtRoute(\"GetDelivery\", new { id= delivery.Id }, delivery);\n    }\n    catch (DuplicateResourceException)\n    {\n        // This method mainly creates deliveries. If the delivery already exists, update it.\n        logger.LogInformation(\"Updating resource with delivery id: {DeliveryId}\", id);\n\n        var internalDelivery = delivery.ToInternal();\n        await deliveryRepository.UpdateAsync(id, internalDelivery);\n\n        // Return HTTP 204 (No Content)\n        return NoContent();\n    }\n}\n```\n\nMost requests create a new entity, so the method expects the creation to succeed and calls `CreateAsync` on the repository object. Then the method handles duplicate-resource exceptions by updating the resource instead.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/api-design.md",
+        "parent_title": "API design"
+      }
+    },
+    {
+      "title": "Choose an Azure compute option for microservices",
+      "content": "This article helps you choose an Azure compute platform for a workload built on a microservices architecture. A microservices architecture consists of small, independently deployable services that communicate over the network. Your compute platform needs to support independent scaling, independent deployment, and reliable interservice communication across many services.\n\nFor decision factors that apply to any workload, like team skills, networking, and portability, see [Choose an Azure compute service](../../guide/technology-choices/compute-decision-tree.md). This article focuses on the factors that matter specifically for microservices.",
+      "depth": 0,
+      "metadata": {
+        "file_path": "design/compute-options.md"
+      }
+    },
+    {
+      "title": "Azure compute platforms for microservices",
+      "content": "The following Azure platforms support microservices workloads. They differ in how much orchestration, interservice communication, and scaling behavior that they provide.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/compute-options.md",
+        "parent_title": "Choose an Azure compute option for microservices"
+      }
+    },
+    {
+      "title": "Azure Kubernetes Service (AKS)",
+      "content": "[Azure Kubernetes Service (AKS)](/azure/well-architected/service-guides/azure-kubernetes-service) is a managed Kubernetes service that provides direct access to Kubernetes APIs and the control plane. AKS provides node management, patching, and optional automatic upgrades. You configure the cluster, networking, and scaling policies.\n\nFor microservices, AKS supports service meshes like [Istio](/azure/aks/istio-about) for traffic management and mutual Transport Layer Security (mTLS), per-deployment scaling through Horizontal Pod Autoscaler (HPA) and [Kubernetes Event-driven Autoscaling (KEDA)](/azure/aks/keda-about), and Kubernetes-native deployment strategies like rolling updates and canary releases.\n\n[AKS Automatic](/azure/aks/intro-aks-automatic) is a mode of AKS that preconfigures node management, scaling, security, and observability based on AKS well-architected recommendations, so teams get a production-ready cluster without per-capability configuration.",
+      "depth": 2,
+      "metadata": {
+        "file_path": "design/compute-options.md",
+        "parent_title": "Azure compute platforms for microservices"
+      }
+    },
+    {
+      "title": "Azure Container Apps",
+      "content": "[Azure Container Apps](/azure/well-architected/service-guides/azure-container-apps) is a managed service built on Kubernetes that abstracts cluster management.\n\nContainer Apps provides built-in features for microservices, including [service discovery](/azure/container-apps/connect-apps), [Dapr integration](/azure/container-apps/dapr-overview) for service-to-service invocation with mTLS, publisher-subscriber messaging, and state management. [KEDA-based autoscaling](/azure/container-apps/scale-app) enables event-driven scaling, including scale to zero. Container Apps also supports [traffic splitting](/azure/container-apps/revisions) across revisions for canary deployments and [jobs](/azure/container-apps/jobs) for on-demand, scheduled, or event-driven tasks.\n\nContainer Apps doesn't expose Kubernetes APIs. If your deployment tooling or service mesh configuration depends on Kubernetes primitives, use AKS instead.",
+      "depth": 2,
+      "metadata": {
+        "file_path": "design/compute-options.md",
+        "parent_title": "Azure compute platforms for microservices"
+      }
+    },
+    {
+      "title": "Azure Functions",
+      "content": "[Azure Functions](/azure/well-architected/service-guides/azure-functions) is a serverless, event-driven compute service suited for microservices that respond to triggers like HTTP requests, queue messages, or timers. Functions scales each function app independently and can scale to zero. For microservices, deploy each service as its own function app.\n\nFunctions doesn't provide platform-level service discovery or interservice communication. Implement those capabilities in application code or through external services like [Azure API Management](/azure/api-management/api-management-key-concepts).\n\nFunctions supports [multiple programming languages](/azure/azure-functions/supported-languages#language-support-details). You can also [run the Functions programming model on Container Apps](/azure/container-apps/functions-overview), which combines Functions triggers and bindings with Container Apps networking and scaling features.",
+      "depth": 2,
+      "metadata": {
+        "file_path": "design/compute-options.md",
+        "parent_title": "Azure compute platforms for microservices"
+      }
+    },
+    {
+      "title": "Azure App Service",
+      "content": "[Azure App Service](/azure/well-architected/service-guides/app-service-web-apps) suits HTTP-based microservices like web APIs. App Service supports deploying as code or as a single container. It provides built-in autoscaling, [deployment slots](/azure/app-service/deploy-staging-slots) for blue-green deployments and percentage-based traffic routing, and integration with continuous integration and continuous delivery (CI/CD) pipelines. App Service doesn't provide service discovery, so it suits microservices that communicate through external messaging or an API gateway rather than relying on platform-level interservice communication.",
+      "depth": 2,
+      "metadata": {
+        "file_path": "design/compute-options.md",
+        "parent_title": "Azure compute platforms for microservices"
+      }
+    },
+    {
+      "title": "Azure Red Hat OpenShift",
+      "content": "[Azure Red Hat OpenShift](/azure/openshift/intro-openshift) provides fully managed OpenShift clusters and extends Kubernetes with an opinionated developer experience. Red Hat and Microsoft jointly engineer, operate, and support the service. Use Azure Red Hat OpenShift when your organization standardizes on OpenShift.",
+      "depth": 2,
+      "metadata": {
+        "file_path": "design/compute-options.md",
+        "parent_title": "Azure compute platforms for microservices"
+      }
+    },
+    {
+      "title": "Compare platforms for microservices",
+      "content": "The following table compares how each platform supports the capabilities that matter for a microservices architecture. For a more detailed comparison of Azure container-hosting platforms and their capabilities, see [Choose an Azure container service](../../guide/choose-azure-container-service.md).\n\n| Capability | AKS | Container Apps | Functions | App Service |\n| :--------- | :-- | :------------- | :-------- | :---------- |\n| Service discovery | Kubernetes Domain Name System (DNS), service mesh | [Built-in](/azure/container-apps/connect-apps), [Dapr](/azure/container-apps/dapr-overview) | None (app-level) | None (app-level) |\n| Interservice communication | Service mesh ([Istio](/azure/aks/istio-about)) | [Dapr](/azure/container-apps/dapr-overview), [environment-level](/azure/container-apps/networking) | None (app-level) | None (app-level) |\n| Publisher-subscriber messaging | App-level (like Azure Service Bus, Azure Event Hubs) | [Dapr pub/sub](/azure/container-apps/dapr-overview) | [Bindings](/azure/azure-functions/functions-triggers-bindings) | App-level |\n| Independent scaling | Per-deployment (HPA, [KEDA](/azure/aks/keda-about)) | Per-app ([KEDA](/azure/container-apps/scale-app)) | Per-function app ([per-function on Flex](/azure/azure-functions/flex-consumption-plan)) | Per-App Service plan |\n| Scale to zero | Partial ([user node pools only](/azure/aks/scale-cluster)) | Yes | Yes (Consumption or Flex Consumption plans) | No |\n| Cold start mitigation | [Minimum node count](/azure/aks/scale-cluster), minimum pod replicas | [Minimum replica count](/azure/container-apps/scale-app) | [Prewarmed or always-ready instances](/azure/azure-functions/functions-premium-plan#eliminate-cold-starts) (Premium or Flex Consumption) | Not applicable (Always On) |\n| Traffic splitting and canary deployments | Kubernetes-native, service mesh | [Revision-based](/azure/container-apps/revisions) | Deployment slots (Premium/Dedicated) | [Deployment slots that include traffic routing](/azure/app-service/deploy-staging-slots) |\n| Distributed tracing | OpenTelemetry, open-source tooling | [Built-in](/azure/container-apps/observability), Dapr tracing | [Application Insights](/azure/azure-monitor/app/app-insights-overview) | [Application Insights](/azure/azure-monitor/app/app-insights-overview) |\n| Stateful services | Persistent volumes, StatefulSets | [Volume mounts](/azure/container-apps/storage-mounts), [Dapr state](/azure/container-apps/dapr-overview) | [Durable Functions](/azure/azure-functions/durable/durable-functions-overview) | [Azure Files mount](/azure/app-service/configure-connect-to-azure-storage) |\n| Per-service identity | [Workload identity](/azure/aks/workload-identity-overview) | [Managed identity](/azure/container-apps/managed-identity) | [Managed identity](/azure/azure-functions/security-concepts#managed-identities) | [Managed identity](/azure/app-service/overview-managed-identity) |\n| Kubernetes API access | Yes | No | No | No |\n| Independent deployability | Yes (per-pod or per-deployment) | Yes (per-container app) | Yes (per-function app) | Yes (per-app or [per-deployment slot](/azure/app-service/deploy-staging-slots)) |\n| Runs containers | Yes | Yes | Yes | Yes |\n| Runs code without containers | No | No | Yes | Yes |\n\n*App-level* in this table means that the platform doesn't provide the capability as a built-in feature. You implement it in application code through an SDK or an external service, which introduces a dependency on that service.\n\n> **Note:**\n> This table doesn't include Azure Red Hat OpenShift. It provides the full Kubernetes API, so its core microservices capabilities, like per-deployment scaling, service discovery, and rolling updates, are comparable to AKS.\n>\n> The platforms differ in their operational tooling, not in their core microservices capabilities. For example, AKS provides Dapr and KEDA as managed add-ons, but on OpenShift, you install and maintain them yourself. For more information, see [Azure Red Hat OpenShift documentation](/azure/openshift/).",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/compute-options.md",
+        "parent_title": "Choose an Azure compute option for microservices"
+      }
+    },
+    {
+      "title": "Choose your platform",
+      "content": "- **Start with Container Apps** when you want built-in microservices primitives, like service discovery, Dapr, and per-app scaling that includes scale to zero, without cluster management.\n\n- **Choose AKS** when you need direct Kubernetes API access, custom service mesh configuration, or fine-grained control over cluster infrastructure like node pools, networking policies, or scheduling constraints.\n\n- **Use Functions** for event-driven microservices that have sporadic or sudden-spike traffic patterns that benefit from scale-to-zero billing and trigger-based execution.\n\n- **Use App Service** for straightforward HTTP-based services that don't need platform-level service discovery or interservice communication features.\n\nYour microservices workload doesn't need to run on a single platform. For example, you can run core services on AKS or Container Apps while Functions handles event-driven workloads. Evaluate each service in your composition against its own traffic pattern, scaling requirements, and communication needs. Choose the platform that fits that service instead of forcing the service to fit the platform.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/compute-options.md",
+        "parent_title": "Choose an Azure compute option for microservices"
+      }
+    },
+    {
+      "title": "Key decision factors",
+      "content": "The comparison table shows what each platform supports. The following sections help you weigh those capabilities based on which microservices concerns matter most to your workload.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/compute-options.md",
+        "parent_title": "Choose an Azure compute option for microservices"
+      }
+    },
+    {
+      "title": "Interservice communication",
+      "content": "Microservices depend on reliable service-to-service communication with capabilities like service discovery, retries, and mTLS.\n\nIf your architecture depends on synchronous service-to-service calls across many services, prioritize a platform that has built-in communication primitives. Container Apps provides these primitives through Dapr without extra infrastructure. AKS provides them through service meshes like Istio, which give you control over traffic policies, retries, and circuit breaking at the mesh level. You manage the mesh life cycle, configuration, and upgrades.\n\nIf your services communicate primarily through asynchronous messaging like queues or event streams, the platform's built-in communication features matter less because you need to interact with those services through an SDK or an abstraction. Use the [Asynchronous Request-Reply pattern](../../patterns/asynchronous-request-reply.md) for long-running operations because platform timeouts can become a problem. For example, Functions and App Service enforce a [230-second HTTP response timeout](/troubleshoot/azure/app-service/web-request-times-out-app-service) because of Azure Load Balancer limits.",
+      "depth": 2,
+      "metadata": {
+        "file_path": "design/compute-options.md",
+        "parent_title": "Key decision factors"
+      }
+    },
+    {
+      "title": "Independent scaling",
+      "content": "Each microservice in a composition has different load characteristics.\n\nIf your services have highly variable or sudden-spike traffic, Container Apps and Functions scale per service and can scale idle services to zero. This approach avoids unused capacity charges. For Functions, each function app is the scaling unit, so deploy each microservice as its own function app. AKS provides per-deployment scaling. You manage shared node pools that remain provisioned, and user node pools can scale to zero.\n\nScale-to-zero platforms introduce cold start latency when an idle service receives its first request. In a microservices architecture, a single user request can traverse multiple services. If several services in the call chain are cold, the latency compounds. For synchronous interservice calls that require low latency, use the platform's cold start mitigation features or pay the cost to keep minimum instances active to avoid cold starts.\n\nIf your services have steady, predictable load, AKS or App Service can reduce costs because you pay for reserved capacity instead of consumption-based billing.",
+      "depth": 2,
+      "metadata": {
+        "file_path": "design/compute-options.md",
+        "parent_title": "Key decision factors"
+      }
+    },
+    {
+      "title": "Independent deployability",
+      "content": "You need to deploy, update, and roll back individual microservices without affecting the rest of the system. All four platforms support independent deployability, but they differ in how you validate changes. Container Apps and AKS provide traffic splitting natively for gradual rollouts. App Service supports percentage-based traffic routing across deployment slots. Functions supports deployment slots on Premium and Dedicated plans.",
+      "depth": 2,
+      "metadata": {
+        "file_path": "design/compute-options.md",
+        "parent_title": "Key decision factors"
+      }
+    },
+    {
+      "title": "Distributed observability",
+      "content": "A single user request can traverse many services. If you need correlated traces across the full call chain, verify that your platform's observability tooling integrates with your tracing strategy. Container Apps provides built-in observability with Dapr tracing. AKS integrates with OpenTelemetry and open-source tracing tools, which lets you choose your tracing back end (like Jaeger, Zipkin, or Azure Monitor) but requires you to deploy and configure the collection pipeline. Functions and App Service integrate with Application Insights for end-to-end transaction tracing with minimal configuration.\n\nEnsure that each service in the composition exposes per-service metrics like request rate, error rate, and latency. These metrics help you identify which service degrades without correlating logs across the full call chain.",
+      "depth": 2,
+      "metadata": {
+        "file_path": "design/compute-options.md",
+        "parent_title": "Key decision factors"
+      }
+    },
+    {
+      "title": "State management",
+      "content": "In a microservices architecture, each service typically owns its data and externalizes state to a dedicated database or cache. This pattern keeps services independently deployable, and all four platforms support it equally because the data store is a separate Azure resource.\n\nThe platforms differ when a service needs platform-managed state abstractions, like actor-based patterns, workflow orchestration, or dedicated per-instance storage:\n\n- AKS provides the most flexibility through persistent volumes and StatefulSets, which support in-cluster data stores and stable per-instance identity.\n\n- Container Apps supports volume mounts and Dapr state management, including Dapr actors.\n\n- Functions supports stateful orchestrations and entities through Durable Functions.\n\n- App Service supports shared storage through Azure Files mounts but doesn't provide per-instance storage or platform-level state abstractions.",
+      "depth": 2,
+      "metadata": {
+        "file_path": "design/compute-options.md",
+        "parent_title": "Key decision factors"
+      }
+    },
+    {
+      "title": "Choose an Azure compute option for microservices: Considerations",
+      "content": "These considerations implement the pillars of the Azure Well-Architected Framework, which is a set of guiding tenets that you can use to improve the quality of a workload. For more information, see [Well-Architected Framework](/azure/well-architected/).",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/compute-options.md",
+        "parent_title": "Choose an Azure compute option for microservices"
+      }
+    },
+    {
+      "title": "Reliability",
+      "content": "Reliability helps ensure that your application can meet the commitments that you make to your customers. For more information, see [Design review checklist for Reliability](/azure/well-architected/reliability/checklist).\n\nIn a microservices architecture, the primary reliability risk is cascading failure. One unhealthy service causes callers to accumulate timeouts, and the problem propagates outward through the call chain. Your platform choice affects how you mitigate this risk.\n\n- AKS and Container Apps provide platform-level health probes that detect unhealthy instances and remove them from rotation automatically.\n\n- Functions retries failed executions based on the trigger type.\n\nRegardless of platform, implement [circuit breakers](../../patterns/circuit-breaker.md), retry policies with backoff, and timeouts in your interservice communication to prevent a single service failure from becoming a system-wide outage.\n\nDeploy each service across [availability zones](/azure/reliability/availability-zones-overview) to protect against datacenter-level failures. In a mixed-platform composition, verify that all platforms in use support zone redundancy for your deployment region.\n\nFor platform-specific reliability guidance, see the reliability sections of the Well-Architected Framework service guides for [AKS](/azure/well-architected/service-guides/azure-kubernetes-service#reliability), [Container Apps](/azure/well-architected/service-guides/azure-container-apps#reliability), and [Functions](/azure/well-architected/service-guides/azure-functions#reliability).",
+      "depth": 2,
+      "metadata": {
+        "file_path": "design/compute-options.md",
+        "parent_title": "Considerations"
+      }
+    },
+    {
+      "title": "Security",
+      "content": "Security provides assurances against deliberate attacks and the misuse of your valuable data and systems. For more information, see [Design review checklist for Security](/azure/well-architected/security/checklist).\n\nMicroservices increase the attack surface because every service-to-service call crosses a network boundary. Treat all interservice traffic as untrusted and encrypt it through mTLS. AKS supports mTLS through service meshes like [Istio](/azure/aks/istio-about). Container Apps provides mTLS through [Dapr](/azure/container-apps/dapr-overview) or [environment-level configuration](/azure/container-apps/networking). Functions and App Service don't provide platform-level mTLS. If those platforms host services in your composition, enforce transport security through application-layer HTTPS, API gateway policies, or virtual network isolation.\n\nIn a composition of many services, each service should authenticate to only the resources that it requires. Assign per-service identities rather than sharing a single identity across the workload. For platform-specific mechanisms, see the [per-service identity](#compare-platforms-for-microservices) row in the comparison table.\n\nFor platform-specific security guidance, see the security sections of the Well-Architected Framework service guides for [AKS](/azure/well-architected/service-guides/azure-kubernetes-service#security), [Container Apps](/azure/well-architected/service-guides/azure-container-apps#security), and [Functions](/azure/well-architected/service-guides/azure-functions#security).",
+      "depth": 2,
+      "metadata": {
+        "file_path": "design/compute-options.md",
+        "parent_title": "Considerations"
+      }
+    },
+    {
+      "title": "Cost Optimization",
+      "content": "Cost Optimization focuses on ways to reduce unnecessary expenses and improve operational efficiencies. For more information, see [Design review checklist for Cost Optimization](/azure/well-architected/cost-optimization/checklist).\n\nA microservices architecture can include dozens of services, and each service handles different traffic volumes. Match each service to the billing model that fits its traffic pattern. Consumption-based platforms like Container Apps and Functions scale idle services to zero, but dedicated compute like AKS can be more cost-effective for services that have sustained load. In a mixed-platform composition, per-service billing flexibility is one of the main cost advantages. However, account for the overhead of maintaining separate deployment pipelines, monitoring configurations, and team expertise across platforms.\n\nFor platform-specific cost guidance, see the cost optimization sections of the Well-Architected Framework service guides for [AKS](/azure/well-architected/service-guides/azure-kubernetes-service#cost-optimization), [Container Apps](/azure/well-architected/service-guides/azure-container-apps#cost-optimization), and [Functions](/azure/well-architected/service-guides/azure-functions#cost-optimization).",
+      "depth": 2,
+      "metadata": {
+        "file_path": "design/compute-options.md",
+        "parent_title": "Considerations"
+      }
+    },
+    {
+      "title": "Reference architectures",
+      "content": "Narrow your options to one or two platforms by applying the comparison criteria in this article. Run a proof of concept by deploying a representative subset of your services and testing interservice communication, scaling behavior, and deployment workflows against your requirements. Confirm that the platform meets your team's operational expectations before you commit to production. The following architectures provide production-ready starting points:\n\n- **AKS:** [Baseline architecture for an AKS cluster](../../reference-architectures/containers/aks/baseline-aks.yml)\n- **Container Apps:** [Microservices with Container Apps and Dapr](../../example-scenario/serverless/microservices-with-container-apps-dapr.yml)\n- **App Service:** [Baseline highly available zone-redundant web application](../../web-apps/app-service/architectures/baseline-zone-redundant.yml)\n- **Azure Red Hat OpenShift:** [Azure Red Hat OpenShift in a hybrid environment](../../reference-architectures/containers/aro/azure-redhat-openshift-financial-services-workloads.yml)",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/compute-options.md",
+        "parent_title": "Choose an Azure compute option for microservices"
+      }
+    },
+    {
+      "title": "Data considerations for microservices",
+      "content": "This article describes considerations for managing data in a microservices architecture. Each microservice manages its own data, so data integrity and data consistency pose critical challenges. \n\nTwo services shouldn't share a data store. Each service manages its own private data store, and other services can't access it directly. This rule prevents unintentional coupling between services, which happens when services share the same underlying data schemas. If the data schema changes, the change must be coordinated across every service that relies on that database. Isolating each service's data store limits the scope of change and preserves the agility of independent deployments. Each microservice might also have unique data models, queries, or read and write patterns. A shared data store limits each team's ability to optimize data storage for its specific service.\n\n[IMAGE: md_microservices_img005]\nThe diagram shows service A and a database in a section on the left. An arrow labeled write points from service A to the database. Service B resides outside this section on the right. An arrow labeled read points to the database. A red X goes across this arrow.\n\n\nThis approach naturally leads to [polyglot persistence](https://martinfowler.com/bliki/PolyglotPersistence.html), which means using multiple data storage technologies within a single application. One service might need the schema-on-read capabilities of a document database. Another service might need the referential integrity that a relational database management system (RDBMS) provides. Each team can choose the best option for its service.\n\n> **Note:**\n> Services can safely share the same physical database server. Problems occur when services share the same schema, or they read and write to the same set of database tables.",
+      "depth": 0,
+      "metadata": {
+        "file_path": "design/data-considerations.md"
+      },
+      "images": [
+        {
+          "id": "md_microservices_img005",
+          "local_path": "images/md_microservices_img005.png",
+          "alt_text": "Database-per-service illustration: Service A writes to its own private data store while a red X blocks Service B from reading that store directly.",
+          "context": "markdown_ref:../images/cqrs-microservices-wrong.png"
+        }
+      ]
+    },
+    {
+      "title": "Data considerations for microservices: Challenges",
+      "content": "The distributed approach to managing data introduces several challenges. First, redundancy can occur across data stores. The same data item might appear in multiple places. For example, data might be stored as part of a transaction and then stored elsewhere for analytics, reporting, or archiving. Duplicated or partitioned data can lead to problems with data integrity and consistency. When data relationships span multiple services, traditional data management techniques can't enforce those relationships.\n\nTraditional data modeling follows the rule of *one fact in one place*. Every entity appears exactly once in the schema. Other entities might reference it but not duplicate it. The main advantage of the traditional approach is that updates occur in a single place, which prevents data consistency problems. In a microservices architecture, you must consider how updates propagate across services and how to manage eventual consistency when data appears in multiple places without strong consistency.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/data-considerations.md",
+        "parent_title": "Data considerations for microservices"
+      }
+    },
+    {
+      "title": "Approaches to managing data",
+      "content": "No single approach works for all cases. Consider the following general guidelines to manage data in a microservices architecture:\n\n- **Define the required consistency level for each component, and prefer eventual consistency where possible.** Identify areas in the system where you need strong consistency or atomicity, consistency, isolation, and durability (ACID) transactions. And identify areas where eventual consistency is acceptable. For more information, see [Use tactical domain-driven design (DDD) for microservices](../model/tactical-domain-driven-design.md).\n\n- **Use a single source of truth when you require strong consistency.** One service might represent the source of truth for a given entity and expose it through an API. Other services might hold their own copy of the data, or a subset of the data, that's eventually consistent with the primary data but not considered the source of truth. For example, in an e-commerce system that has a customer order service and a recommendation service, the recommendation service might listen to events from the order service. But if a customer requests a refund, the order service, not the recommendation service, has the complete transaction history.\n\n- **Apply transaction patterns to maintain consistency across services.** Use patterns like [Scheduler Agent Supervisor](../../patterns/scheduler-agent-supervisor.yml) and [Compensating Transaction](../../patterns/compensating-transaction.md) to keep data consistent across multiple services. To avoid partial failure among multiple services, you might need to store an extra piece of data that captures the state of a unit of work that spans multiple services. For example, keep a work item on a durable queue while a multi-step transaction is in progress.\n\n- **Store only the data that a service needs.** A service might only need a subset of information about a domain entity. For example, in the shipping bounded context, you need to know which customer is associated with a specific delivery. But you don't need the customer's billing address because the accounts bounded context manages that information. Careful domain analysis and a DDD approach can enforce this principle.\n\n- **Consider whether your services are coherent and loosely coupled.** If two services continually exchange information with each other and create chatty APIs, you might need to redraw your service boundaries. Merge the two services or refactor their functionality.\n\n- **Use an [event-driven architecture style](../../guide/architecture-styles/event-driven.md).** In this architecture style, a service publishes an event when changes to its public models or entities occur. Other services can subscribe to these events. For example, another service can use the events to construct a materialized view of the data that's more suitable for querying.\n\n  - **Publish a schema for events.** A service that owns events should publish a schema to automate serialization and deserialization of events. This approach avoids tight coupling between publishers and subscribers. Consider JSON schema or a framework like Protobuf or Avro.\n\n  - **Reduce event bottlenecks at scale.** At high scale, events can become a bottleneck on the system. Consider using aggregation or batching to reduce the total load.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/data-considerations.md",
+        "parent_title": "Data considerations for microservices"
+      }
+    },
+    {
+      "title": "Example: Choose data stores for the drone delivery application",
+      "content": "The previous articles in this series describe a drone delivery service as a running example. For more information about the scenario and the corresponding architecture, see [Design a microservices architecture](./index.md).\n\nTo recap, this application defines several microservices for scheduling deliveries by drone. When a user schedules a new delivery, the client request includes information about the delivery, like pickup and dropoff locations, and about the package, such as size and weight. This information defines a unit of work.\n\nThe various back-end services use different portions of the information in the request and have different read and write profiles.\n\n[IMAGE: md_microservices_img006]\nThe diagram shows a flow inside a main section. The flow starts with gateway, then ingestion, then scheduler. Scheduler points to account, external transport, package, drone, and delivery. Delivery points to delivery history and Azure Managed Redis. Delivery history points to a file and a database. Package points to a database. Azure Managed Redis, delivery history, the databases, and the folder reside outside the main section.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/data-considerations.md",
+        "parent_title": "Data considerations for microservices"
+      },
+      "images": [
+        {
+          "id": "md_microservices_img006",
+          "local_path": "images/md_microservices_img006.svg",
+          "alt_text": "Data considerations diagram for the Drone Delivery application: Gateway, Ingestion, and Scheduler fan out to Account, 3rd Party Transport, Package, Drone, and Delivery services, with each service using its own storage technology (Cosmos DB for Package and Delivery History, Redis cache for Delivery, blob storage for history), illustrating polyglot persistence.",
+          "context": "markdown_ref:../images/data-considerations.svg"
+        }
+      ]
+    },
+    {
+      "title": "Delivery service",
+      "content": "The delivery service stores information about every delivery that's currently scheduled or in progress. It listens for events from the drones and tracks the status of deliveries in progress. It also sends domain events with delivery status updates.\n\nUsers frequently check the status of a delivery while they wait for their package. So the delivery service requires a data store that emphasizes throughput (read and write) over long-term storage. The delivery service doesn't do complex queries or analysis. It only fetches the latest status for a specific delivery. The delivery service team chose Azure Managed Redis for its high read-write performance. The information stored in Azure Managed Redis is short-lived. After a delivery finishes, the delivery history service becomes the system of record.",
+      "depth": 2,
+      "metadata": {
+        "file_path": "design/data-considerations.md",
+        "parent_title": "Example: Choose data stores for the drone delivery application"
+      }
+    },
+    {
+      "title": "Delivery history service",
+      "content": "The delivery history service listens for delivery status events from the delivery service. It stores this data in long-term storage. This historical data supports two scenarios, each with different storage requirements.\n\nThe first scenario aggregates data for data analytics to optimize the business or improve service quality. The delivery history service doesn't do the actual data analysis. It only ingests and stores the data. For this scenario, the storage must be optimized for data analysis over large datasets and use a schema-on-read approach to accommodate various data sources. [Azure Data Lake Storage](/azure/storage/blobs/data-lake-storage-introduction) is a good fit for this scenario because it's an Apache Hadoop file system compatible with Hadoop Distributed File System (HDFS). It's also tuned for performance for data analytics scenarios.\n\nThe second scenario lets users look up the history of a delivery after the delivery finishes. Data Lake Storage doesn't support this scenario. For optimal performance, store time-series data in Data Lake Storage in folders partitioned by date. But this structure makes individual ID-based lookups inefficient. Unless you also know the timestamp, an ID lookup requires you to scan the entire collection. To address this problem, the delivery history service also stores a subset of the historical data in Azure Cosmos DB for quicker lookup. The records don't need to stay in Azure Cosmos DB indefinitely. You can archive older deliveries after a specific time period, like a month, by running an occasional batch process. Archiving data can reduce costs for Azure Cosmos DB and keep the data available for historical reporting from Data Lake Storage.\n\nFor more information, see [Tune Data Lake Storage for performance](/azure/storage/blobs/data-lake-storage-best-practices).",
+      "depth": 2,
+      "metadata": {
+        "file_path": "design/data-considerations.md",
+        "parent_title": "Example: Choose data stores for the drone delivery application"
+      }
+    },
+    {
+      "title": "Package service",
+      "content": "The package service stores information about all packages. The data store for the package service must meet the following requirements:\n\n- Long-term storage\n- High write throughput to handle a large volume of packages\n- Simple queries by package ID without complex joins or referential integrity constraints\n\nThe package data isn't relational, so a document-oriented database works well. Azure DocumentDB can achieve high throughput by using sharded collections. The package service team is familiar with the MongoDB, Express.js, AngularJS, and Node.js (MEAN) stack, so they choose to implement [Azure DocumentDB](/azure/documentdb/overview). This choice lets them use their existing MongoDB experience while getting the benefits of a fully managed high-performance Azure service.",
+      "depth": 2,
+      "metadata": {
+        "file_path": "design/data-considerations.md",
+        "parent_title": "Example: Choose data stores for the drone delivery application"
+      }
+    },
+    {
+      "title": "Gateway Content: Introduction",
+      "content": "In a microservices architecture, a client might interact with more than one front-end service. Given this fact, how does a client know what endpoints to call? What happens when new services are introduced, or existing services are refactored? How do services handle SSL termination, mutual TLS, authentication, and other concerns? An *API gateway* can help to address these challenges.\n\n[IMAGE: md_microservices_img007]\n\n*Download a [Visio file](https://arch-center.azureedge.net/gateway.vsdx) of this architecture.*",
+      "depth": 0,
+      "metadata": {
+        "file_path": "design/gateway-content.md"
+      },
+      "images": [
+        {
+          "id": "md_microservices_img007",
+          "local_path": "images/md_microservices_img007.png",
+          "alt_text": "API gateway architecture diagram: client apps connect over TLS to an API gateway (platform or custom) that performs routing, aggregation, TLS offloading/mTLS, and response caching for Services A and B, with dotted links to an identity provider for authentication and a monitoring component for logging and metrics.",
+          "context": "markdown_ref:../images/gateway.png"
+        }
+      ]
+    },
+    {
+      "title": "What is an API gateway?",
+      "content": "An API gateway provides a centralized entry point for managing interactions between clients and application services. It acts as a reverse proxy and routes clients requests to the appropriate services. It can also perform various cross-cutting tasks such as authentication, SSL termination, mutual TLS, and rate limiting.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/gateway-content.md",
+        "parent_title": "Introduction"
+      }
+    },
+    {
+      "title": "Why use an API gateway?",
+      "content": "An API gateway simplifies communication, enhances client interactions, and centralizes the management of common service-level responsibilities. It acts as an intermediary, and it prevents direct exposure of application services to clients. Without an API gateway, clients must communicate directly with individual application services, which can introduce the following challenges:\n\n- **Complex client code**: It can result in complex client code. Clients must track multiple endpoints and handle failures resiliently.\n\n- **Tight coupling**: It creates coupling between the client and the backend. Clients need to understand decomposition of individual services, complicating service maintenance and refactoring.\n\n- **Increased latency**: A single operation might require calls to multiple services. The result can be multiple network round trips between the client and the server, adding significant latency.\n\n- **Redundant handling of concerns**: Each public-facing service must handle concerns such as authentication, SSL, and client rate limiting.\n\n- **Protocol limitations**: Services must expose a client-friendly protocol such as HTTP or WebSocket. This exposure limits [communication protocols](./interservice-communication.yml) options.\n\n- **Expanded attack surface**: Public endpoints increase the potential attack surface and require hardening.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/gateway-content.md",
+        "parent_title": "Introduction"
+      }
+    },
+    {
+      "title": "How to use an API gateway",
+      "content": "An API gateway can be tailored to your application’s requirements by using specific design patterns. These design patterns address key functionality such as routing, request aggregation, and cross-cutting concerns:\n\n- [Gateway routing](../../patterns/gateway-routing.yml). You can use an API gateway as a reverse proxy to route client requests to different application services. The API gateway uses layer-7 routing and provides a single endpoint for clients to use. Use API gateway routing when you want to decouple clients from application services.\n\n- [Gateway aggregation](../../patterns/gateway-aggregation.md). You can use the API gateway to aggregate multiple client requests into a single request. Use this pattern when a single operation requires calls to multiple application services. In API aggregation, the client sends one request to the API gateway. Then, the API gateway routes requests to the various services required for the operations. Finally, the API gateway aggregates the results and sends them back to the client. The aggregation helps reduce chattiness between the client and the application services.\n\n- [Gateway offloading](../../patterns/gateway-offloading.yml). You can use an API gateway to provide cross-cutting functionality, so individual services don't have to provide it. It can be useful to consolidate cross-cutting functionality into one place, rather than making every service responsible. Here are examples of functionality that you could offload to an API gateway:\n\n  - SSL termination\n  - Mutual TLS\n  - Authentication\n  - IP allow list or block list\n  - Client rate limiting (throttling)\n  - IP allow list or blocklist\n  - Client [throttling](../../patterns/throttling.md)\n  - Logging and monitoring\n  - Response caching\n  - Web application firewall\n  - GZIP compression\n  - Servicing static content",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/gateway-content.md",
+        "parent_title": "Introduction"
+      }
+    },
+    {
+      "title": "API gateway options",
+      "content": "Here are some options for implementing an API gateway in your application.\n\n- **Reverse proxy server**. Nginx and HAProxy are open-source reverse proxy offerings. They support features such as load balancing, SSL termination, and layer-7 routing. They have free versions and paid editions that provide extra features and support options. These products are mature with rich feature sets, high performance, and extensible.\n\n- **Service mesh ingress gateway**. If you already run a service mesh, the mesh's own ingress gateway is a candidate for your API gateway. Using it means north-south traffic enters the mesh dataplane immediately and participates in the same mTLS, workload identity, authorization policy, and telemetry as east-west traffic. For AKS, the [Istio-based service mesh add-on](/azure/aks/istio-about) is the supported managed option and includes a managed [Istio ingress gateway](/azure/aks/istio-deploy-ingress). [Linkerd](https://linkerd.io/docs/tasks/using-ingress/) and [Consul](https://developer.hashicorp.com/consul/docs/north-south/api-gateway) are unmanaged alternatives.\n\n  Mesh ingress gateways typically have weaker capabilities than dedicated API gateways for web application firewall (WAF), API productization, request transformation, and global routing, so pair them with or replace them with Application Gateway, Front Door, or API Management when those capabilities are required.\n\n- **[Azure Application Gateway](/azure/application-gateway/)**. Application Gateway is a managed load balancing service. It provides perform layer-7 routing, SSL termination, and a web application firewall (WAF).\n\n- **[Azure Front Door](/azure/frontdoor/front-door-overview)**. Azure Front Door is a content delivery network (CDN). It uses global and local points of presence (PoPs) to provide fast, reliable, and secure access to your applications' static and dynamic web content globally.\n\n- **[Azure API Management](/azure/api-management/)**. API Management is a managed solution for publishing APIs to external and internal customers. It provides features to manage public-facing APIs, including rate limiting, IP restrictions, and authentication using Microsoft Entra ID or other identity providers. API Management doesn't perform any load balancing, so you should use it with a load balancer, such as Azure Application Gateway, or a reverse proxy. For more information, see [API Management with Azure Application Gateway](/azure/api-management/api-management-howto-integrate-internal-vnet-appgateway).",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/gateway-content.md",
+        "parent_title": "Introduction"
+      }
+    },
+    {
+      "title": "Choose an API gateway technology",
+      "content": "When selecting an API gateway, consider the following factors:\n\n- **Support all requirements.**  Choose an API gateway that supports your required features. All the previous [API gateway options](#api-gateway-options) support layer-7 routing. But their support for other features, such as authentication, rate limiting, and SSL termination, can vary. Assess whether a single gateway meets your needs or if multiple gateways are necessary.\n\n- **Prefer built-in offerings.** Use built-in API gateway and ingress solutions provided by your platform, such as Azure Container Apps and AKS, whenever they meet your security and control requirements. Only use a custom gateway if the built-in options lack necessary flexibility. Custom solutions require a governance model, such as GitOps, to manage its lifecycle effectively.\n\n- **Choose the right deployment model.** Use managed services like Azure Application Gateway and Azure API Management for reduced operational overhead. If you use general-purpose reverse proxies or load balancers, deploy them in a way that aligns with your architecture. You can deploy general-purpose API gateways to dedicated virtual machines or inside an AKS cluster in their Ingress Controller offerings. To isolate the API gateway from the workload, you can deploy them outside the cluster, but this deployment increases the management complexity.\n\n- **Manage changes.** When you update services or add new ones, you might need to update the gateway routing rules.  Implement processes or workflows to manage routing rules when adding or modifying services, SSL certificates, IP allow lists, and security configurations. Use infrastructure-as-code and automation tools to streamline API gateway management.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/gateway-content.md",
+        "parent_title": "Introduction"
+      }
+    },
+    {
+      "title": "Interservice Communication Content: Introduction",
+      "content": "Communication between microservices must be efficient and robust. With lots of small services interacting to complete a single business activity, this can be a challenge. In this article, we examine the tradeoffs between asynchronous messaging versus synchronous APIs. Then we consider some of the challenges in designing resilient interservice communication.",
+      "depth": 0,
+      "metadata": {
+        "file_path": "design/interservice-communication-content.md"
+      }
+    },
+    {
+      "title": "Introduction: Challenges",
+      "content": "Here are some of the main challenges arising from service-to-service communication. Service meshes, described later in this article, are designed to handle many of these challenges.\n\n**Resiliency**. There might be dozens or even hundreds of instances of any given microservice. An instance can fail for any number of reasons. There can be a node-level failure, such as a hardware failure or a VM reboot. An instance might crash, or be overwhelmed with requests and unable to process any new requests. Any of these events can cause a network call to fail. There are two design patterns that can help make service-to-service network calls more resilient:\n\n- **[Retry](../../patterns/retry.yml)**. A network call might fail because of a transient fault that resolves on its own. Rather than fail outright, the caller should typically retry the operation a specified number of times or until a configured timeout period elapses.\n\n  If an operation isn't idempotent, retries can cause unintended effects. The original call might succeed, but the caller never gets a response. If the caller retries, the operation might be invoked twice. Generally, it's not safe to retry POST or PATCH methods because these operations aren't guaranteed to be idempotent. For more information, see [Transient fault handling](../../best-practices/transient-faults.md).\n\n- **[Circuit Breaker](../../patterns/circuit-breaker.md)**. Too many failed requests can cause a bottleneck, as pending requests accumulate in the queue. These blocked requests might hold critical system resources such as memory, threads, and database connections, which can cause cascading failures. The Circuit Breaker pattern can prevent a service from repeatedly trying an operation that is likely to fail.\n\n**Load balancing**. When service \"A\" calls service \"B\", the request must reach a running instance of service \"B\". In Kubernetes, the `Service` resource type provides a stable IP address for a group of pods. Network traffic to the service's IP address gets forwarded to a pod by means of iptable rules. By default, a random pod is chosen. A [service mesh](#using-a-service-mesh) can provide more intelligent load balancing algorithms based on observed latency or other metrics.\n\n**Distributed tracing**. A single transaction might span multiple services. That can make it hard to monitor the overall performance and health of the system. Even if every service generates logs and metrics, without some way to tie them together, they are of limited use. \n\n**Service versioning**. When a team deploys a new version of a service, they must avoid breaking any other services or external clients that depend on it. In addition, you might want to run multiple versions of a service side-by-side, and route requests to a particular version. For more information, see [API versioning](./api-design.md#api-versioning).\n\n**TLS encryption and mutual TLS authentication**. For security reasons, you might want to encrypt traffic between services with TLS, and use mutual TLS authentication to authenticate callers.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/interservice-communication-content.md",
+        "parent_title": "Introduction"
+      }
+    },
+    {
+      "title": "Synchronous versus asynchronous messaging",
+      "content": "There are two basic messaging patterns that microservices can use to communicate with other microservices.\n\n1. Synchronous communication. In this pattern, a service calls an API that another service exposes, using a protocol such as HTTP or gRPC. This option is a synchronous messaging pattern because the caller waits for a response from the receiver.\n\n2. Asynchronous message passing. In this pattern, a service sends message without waiting for a response, and one or more services process the message asynchronously.\n\nIt's important to distinguish between asynchronous I/O and an asynchronous protocol. Asynchronous I/O means the calling thread isn't blocked while the I/O completes. That's important for performance, but is an implementation detail in terms of the architecture. An asynchronous protocol means the sender doesn't wait for a response. HTTP is a synchronous protocol, even though an HTTP client might use asynchronous I/O when it sends a request.\n\nThere are tradeoffs to each pattern. Request/response is a well-understood paradigm, so designing an API might feel more natural than designing a messaging system. However, asynchronous messaging has some advantages that can be useful in a microservices architecture:\n\n- **Reduced coupling**. The message sender doesn't need to know about the consumer.\n\n- **Multiple subscribers**. Using a [pub/sub model](../../patterns/publisher-subscriber.md), multiple consumers can subscribe to receive events. See [Event-driven architecture style](../../guide/architecture-styles/event-driven.md).\n\n- **Failure isolation**. If the consumer fails, the sender can still send messages. The messages are picked up when the consumer recovers. This ability is especially useful in a microservices architecture, because each service has its own lifecycle. A service could become unavailable or be replaced with a newer version at any given time. Asynchronous messaging can handle intermittent downtime. Synchronous APIs, on the other hand, require the downstream service to be available or the operation fails.\n\n- **Responsiveness**. An upstream service can reply faster if it doesn't wait on downstream services. This is especially useful in a microservices architecture. If there's a chain of service dependencies (for example, service A calls B, which calls C), waiting on synchronous calls can add unacceptable amounts of latency.\n\n- **Load leveling**. A queue can act as a buffer to level the workload, so that receivers can process messages at their own rate.\n\n- **Workflows**. Queues can be used to manage a workflow, by check-pointing the message after each step in the workflow.\n\nHowever, there are also some challenges to using asynchronous messaging effectively.\n\n- **Coupling with the messaging infrastructure**. Using a particular messaging infrastructure might cause tight coupling with that infrastructure. It can be difficult to switch to another messaging infrastructure later.\n\n- **Latency**. End-to-end latency for an operation might become high if the message queues fill up.\n\n- **Cost**. At high throughputs, the monetary cost of the messaging infrastructure could be significant.\n\n- **Complexity**. Handling asynchronous messaging isn't a trivial task. For example, you must handle duplicated messages, either by de-duplicating or by making operations idempotent. It's also hard to implement request-response semantics using asynchronous messaging. To send a response, you need another queue, plus a way to correlate request and response messages.\n\n- **Throughput**. If messages require *queue semantics*, the queue can become a bottleneck in the system. Each message requires at least one queue operation and one dequeue operation. Moreover, queue semantics generally require some kind of locking inside the messaging infrastructure. If the queue is a managed service, there might be additional latency, because the queue is external to the cluster's virtual network. You can mitigate these issues by batching messages, but that complicates the code. If the messages don't require queue semantics, you might be able to use an *eventstream* instead of a queue. For more information, see [Event-driven architecture style](../../guide/architecture-styles/event-driven.md).",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/interservice-communication-content.md",
+        "parent_title": "Introduction"
+      }
+    },
+    {
+      "title": "Drone Delivery: Choosing the messaging patterns",
+      "content": "This solution uses the Drone Delivery example. It's ideal for the aerospace and aircraft industries.\n\nWith these considerations in mind, the development team made the following design choices for the Drone Delivery application:\n\n- The Ingestion service exposes a public REST API that client applications use to schedule, update, or cancel deliveries.\n\n- The Ingestion service uses Event Hubs to send asynchronous messages to the Scheduler service. Asynchronous messages are necessary to implement the load-leveling that is required for ingestion.\n\n- The Account, Delivery, Package, Drone, and Third-party Transport services all expose internal REST APIs. The Scheduler service calls these APIs to carry out a user request. One reason to use synchronous APIs is that the Scheduler needs to get a response from each of the downstream services. A failure in any of the downstream services means the entire operation failed. However, a potential issue is the amount of latency that is introduced by calling the backend services.\n\n- If any downstream service has a nontransient failure, the entire transaction should be marked as failed. To handle this case, the Scheduler service sends an asynchronous message to the Supervisor, so that the Supervisor can schedule compensating transactions.\n\n- The Delivery service exposes a public API that clients can use to get the status of a delivery. In the article [API gateway](./gateway.yml), we discuss how an API gateway can hide the underlying services from the client, so the client doesn't need to know which services expose which APIs.\n\n- While a drone is in flight, the Drone service sends events that contain the drone's current location and status. The Delivery service listens to these events in order to track the status of a delivery.\n\n- When the status of a delivery changes, the Delivery service sends a delivery status event, such as `DeliveryCreated` or `DeliveryCompleted`. Any service can subscribe to these events. In the current design, the Delivery History service is the only subscriber, but there might be other subscribers later. For example, the events might go to a real-time analytics service. And because the Scheduler doesn't have to wait for a response, adding more subscribers doesn't affect the main workflow path.\n\n[IMAGE: md_microservices_img008]\n\nNotice that delivery status events are derived from drone location events. For example, when a drone reaches a delivery location and drops off a package, the Delivery service translates this into a DeliveryCompleted event. This is an example of thinking in terms of domain models. As described earlier, Drone Management belongs in a separate bounded context. The drone events convey the physical location of a drone. The delivery events, on the other hand, represent changes in the status of a delivery, which is a different business entity.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/interservice-communication-content.md",
+        "parent_title": "Introduction"
+      },
+      "images": [
+        {
+          "id": "md_microservices_img008",
+          "local_path": "images/md_microservices_img008.png",
+          "alt_text": "Interservice communication map of the Drone Delivery app with a legend distinguishing REST API calls (solid arrows) from events (dashed): Ingestion sends events to the Scheduler, which calls Account, 3rd Party Transport, Package, Drone, and Delivery via REST, while Delivery emits events to Delivery History and the Supervisor listens via events.",
+          "context": "markdown_ref:../images/drone-communication.png"
+        }
+      ]
+    },
+    {
+      "title": "Using a service mesh",
+      "content": "A *service mesh* is a software layer that handles service-to-service communication. Service meshes are designed to address many of the concerns listed in the previous section, and to move responsibility for these concerns away from the microservices themselves and into a shared layer. The service mesh acts as a proxy that intercepts network communication between microservices in the cluster. Currently, the service mesh concept applies mainly to container orchestrators, rather than serverless architectures.\n\n> **Note:**\n> Service mesh is an example of the [Ambassador pattern](../../patterns/ambassador.md) &mdash; a helper service that sends network requests on behalf of the application.\n\nRight now, the main options for a service mesh in Kubernetes are [Linkerd](https://linkerd.io/) and [Istio](https://istio.io/). Both of these technologies are evolving rapidly. However, some features that both Linkerd and Istio have in common include:\n\n- Load balancing at the session level, based on observed latencies or number of outstanding requests. This can improve performance over the layer-4 load balancing that is provided by Kubernetes.\n\n- Layer-7 routing based on URL path, Host header, API version, or other application-level rules.\n\n- Retry of failed requests. A service mesh understands HTTP error codes, and can automatically retry failed requests. You can configure that maximum number of retries, along with a timeout period in order to bound the maximum latency.\n\n- Circuit breaking. If an instance consistently fails requests, the service mesh temporarily marks it as unavailable. After a backoff period, it tries the instance again. You can configure the circuit breaker based on various criteria, such as the number of consecutive failures,\n\n- Service mesh captures metrics about interservice calls, such as the request volume, latency, error and success rates, and response sizes. The service mesh also enables distributed tracing by adding correlation information for each hop in a request.\n\n- Mutual TLS Authentication for service-to-service calls.\n\nDo you need a service mesh? It depends. Without a service mesh, you need to consider each of the challenges mentioned at the beginning of this article. You can solve problems like retry, circuit breaker, and distributed tracing without a service mesh, but a service mesh moves these concerns out of the individual services and into a dedicated layer. On the other hand, a service mesh adds complexity to the setup and configuration of the cluster. There might be performance implications, because requests now get routed through the service mesh proxy, and because extra services are now running on every node in the cluster. You should do thorough performance and load testing before deploying a service mesh in production.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/interservice-communication-content.md",
+        "parent_title": "Introduction"
+      }
+    },
+    {
+      "title": "Distributed transactions",
+      "content": "A common challenge in microservices is correctly handling transactions that span multiple services. Often in this scenario, the success of a transaction is all or nothing &mdash; if one of the participating services fails, the entire transaction must fail.\n\nThere are two cases to consider:\n\n- A service might experience a *transient* failure such as a network timeout. These errors can often be resolved by retrying the call. If the operation still fails after a certain number of attempts, it's considered a nontransient failure.\n\n- A  *nontransient* failure is any failure that's unlikely to go away by itself. Nontransient failures include normal error conditions, such as invalid input. They also include unhandled exceptions in application code or a process crashing. If this type of error occurs, the entire business transaction must be marked as a failure. It might be necessary to undo other steps in the same transaction that already succeeded.\n\nAfter a nontransient failure, the current transaction might be in a *partially failed* state, where one or more steps already completed successfully. For example, if the Drone service already scheduled a drone, the drone must be canceled. In that case, the application needs to undo the steps that succeeded, by using a [Compensating Transaction](../../patterns/compensating-transaction.md). In some cases, this action must be done by an external system or even by a manual process. In your design, remember that compensating measures are also subject to failure.\n\nIf the logic for compensating transactions is complex, consider creating a separate service that is responsible for this process. In the Drone Delivery application, the Scheduler service puts failed operations onto a dedicated queue. A separate microservice, called the Supervisor, reads from this queue and calls a cancellation API on the services that need to compensate. This is a variation of the [Scheduler Agent Supervisor pattern](../../patterns/scheduler-agent-supervisor.yml). The Supervisor service might take other actions as well, such as notify the user by text or email, or send an alert to an operations dashboard.\n\n[IMAGE: md_microservices_img009]\n\nThe Scheduler service itself might fail (for example, because a node crashes). In that case, a new instance can spin up and take over. However, any transactions that were already in progress must be resumed.\n\nOne approach is to save a checkpoint to a durable store after each step in the workflow is completed. If an instance of the Scheduler service crashes in the middle of a transaction, a new instance can use the checkpoint to resume where the previous instance left off. However, writing checkpoints can create a performance overhead.\n\nAnother option is to design all operations to be idempotent. An operation is idempotent if it can be called multiple times without producing additional side-effects after the first call. Essentially, the downstream service should ignore duplicate calls, which means the service must be able to detect duplicate calls. It's not always straightforward to implement idempotent methods. For more information, see [Idempotent operations](./api-design.md#idempotent-operations).",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/interservice-communication-content.md",
+        "parent_title": "Introduction"
+      },
+      "images": [
+        {
+          "id": "md_microservices_img009",
+          "local_path": "images/md_microservices_img009.png",
+          "alt_text": "Compensating-transaction (saga) diagram: the Scheduler's calls to Account, 3rd Party Transport, and Drone succeed (OK) but the Package call fails, so a Supervisor reads from a shared message queue and sends Cancel commands to the services that had succeeded.",
+          "context": "markdown_ref:../images/supervisor.png"
+        }
+      ]
+    },
+    {
+      "title": "Orchestration Content: Introduction",
+      "content": "Microservices architectures typically package and deploy each microservice instance inside a single container. Many instances of the microservices might be running, each in a separate container. Containers are lightweight and short-lived, making them easy to create and destroy, but difficult to coordinate and communicate between.\n\nThis article discusses the challenges of running a containerized microservices architecture at production scale, and how container orchestration can help. The article presents several Azure container orchestration options.",
+      "depth": 0,
+      "metadata": {
+        "file_path": "design/orchestration-content.md"
+      }
+    },
+    {
+      "title": "Containerized microservices architecture",
+      "content": "In this simple containerized Azure Kubernetes Service (AKS) cluster:\n\n- One Microservice A instance is running in Node 1, another instance in Node 2, and a third instance in Node 3.\n- One instance of Microservice B is running in Node 1, and another instance in Node 3.\n- Containerized [reverse proxy servers](https://komodor.com/learn/kubernetes-sidecar-containers-practical-guide-with-examples/) are running in Nodes 1 and 2 to distribute traffic.\n\n[IMAGE: md_microservices_img010]\n\nTo manage the cluster, a DevOps team has to:\n\n- Run multiple container instances in each node.\n- Load balance traffic between the instances.\n- Manage communication between dependent instances in separate nodes.\n- Maintain the desired AKS cluster state.\n\nWith container orchestration, the DevOps team can represent the cluster's desired state as a configuration. A container orchestration engine enforces the desired configuration and automates all the management tasks.\n\nConsider containerizing a simple three-tier web application:\n\n- A container hosts the front-end component.\n- Another container hosts the middle tier or REST API layer.\n- The middle tier layer communicates with a globally distributed database.\n\nRunning these containers on a single development machine might not be too hard. However, running the application in high availability mode at scale in a production cluster quickly becomes challenging. Container orchestration is crucial for large and dynamic production environments.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/orchestration-content.md",
+        "parent_title": "Introduction"
+      },
+      "images": [
+        {
+          "id": "md_microservices_img010",
+          "local_path": "images/md_microservices_img010.png",
+          "alt_text": "Azure architecture diagram of a web app in a multiple-container AKS cluster: users reach an Application Gateway routing to three nodes that host reverse proxy and Service A/B containers, all managed by an orchestrator (Azure Kubernetes Service) operated by DevOps.",
+          "context": "markdown_ref:images/orchestration/multi-container-cluster-with-orchestrator.png"
+        }
+      ]
+    },
+    {
+      "title": "Advantages of container orchestration",
+      "content": "The following example shows how container orchestration can help manage cluster deployment, networking, and scaling.\n\n[IMAGE: md_microservices_img011]\n\nThe container orchestrator:\n\n- Automatically scales the number of microservice instances, based on traffic or resource utilization. In the example, the orchestrator automatically adds another Microservice A instance in response to increased traffic.\n\n- Manages the containers to reflect the configured desired state. In the example, Microservice B is configured to have two instances. One instance has become unhealthy, so the orchestrator maintains the desired state by creating another instance.\n\n- Wraps the containers for each microservice in a simple service layer. The service layer:\n\n  - Abstracts out complexities like IP address, port, and number of instances.\n  - Load balances traffic between microservice instances.\n  - Supports easy communication between dependent microservice instances.\n\nContainer orchestrators also provide flexibility and traffic control to:\n\n- Release new versions or roll back to old versions of microservices or sets of microservices, without downtime.\n- Enable side by side testing of different microservice versions.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/orchestration-content.md",
+        "parent_title": "Introduction"
+      },
+      "images": [
+        {
+          "id": "md_microservices_img011",
+          "local_path": "images/md_microservices_img011.png",
+          "alt_text": "Detailed container topology diagram: an API gateway routes through two reverse proxy containers to service layers for Microservices A and B, each with multiple containers (including an auto-scaled new instance, an unhealthy instance being bypassed, and a replacement healthy instance) backed by separate Azure Cosmos DB cluster databases.",
+          "context": "markdown_ref:images/orchestration/container-orchestrator-example.png"
+        }
+      ]
+    },
+    {
+      "title": "Choose an Azure container orchestrator",
+      "content": "Here are some options for implementing microservices container orchestration in Azure:\n\n- [Azure Kubernetes Service (AKS)](/azure/well-architected/service-guides/azure-kubernetes-service) is a fully managed [Kubernetes](https://kubernetes.io/) container orchestration service in Azure that simplifies deployment and management of containerized applications. AKS provides elastic provisioning, flexible application deployment model, and advanced identity and access management.\n\n- [Azure Container Instances (ACI)](/azure/container-instances/container-instances-overview) is the quickest and simplest way to run a container in Azure. With ACI, you don't have to manage virtual machines or adapt higher-level services.\n\n  For simple orchestration scenarios, you can use [Docker Compose](https://docs.docker.com/compose/) to define and run a multi-container application locally. Then, deploy the Docker containers as an ACI container group in a managed, serverless Azure environment. For full container orchestration scenarios, ACI can integrate with AKS to create virtual nodes for AKS orchestration.\n\n- [Azure Container Apps](/azure/well-architected/service-guides/azure-container-apps) is a fully managed serverless container service for building and deploying modern apps at scale. With Container Apps, you can run microservices built with [Spring Boot](https://spring.io/projects/spring-boot) and other frameworks without having to manage infrastructure. Container Apps supports built-in autoscaling, traffic splitting, and integration with Azure.\n\n- [Azure Red Hat OpenShift (ARO)](/azure/openshift/intro-openshift) supports deployment of fully managed [OpenShift](https://www.openshift.com/) clusters on Azure. Running Kubernetes production containers requires integration with frameworks and tools like image registries, storage management, monitoring, and DevOps. ARO extends Kubernetes by combining these components into a single container platform as a service (PaaS).",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/orchestration-content.md",
+        "parent_title": "Introduction"
+      }
+    },
+    {
+      "title": "Design patterns for microservices",
+      "content": "A microservices architecture distributes responsibility across independent services. That independence changes how you handle the following common architectural challenges:\n\n- Data consistency maintenance without distributed transactions\n- Cross-service communication management\n- Failure isolation so that failures don't cascade\n- Legacy system integration during migration\n\nThe design patterns in this article address these challenges directly. Each pattern targets a specific concern that you might encounter when you design, build, and operate microservices.\n\n[IMAGE: md_microservices_img012]\n  The diagram flow starts with a client application. An arrow points from the client application to a box that represents the microservices application. A second arrow points from the client application to the Strangler Fig pattern. Two arrows point from the Strangler Fig pattern. One arrow points to the microservices application box, and the other arrow points to a rectangle labeled legacy system at the bottom of the diagram. The microservices application box includes design patterns and microservices. In a section labeled API gateway, an arrow points from the Gateway Offloading pattern to the Gateway Routing and Gateway Aggregation patterns. An arrow points from the Gateway Routing pattern to a microservice for desktop. An arrow points from the Gateway Aggregation pattern to a microservice for mobile. These microservices are within a section labeled Backends for Frontends. Arrows point from these microservices to another microservice under a box labeled Sidecar. An arrow points from this microservice to a remote service outside of the microservices application box. An arrow points from the microservice for mobile to a section that contains two boxes labeled service. Arrows point from each service to an event bus between them. In another section, an arrow that passes through an anti-corruption layer points from a microservice to the legacy system outside of the microservices application.",
+      "depth": 0,
+      "metadata": {
+        "file_path": "design/patterns.md"
+      },
+      "images": [
+        {
+          "id": "md_microservices_img012",
+          "local_path": "images/md_microservices_img012.png",
+          "alt_text": "Composite Azure design-patterns diagram showing a client application reaching a microservices application through Strangler Fig and an API gateway (offloading, routing, aggregation), with Backends for Frontends for desktop and mobile, a Sidecar, an event bus between services, and an Anti-corruption layer in front of a legacy system.",
+          "context": "markdown_ref:../images/microservices-patterns.png"
+        }
+      ]
+    },
+    {
+      "title": "Common design patterns",
+      "content": "- [**Anti-Corruption Layer**](../../patterns/anti-corruption-layer.md) implements a facade or adapter layer between subsystems that don't share the same semantics. This pattern translates requests between subsystems and prevents dependencies on legacy systems or other services that have incompatible domain models from limiting a new service's design.\n\n- [**Backends for Frontends**](../../patterns/backends-for-frontends.md) creates separate backend services for different types of clients, such as desktop and mobile. When you take this approach, a single backend service doesn't need to handle the conflicting requirements of various client types. This pattern helps keep each microservice simple by separating client-specific concerns.\n\n- [**Bulkhead**](../../patterns/bulkhead.md) isolates critical resources, such as connection pools, memory, and CPU, for each workload or service. This isolation prevents a single workload or service from consuming all resources. This pattern increases workload resiliency by preventing one service from causing cascading failures.\n\n- [**Choreography**](../../patterns/choreography.md) lets each service decide when and how to process a business operation, rather than depending on a central orchestrator. This pattern reduces coupling between services and supports frequent service updates or changes.\n\n- [**Command Query Responsibility Segregation (CQRS)**](../../patterns/cqrs.md) segregates read operations from write operations into separate data models. This pattern improves performance, scalability, and security in microservices where reads and writes have different performance or scaling requirements.\n\n- [**Gateway Routing**](../../patterns/gateway-routing.yml) uses an API gateway as a reverse proxy to route client requests to different services based on the request. This approach gives clients a single endpoint instead of many.\n\n  [**Gateway Aggregation**](../../patterns/gateway-aggregation.md) uses the gateway to combine multiple client requests into a single request. This approach reduces chattiness between clients and services.\n\n  [**Gateway Offloading**](../../patterns/gateway-offloading.yml) centralizes cross-cutting functionality, such as Secure Socket Layer (SSL) termination, authentication, and rate limiting, into the gateway so that individual services don't have to implement these concerns separately.\n\n  For more information, see [API gateways for microservices](gateway.yml).\n\n- [**Saga**](../../patterns/saga.yml) manages data consistency across microservices that have independent data stores. A saga is a sequence of local transactions in which each service performs its operation and triggers the next step. If a step fails, the saga runs compensating transactions to undo the preceding changes. This pattern replaces distributed transactions, which are often impractical in a microservices architecture.\n\n- [**Sidecar**](../../patterns/sidecar.md) deploys helper components of an application as a separate container or process to provide isolation and encapsulation. Use this pattern to attach common functionality, such as logging, monitoring, and networking configuration, to a service without embedding it in the service's code.\n\n- [**Strangler Fig**](../../patterns/strangler-fig.md) supports incremental migration from a legacy system by gradually replacing specific pieces of functionality with new services. Consumers continue to use the same interface, unaware that the migration is taking place, until you fully replace the legacy system.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/patterns.md",
+        "parent_title": "Design patterns for microservices"
+      }
+    },
+    {
+      "title": "Supporting patterns",
+      "content": "[Interservice communication](interservice-communication.yml) describes the [Retry](../../patterns/retry.yml) and [Circuit Breaker](../../patterns/circuit-breaker.md) patterns for resilient service-to-service calls.\n\nFor the complete catalog of cloud design patterns in Azure Architecture Center, see [Cloud design patterns](../../patterns/index.md).",
+      "depth": 1,
+      "metadata": {
+        "file_path": "design/patterns.md",
+        "parent_title": "Design patterns for microservices"
+      }
+    },
+    {
+      "title": "Use domain analysis to model microservices",
+      "content": "One of the biggest challenges of microservices is to define the boundaries of individual services. The general rule is that a service should do only one thing, but putting that rule into practice requires careful thought. There's no mechanical process that produces the correct design. You must think deeply about your business domain, requirements, architecture characteristics (also known as *nonfunctional requirements*), and goals. Otherwise, you risk creating an unstructured design that has hidden dependencies between services, tight coupling, or poorly designed interfaces. This article shows a domain-driven approach to designing microservices. Service boundary evaluation is an ongoing effort for evolving workloads. Sometimes the evaluation results in redefined boundaries that require more application development to accommodate the changes.\n\nThis article uses a drone delivery service as a running example. For more information about the scenario and the corresponding reference implementation, see [Design a microservices architecture](../design/index.md).",
+      "depth": 0,
+      "metadata": {
+        "file_path": "model/domain-analysis.md"
+      }
+    },
+    {
+      "title": "Use domain analysis to model microservices: Introduction",
+      "content": "Design microservices around business capabilities, not horizontal layers like data access or messaging. Ensure that microservices have loose coupling and high functional cohesion. Microservices are *loosely coupled* if you can change one service without updating other services at the same time. A microservice is *cohesive* if it has a single, well-defined purpose, like managing user accounts or tracking delivery history. Services should encapsulate domain knowledge and abstract that knowledge from clients. For example, a client can schedule a drone without knowledge of the scheduling algorithm or drone fleet management.\n\nYou must define architecture characteristics for each microservice to match its domain concerns, rather than define them for the entire system. For example, a customer-facing microservice might require performance, availability, fault tolerance, security, testability, and agility. A back-end microservice might require only fault tolerance and security. When microservices communicate synchronously, their runtime dependency often requires them to share the same architecture characteristics.\n\nDomain-driven design (DDD) provides a framework that supports the design of well-structured microservices. DDD has a *strategic* phase and a *tactical* phase. In strategic DDD, you define the large-scale system structure. Strategic DDD ensures that your architecture remains focused on business capabilities. Tactical DDD provides design patterns that you can use to create the domain model. These patterns include entities, aggregates, and domain services. These tactical patterns help you design microservices that are loosely coupled and cohesive.\n\nThe concept of *ubiquitous language* is central in DDD. It's a shared vocabulary that developers and domain experts create together within each bounded context. Teams use this language consistently in conversations, documentation, and code. When the same terms mean the same thing across all these areas, teams reduce misunderstandings and produce domain models that accurately reflect business intent. Each bounded context can have its own ubiquitous language, which means that the same word (like *account*) has different meanings in different contexts.\n\n[IMAGE: md_microservices_img013]\n   The image has four sections: analyze domain; define bounded contexts; define entities, aggregates, and services; and identify microservices. Double greater-than signs indicate a flow between the sections, from left to right.\n\n\nThis article and the related [Tactical DDD](./tactical-domain-driven-design.md) article present the following steps and apply them to the drone delivery application:\n\n1. Analyze the business domain to understand the application's functional requirements. The output of this step is an informal description of the domain, which you can refine into a more formal set of domain models.\n\n1. Define the *bounded contexts* of the domain. Each bounded context contains a domain model that represents a specific subdomain of the larger application.\n\n1. Apply tactical DDD patterns within a bounded context to define entities, aggregates, and domain services.\n\n1. Use the results from the previous step to identify the microservices in your application.\n\nThis article covers the first two steps, which primarily concern strategic DDD. The article [Tactical DDD](./tactical-domain-driven-design.md) covers step 3. The article [Identify microservice boundaries](microservice-boundaries.yml) covers step 4. DDD is an iterative, ongoing process, so service boundaries don't remain fixed. As an application evolves, you might decide to separate a service into several smaller services.\n\n> **Note:**\n> This article doesn't show a complete and comprehensive domain analysis. The example is intentionally brief and focuses on the key ideas. For more background about DDD, read Eric Evans's *Domain-Driven Design*, the book that first introduced the term. Another good reference is *Learning Domain-Driven Design* by Vlad Khononov for a practical, modern treatment of the subject.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "model/domain-analysis.md",
+        "parent_title": "Use domain analysis to model microservices"
+      },
+      "images": [
+        {
+          "id": "md_microservices_img013",
+          "local_path": "images/md_microservices_img013.png",
+          "alt_text": "Four-step domain-driven design process flow: analyze domain, define bounded contexts, define entities, aggregates, and services, then identify microservices.",
+          "context": "markdown_ref:../images/ddd-process.png"
+        }
+      ]
+    },
+    {
+      "title": "Scenario: Drone delivery",
+      "content": "Fabrikam, Inc., starts a drone delivery service. The company manages a fleet of drone aircraft. Businesses register with the service, and users request a drone to pick up goods for delivery. When a customer schedules a pickup, a back-end system assigns a drone and notifies the user with an estimated delivery time. While the delivery progresses, the customer tracks the drone location, with a continuously updated estimated time of arrival (ETA).\n\nThis scenario involves a complex domain. Key business concerns include how to schedule drones, track packages, manage user accounts, and store and analyze historical data. Fabrikam also aims to reach market quickly and iterate rapidly to add new functionality and capabilities. The application must operate at cloud scale and meet a high service-level objective (SLO). Fabrikam also expects different parts of the system to have different requirements for data storage and query operations. These considerations lead Fabrikam to adopt a microservices architecture for the drone delivery application.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "model/domain-analysis.md",
+        "parent_title": "Use domain analysis to model microservices"
+      }
+    },
+    {
+      "title": "Analyze the domain",
+      "content": "A DDD approach helps you design microservices so that each service aligns naturally with a functional business requirement. It also helps you avoid letting organizational boundaries or technology choices dictate your design.\n\n> **Tip:**\n> [Conway's law](https://en.wikipedia.org/wiki/Conway's_law) observes that systems tend to mirror the communication structures of the organizations that build them. When that mirroring occurs passively, it can lead to architectures that reflect organizational charts rather than business domains. You can use DDD to your advantage by defining service boundaries through domain analysis and then intentionally aligning team ownership to those boundaries. This proactive approach ensures that your team structure supports the architecture rather than conflicting with it.\n>\n> If a single team must own multiple unrelated bounded contexts, or a single bounded context requires coordination across many teams, revisit either the boundaries or the team structure.\n\nBefore you write any code, you need a high-level understanding of the system that you build. DDD models the business domain and creates a *domain model*. The domain model is an abstract model of the business domain. It distills and organizes domain knowledge and establishes a shared language for developers and domain experts.\n\nStart by mapping all the business functions and the connections among them. This effort should involve domain experts, software architects, and other stakeholders. You don't need to follow a specific formal method. For example, you can sketch a diagram or use a whiteboard. One structured approach involves *event storming*. Whether you use [event storming](https://wikipedia.org/wiki/Event_storming) or a less formal approach, the goal is to build a shared understanding of the domain before you choose technologies.\n\nAs you fill in the diagram, you might start to identify discrete subdomains. Look for the following patterns:\n\n- Functions that are closely related\n\n- Functions that are key to the business versus functions that provide supporting services\n\n- The dependency graph between functions\n\nDuring this initial phase, don't focus on technologies or implementation details. But you should identify where the application must integrate with external systems, like customer relationship management, payment processing, or billing systems.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "model/domain-analysis.md",
+        "parent_title": "Use domain analysis to model microservices"
+      }
+    },
+    {
+      "title": "Example: Drone delivery application",
+      "content": "After some initial domain analysis, the Fabrikam team creates a rough sketch that depicts the drone delivery domain.\n\n[IMAGE: md_microservices_img014]\n   The diagram is an interconnected web that has multiple connecting lines and ovals that contain words. Shipping connects to drone management, third party, call center, accounts, invoicing, and returns. Accounts connects to call center, shipping, invoicing, user rating, and loyalty. Drone management connects to drone sharing, predictive analysis, drone repair, ETA analysis, third party, shipping, and video surveillance.\n\n\n- **Shipping** appears in the center of the diagram because it's core to the business. Everything else in the diagram exists to support this functionality.\n\n- **Drone management** is also core to the business. Functionality closely related to drone management includes drone repair and using predictive analysis to predict when drones need servicing and maintenance.\n\n- **ETA analysis** provides time estimates for pickup and delivery.\n\n- **Third-party transportation** lets the application schedule alternative transportation methods if a package can't be shipped entirely by drone.\n\n- **Drone sharing** is a possible extension of the core business. The company might have excess drone capacity during specific hours and can rent out idle drones. The initial release doesn't include this feature.\n\n- **Video surveillance** is another area that the company might expand into later.\n\n- **User accounts**, **invoicing**, and **call center** are subdomains that support the core business.\n\nDDD classifies subdomains into three categories, and this classification helps prioritize where to invest the most design effort:\n\n- **Core subdomains** provide a competitive advantage. Shipping and drone management form core subdomains for Fabrikam because they define the business. These subdomains require detailed modeling and substantial team investment.\n\n- **Supporting subdomains** keep the business operational but don't differentiate it from competitors. Invoicing falls into this category. It requires custom development but doesn't serve as the competitive advantage source.\n\n- **Generic subdomains** represent problems that the industry already solved. User accounts and call center form generic subdomains that Fabrikam can address by using existing prebuilt or standard solutions rather than custom-built systems.\n\nAt this point in the process, Fabrikam hasn't made any decisions about implementation or technologies. Some of the subsystems might involve external software systems or non-Microsoft services. But the application needs to interact with these systems and services, so Fabrikam includes them in the domain model.\n\n> **Note:**\n> When an application depends on an external system, the external system's data schema or API might leak into the application. This leakage can compromise the architectural design. It's especially common in legacy systems that don't follow modern best practices and might use convoluted data schemas or outdated APIs. In these cases, establish a well-defined boundary between the external system and the application. Consider using the [Strangler Fig pattern](../../patterns/strangler-fig.md) or the [Anti-Corruption Layer pattern](../../patterns/anti-corruption-layer.md) to enforce this boundary.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "model/domain-analysis.md",
+        "parent_title": "Use domain analysis to model microservices"
+      },
+      "images": [
+        {
+          "id": "md_microservices_img014",
+          "local_path": "images/md_microservices_img014.svg",
+          "alt_text": "Hand-drawn style domain model bubble map for the drone delivery business with Shipping at the center connected to subdomains such as Drone management, Accounts, Invoicing, Returns, Video surveillance, Drone sharing, Predictive analysis, Drone repair, Third party, Call center, Loyalty, User rating, and ETA analysis.",
+          "context": "markdown_ref:../images/ddd1.svg"
+        }
+      ]
+    },
+    {
+      "title": "Define bounded contexts",
+      "content": "The domain model includes representations of real-world entities, like users, drones, packages, and other entities. But that doesn't mean that each part of the system needs to use the same representations for the same entities.\n\nFor example, subsystems that handle drone repair and predictive analysis need to represent many physical characteristics of drones, like their maintenance history, mileage, age, model number, and performance characteristics. But when the time comes to schedule a delivery, those details become irrelevant. The scheduling subsystem only needs to know whether a drone is available and the ETA for pickup and delivery.\n\nCreating a single model for both subsystems introduces unnecessary complexity. The model also becomes harder to evolve over time because changes need to satisfy multiple teams that work on separate subsystems. As a result, it's better to design separate models that represent the same real-world entity (in this case, a drone) in two different contexts. Each model includes only the features and attributes that are relevant within its context.\n\nThe DDD concept of *bounded contexts* applies here. A bounded context defines the boundary within a domain where a specific domain model applies. Fabrikam can group functionality based on whether different functions share the same domain model.\n\n[IMAGE: md_microservices_img015]\n   The diagram is an interconnected web that has multiple connecting lines and ovals that contain words. Dotted lines section off each oval. Drone management connects to video surveillance, shipping, and third-party transportation. Accounts connects to drone sharing, shipping, and call center. The third-party transportation and call center sections are both labeled as external systems.\n\n\nBounded contexts aren't necessarily isolated from one another. In the previous diagram, the solid lines that connect the bounded contexts represent places where two bounded contexts interact. For example, shipping depends on user accounts to retrieve customer information and on drone management to schedule drones from the fleet.\n\nFabrikam identifies these interactions and creates a *context map* that documents the relationships between bounded contexts. A context map highlights integration points and helps teams clarify responsibilities. Evans and subsequent DDD practitioners describe several relationship patterns:\n\n- [Customer-Supplier](https://ddd-practitioners.com/home/glossary/bounded-context/bounded-context-relationship/customer-supplier/): One context (upstream) provides data or services that another context (downstream) depends on. The teams negotiate the contract between them.\n\n- [Open Host Service](https://ddd-practitioners.com/home/glossary/bounded-context/bounded-context-relationship/open-host-service/) and [Published Language](https://ddd-practitioners.com/home/glossary/bounded-context/bounded-context-relationship/published-language/): The upstream context exposes a well-defined API (Open Host Service) described in a shared format (Published Language) that downstream contexts consume.\n\n- [Anti-corruption Layer](https://ddd-practitioners.com/home/glossary/bounded-context/bounded-context-relationship/anticorruption-layer/): The downstream team builds a [translation layer](../../patterns/anti-corruption-layer.md) to protect its model from upstream model changes.\n\n- [Separate Ways](https://ddd-practitioners.com/home/glossary/bounded-context/bounded-context-relationship/separate-ways/): Two contexts have no integration. Each context evolves independently.\n\nIn a microservices architecture, Open Host Service and Published Language are especially relevant because microservices communicate through well-defined APIs. The article [Design APIs for microservices](../design/api-design.md) describes how to use [OpenAPI specification](https://spec.openapis.org/oas/latest.html) to define language-agnostic interface descriptions for REST APIs, expressed in JSON or YAML format.\n\nFor the rest of this journey, we will focus on the shipping bounded context.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "model/domain-analysis.md",
+        "parent_title": "Use domain analysis to model microservices"
+      },
+      "images": [
+        {
+          "id": "md_microservices_img015",
+          "local_path": "images/md_microservices_img015.svg",
+          "alt_text": "Bounded-context map of the drone delivery domain with dashed boundary lines grouping Shipping, Drone management, Video surveillance, Drone sharing, and Accounts, while Third-party transportation and Call center are shaded and labeled as external systems.",
+          "context": "markdown_ref:../images/ddd2.svg"
+        }
+      ]
+    },
+    {
+      "title": "Microservice Boundaries Content: Introduction",
+      "content": "Architects and developers struggle to define the correct size for a microservice. Guidance often emphasizes avoiding extremes of too large or too small, but that advice can be vague in practice. But if you start from a carefully designed domain model, you can more easily define the correct size and scope of each microservice.\n\n[IMAGE: md_microservices_img016]\n   The diagram has two key sections. One section labeled Shipping bounded content and contains the following terms: Scheduler, Package, Delivery, and Delivery history. Five arrows point from Scheduler to the following terms: Accounts, Third-party transportation, Drone management, Package, and Delivery. An arrow points from Delivery to Delivery history.\n\n\nThis article uses a drone delivery service as a running example. You can read more about the scenario and the corresponding reference implementation [here](../design/index.md).",
+      "depth": 0,
+      "metadata": {
+        "file_path": "model/microservice-boundaries-content.md"
+      },
+      "images": [
+        {
+          "id": "md_microservices_img016",
+          "local_path": "images/md_microservices_img016.png",
+          "alt_text": "Diagram of the Shipping bounded context containing Scheduler, Package, Delivery, and Delivery history, with the Scheduler also calling out to Accounts, Third-party transportation, and Drone management outside the context boundary.",
+          "context": "markdown_ref:../images/bounded-contexts.png"
+        }
+      ]
+    },
+    {
+      "title": "From domain model to microservices",
+      "content": "In the [previous article](./domain-analysis.md), we defined a set of bounded contexts for a Drone Delivery application. Then we looked more closely at one of these bounded contexts, the Shipping bounded context, and identified a set of entities, aggregates, and domain services for that bounded context.\n\nNow we're ready to go from domain model to application design. Here's an approach that you can use to derive microservices from the domain model.\n\n1. Start with a bounded context. In general, the functionality in a microservice shouldn't span more than one bounded context. By definition, a bounded context marks the boundary of a specific domain model. If you find that a microservice mixes different domain models together, you might need to go back and refine your domain analysis.\n\n1. Next, examine the aggregates in your domain model. Aggregates are often good candidates for microservices. A well-designed aggregate exhibits many of the characteristics of a well-designed microservice:\n\n    - An aggregate is derived from business requirements, rather than technical concerns such as data access or messaging.\n    - An aggregate should have high functional cohesion.\n    - An aggregate is a boundary of persistence.\n    - Aggregates should be loosely coupled.\n\n1. Domain services are also good candidates for microservices. Domain services are stateless operations across multiple aggregates. A typical example is a workflow that includes several microservices. The Drone Delivery application shows an example.\n\n1. Consider nonfunctional requirements. Use factors such as team size, data types, technologies, scalability requirements, availability requirements, and security requirements. These factors might cause you to break a microservice into multiple smaller services. In other cases, they might cause you to merge several microservices into a single microservice.\n\nAfter you identify the microservices in your application, validate your design against the following criteria:\n\n- Each service has a single responsibility.\n\n- There are no chatty calls between services. If splitting functionality into two services causes them to be overly chatty, it might be a symptom that these functions belong in the same service.\n\n- Each service is small enough that it can be built by a small team working independently.\n\n- There are no interdependencies that require two or more services to be deployed together. Each service should be deployable independently, without needing to redeploy others.\n\n- Services aren't tightly coupled and can evolve independently.\n\n- Service boundaries are designed to avoid problems with data consistency or integrity. In some cases, maintaining data consistency means grouping related functionality into a single microservice. However, strong consistency isn't always required. Distributed systems provide strategies for handling eventual consistency, and the benefits of decomposing services often outweigh the complexity of managing it.\n\nAbove all, it's important to be pragmatic, and remember that domain-driven design is an iterative process. When in doubt, start with more coarse-grained microservices. Splitting a microservice into two smaller services is easier than refactoring functionality across several existing microservices.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "model/microservice-boundaries-content.md",
+        "parent_title": "Introduction"
+      }
+    },
+    {
+      "title": "Example: Defining microservices for the Drone Delivery application",
+      "content": "The development team previously identified the four aggregates, Delivery, Package, Drone, and Account, and two domain services, Scheduler and Supervisor.\n\nDelivery and Package are obvious candidates for microservices. The Scheduler and Supervisor coordinate the activities performed by other microservices, so it makes sense to implement these domain services as microservices.\n\nDrone and Account are interesting because they belong to other bounded contexts. One option is for the Scheduler to call the Drone and Account bounded contexts directly. Another option is to create Drone and Account microservices inside the Shipping bounded context. These microservices would mediate between the bounded contexts, by exposing APIs or data schemas that are more suited to the Shipping context.\n\nThe details of the Drone and Account bounded contexts are beyond the scope of this guidance, so we created mock services for them in our reference implementation. But here are some factors to consider in this situation:\n\n- What is the network overhead of calling directly into the other bounded context?\n\n- Is the data schema for the other bounded context suitable for this context, or is it better to have a schema tailored to this bounded context?\n\n- Is the other bounded context a legacy system? If so, you might create a service that acts as an [anti-corruption layer](../../patterns/anti-corruption-layer.md) to translate between the legacy system and the modern application.\n\n- What is the team structure? Is it easy to communicate with the team responsible for the other bounded context? If not, creating a service that mediates between the two contexts can help to mitigate the cost of cross-team communication.\n\nSo far, the team hasn't considered any nonfunctional requirements. After evaluating the application's throughput needs, the development team creates a separate Ingestion microservice to handle client requests. This microservice implements [load leveling](../../patterns/queue-based-load-leveling.yml) by placing incoming requests into a buffer for processing. The Scheduler then reads requests from the buffer and implements the workflow.\n\nNonfunctional requirements also lead the team to create one more service. The existing services focus on scheduling and delivering packages in real time. However, the system must also store delivery history in long-term storage for data analysis. Initially, the team considered making this task part of the Delivery service. But the data storage requirements for historical analysis differ from the requirements for in-flight operations. For more information, see [Data considerations](../design/data-considerations.md). As a result, the team created a separate Delivery History service. This service listens for DeliveryTracking events from the Delivery service and writes them to long-term storage.\n\nThe following diagram shows the design at this point:\n\n[IMAGE: md_microservices_img017]\n   The diagram has five key sections. A dotted arrow labeled Message queue points from Ingestion service to the Scheduler service. A dotted arrow points from the Supervisor service to the Scheduler service. Five arrows point from the Scheduler service to the following sections: User Account Service, Third-party transportation, Drone scheduling service, Package service, and Delivery service. A dotted arrow points from Delivery service to Delivery history service.\n\n\n*Download a [Visio file](https://arch-center.azureedge.net/microservice-boundaries.vsdx) of this architecture.*",
+      "depth": 1,
+      "metadata": {
+        "file_path": "model/microservice-boundaries-content.md",
+        "parent_title": "Introduction"
+      },
+      "images": [
+        {
+          "id": "md_microservices_img017",
+          "local_path": "images/md_microservices_img017.png",
+          "alt_text": "Drone Delivery microservices design: an Ingestion service feeds a message queue consumed by the Scheduler service (watched by a Supervisor service), which calls User Account, 3rd-party transportation (external), Drone Scheduling, Package, and Delivery services, with Delivery emitting delivery events to a Delivery History service.",
+          "context": "markdown_ref:../images/drone-delivery.png"
+        }
+      ]
+    },
+    {
+      "title": "Use tactical DDD to design microservices",
+      "content": "Domain-driven design (DDD) rejects a single unified model for the entire system. It instead encourages you to divide the system into bounded contexts that each has its own model. The [domain analysis](domain-analysis.md) article covers the strategic phase of DDD. This article continues those steps and applies tactical DDD patterns to define domain models more precisely within their bounded contexts.\n\nIn a microservices architecture, where each bounded context is a microservice candidate, the entity and aggregate patterns matter. Applying these patterns helps identify natural boundaries for the services in your application. For more information, see [Identify microservice boundaries](./microservice-boundaries.yml). As a general principle, design a microservice to be no smaller than an aggregate and no larger than a bounded context.\n\nThis article reviews the tactical patterns and then applies them to the shipping bounded context in the Drone Delivery application.",
+      "depth": 0,
+      "metadata": {
+        "file_path": "model/tactical-domain-driven-design.md"
+      }
+    },
+    {
+      "title": "Overview of the tactical patterns",
+      "content": "This section summarizes the tactical DDD patterns. If you're familiar with DDD, you can continue to the next section. These patterns appear in Eric Evans' *Domain-Driven Design*, the book that introduced the term. Another practical, modern reference is *Learning Domain-Driven Design* by Vlad Khononov.\n\n[IMAGE: md_microservices_img018]\n   The diagram has five key sections. An arrow points from application service to domain service. One arrow points from domain service to the aggregate section. Another arrow points from domain service to an aggregate section that contains root entity, entity, and value object. A line points from the first aggregate section to the domain event section.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "model/tactical-domain-driven-design.md",
+        "parent_title": "Use tactical DDD to design microservices"
+      },
+      "images": [
+        {
+          "id": "md_microservices_img018",
+          "local_path": "images/md_microservices_img018.png",
+          "alt_text": "DDD tactical-patterns diagram showing a request flowing from an Application service through a Domain service to Aggregates — one expanded to show a root entity with a child entity and value object — and an aggregate publishing a domain event.",
+          "context": "markdown_ref:../images/ddd-patterns.png"
+        }
+      ]
+    },
+    {
+      "title": "Entities",
+      "content": "An entity is an object that has a unique identity that persists over time. For example, in a banking application, customers and accounts are entities.\n\nAn entity has the following characteristics:\n\n- An entity has a unique identifier in the system, which you can use to look up or retrieve the entity.\n\n  - Two entity instances that share the same identity represent the same domain concept, even if their attributes differ at a given point in time. For instance, a person's name or address might change, but they remain the same individual. Conversely, two instances that have identical attributes but different identities are distinct entities.\n\n  - The identifier isn't always exposed directly to users. It can be a globally unique identifier (GUID) or a primary key in a database.\n\n   Choose your identity strategy intentionally. Natural keys, like an order number or a government-issued ID, convey business meaning and are recognized across systems. Surrogate keys, like GUIDs, lack business meaning but avoid coupling to external systems. In a microservices architecture, other services reference entities by their identifiers, so the identity must remain stable and meaningful across service boundaries. An identity can span multiple bounded contexts and might persist beyond the lifetime of the application.\n\n- Entities should encapsulate behavior, not only carry data. When business logic lives outside the entity in service classes, you create an *anemic domain model*. That antipattern undermines the benefit of DDD, which is to express business rules inside the domain model. Put validation, state transitions, and business rules inside the entity. For example, a `Delivery` entity should contain the logic to determine whether you can cancel it, rather than delegate that decision to an external service.",
+      "depth": 2,
+      "metadata": {
+        "file_path": "model/tactical-domain-driven-design.md",
+        "parent_title": "Overview of the tactical patterns"
+      }
+    },
+    {
+      "title": "Value objects",
+      "content": "A value object has no identity. It's defined only by the values of its attributes. Two value objects that have the same attribute values are interchangeable. Common examples include colors, dates and times, currency amounts, and measurements.\n\n- Value objects are immutable. To update a value object, you create a new instance to replace the old instance. You can share immutable objects across threads, cache them without defensive copying, and reason about them more easily in distributed systems.\n\n- Value objects can include methods that encapsulate domain logic, but those methods shouldn't produce side effects. They return new value objects instead.\n\nPrefer value objects as your default modeling choice. Only promote a concept to an entity when you need to track its identity over time. For example, an `Address` is typically a value object because two addresses with the same street, city, and postal code are interchangeable. But if your domain must track a specific address record over time, like for audit purposes, then it becomes an entity.",
+      "depth": 2,
+      "metadata": {
+        "file_path": "model/tactical-domain-driven-design.md",
+        "parent_title": "Overview of the tactical patterns"
+      }
+    },
+    {
+      "title": "Aggregates",
+      "content": "An aggregate defines a consistency boundary around one or more entities. Exactly one entity in an aggregate is the root. Lookup is done by using the root entity's identifier. Any other entities in the aggregate are children of the root, and are referenced by following pointers from the root.\n\nUse aggregates to model transactional invariants. Real-world domains contain complex relationships. Customers create orders, orders contain products, and products have suppliers. When the application modifies several related objects, it must enforce consistency and uphold the required invariants.\n\nTraditional applications typically enforce consistency through database transactions. In a distributed application, that approach doesn't work across boundaries. A single business transaction might span multiple data stores, run for a long time, or involve non-Microsoft services. The application must enforce the invariants that the domain, not the data layer, requires. Aggregates model that responsibility.\n\n> **Note:**\n> An aggregate can consist of a single entity without child entities. What makes it an aggregate is the transactional boundary.\n\nWhen you design aggregates, follow these rules:\n\n- **Design small aggregates.** Include only the data that must remain consistent within a single transaction. In the drone delivery example, `Delivery`, `Package`, `Drone`, and `Account` each form separate aggregates because they have independent life cycles. When you combine them, you force unrelated updates to compete for the same locks.\n\n- **Reference other aggregates by identity only.** The `Delivery` aggregate stores a `DroneId` and a `PackageId`, not direct references to those objects. This decoupling maps directly to microservice boundaries.\n\n- **Use eventual consistency across aggregates.** When a business process spans multiple aggregates, use domain events rather than a single transaction. When a delivery completes, the `Delivery` aggregate raises a `DeliveryCompleted` event that other services react to asynchronously.",
+      "depth": 2,
+      "metadata": {
+        "file_path": "model/tactical-domain-driven-design.md",
+        "parent_title": "Overview of the tactical patterns"
+      }
+    },
+    {
+      "title": "Domain and application services",
+      "content": "In DDD terminology, a service is a stateless object that implements logic that doesn't naturally belong to an entity or value object.\n\n> **Tip:**\n> The term *service* has multiple meanings in software development. The definition in this article doesn't directly relate to microservices.\n\nDDD defines the following two types of services:\n\n- **Domain services** encapsulate business rules that span multiple entities or aggregates. In the shipping bounded context, the `Scheduler` functions as a domain service because the scheduling logic involves business rules about drone availability, delivery windows, and route optimization that don't belong to any single entity.\n\n- **Application services** orchestrate use cases. They coordinate calls to domain services and repositories, manage transactions, and handle concerns like user authentication or SMS notifications. They contain no business logic themselves. An API endpoint that receives a delivery request, calls the `Scheduler`, and returns the result is an application service.",
+      "depth": 2,
+      "metadata": {
+        "file_path": "model/tactical-domain-driven-design.md",
+        "parent_title": "Overview of the tactical patterns"
+      }
+    },
+    {
+      "title": "Domain events",
+      "content": "Domain events are domain-significant changes. For example, *a record was inserted into a table* doesn't qualify as a domain event, but *a delivery was canceled* does. Aggregates raise domain events after they change state, and these events function as the primary way to coordinate work across aggregate boundaries.\n\nIn a microservices architecture, domain events must sometimes cross microservice boundaries. Internal domain events stay within a bounded context. The system publishes integration events asynchronously through a message broker after the transaction that originated them commits. For example, when the shipping bounded context completes a delivery, it publishes a `DeliveryCompleted` integration event that the accounts bounded context consumes to trigger invoices. For more information about asynchronous messages, see [Interservice communication](../design/interservice-communication.yml).",
+      "depth": 2,
+      "metadata": {
+        "file_path": "model/tactical-domain-driven-design.md",
+        "parent_title": "Overview of the tactical patterns"
+      }
+    },
+    {
+      "title": "Other patterns",
+      "content": "Other DDD patterns not covered in this article include factories, repositories, and modules. These patterns matter when you implement a microservice, but this article focuses on the patterns that help you identify microservice boundaries.",
+      "depth": 2,
+      "metadata": {
+        "file_path": "model/tactical-domain-driven-design.md",
+        "parent_title": "Overview of the tactical patterns"
+      }
+    },
+    {
+      "title": "Drone delivery: Apply the patterns",
+      "content": "The shipping bounded context must handle the following scenarios:\n\n- A customer requests a drone to pick up goods from a business registered with the drone delivery service.\n\n- The sender generates a tag with a barcode or RFID to put on the package.\n\n- A drone picks up and delivers a package from the source location to the destination location.\n\n- When a customer schedules a delivery, the system provides an ETA based on route information, weather conditions, and historical data.\n\n- When the drone is in flight, a user tracks the current location and the latest ETA.\n\n- The customer can cancel a delivery until a drone picks up the package.\n\n- The system notifies the customer when the delivery completes.\n\n- The sender can request delivery confirmation from the customer, in the form of a signature or fingerprint.\n\n- Users can look up the history of a completed delivery.\n\nFrom these scenarios, the development team identifies the following entities:\n\n- `Delivery`\n- `Package`\n- `Drone`\n- `Account`\n- `Confirmation`\n- `Notification`\n- `Tag`\n\nAggregates like `Delivery`, `Package`, `Drone`, and `Account` each define their own transactional consistency boundaries. Each aggregate has its own independent life cycle and a different part of the system manages it. For example, you can create, update, and complete a delivery without a transaction that locks the drone or account. The `Confirmation` and `Notification` entities function as child entities of `Delivery` entities because they don't exist independently. The `Tag` entities function as child entities of `Package` entities for the same reason.\n\nThe value objects in this design include `Location`, `ETA`, `PackageWeight`, and `PackageSize`. These objects lack identity and don't get tracked over time.\n\nThe following unified modeling language (UML) diagram shows the `Delivery` aggregate. It references other aggregates like `Account`, `Package`, and `Drone` by identity only.\n\n[IMAGE: md_microservices_img019]\n   The image contains a delivery header. Below the header are the following terms: ID string, OwnerID: REF, Pickup: Location, Drop-off: Location, Packages: REF, Expedited: BOOLEAN, Confirmation: Confirmation, and DroneId: REF. Three lines connect this section to the terms account, package, and drone.\n\n\nThe design includes two domain events:\n\n- While a drone is in flight, the `Drone` entity sends `DroneStatus` events that describe the drone's location and status, like in-flight or landed.\n\n- The `Delivery` entity sends `DeliveryTracking` events when the stage of a delivery changes. The `DeliveryTracking` events include `DeliveryCreated`, `DeliveryRescheduled`, `DeliveryHeadedToDropoff`, and `DeliveryCompleted`.\n\nThese events describe meaningful domain occurrences that matter in the domain model. They represent domain-level occurrences and don't depend on any specific programming language construct.\n\nThe development team identifies one area of functionality that doesn't fit within the entities described so far. A component must coordinate all steps to schedule or update a delivery. The team adds the following two domain services to the design:\n\n- A `Scheduler` that coordinates the steps\n\n- A `Supervisor` that monitors the status of each step to detect failures or timeouts\n\nThis approach is a variation of the [Scheduler Agent Supervisor pattern](../../patterns/scheduler-agent-supervisor.yml).\n\n[IMAGE: md_microservices_img020]\n   The image contains 11 key sections. An arrow labeled observes points from supervisor to scheduler. An arrow points from scheduler to drone. A double-sided arrow labeled coordinates points from account to delivery. An arrow points from coordinates to package. A smaller arrow points from package to tag. A dotted arrow labeled drone status points from drone to delivery. Two smaller arrows point from delivery to confirmation and notification. A dotted line connects delivery and delivery status.",
+      "depth": 1,
+      "metadata": {
+        "file_path": "model/tactical-domain-driven-design.md",
+        "parent_title": "Use tactical DDD to design microservices"
+      },
+      "images": [
+        {
+          "id": "md_microservices_img019",
+          "local_path": "images/md_microservices_img019.png",
+          "alt_text": "UML-style class box for the Delivery entity listing attributes (Id, OwnerId, Pickup and Dropoff locations, Packages REF, Expedited boolean, Confirmation, DroneId) with association multiplicities to Account (1), Package (1..*), and Drone (0..1).",
+          "context": "markdown_ref:../images/delivery-entity.png"
+        },
+        {
+          "id": "md_microservices_img020",
+          "local_path": "images/md_microservices_img020.png",
+          "alt_text": "Domain relationship diagram for drone delivery: a Supervisor observes the Scheduler, which coordinates the Account, Package (with Tag), Drone, and Delivery aggregates; Drone emits DroneStatus messages consumed by Delivery, which holds Confirmation and Notification and emits DeliveryStatus.",
+          "context": "markdown_ref:../images/drone-ddd.png"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "total_sections": 104,
+    "total_tokens": 19822,
+    "total_images": 21,
+    "file_count": 11,
+    "extracted_at": "2026-06-10T18:42:09.362846+00:00"
+  },
+  "images": [
+    {
+      "id": "md_microservices_img000",
+      "local_path": "images/md_microservices_img000.png",
+      "mime_type": "image/png",
+      "size_bytes": 35435,
+      "width": 0,
+      "height": 0,
+      "alt_text": "Comparison of release flows: in a monolith, Teams A-D all feed one release candidate where any team's failure blocks production, while with microservices each team has its own independent release-to-production pipeline so only Team B's release is blocked.",
+      "educational_value": "high"
+    },
+    {
+      "id": "md_microservices_img001",
+      "local_path": "images/md_microservices_img001.png",
+      "mime_type": "image/png",
+      "size_bytes": 34394,
+      "width": 0,
+      "height": 0,
+      "alt_text": "Sequence-style diagram of a client device sending HTTP POST (202 Accepted) to a Scheduler service, which orchestrates HTTP GET to a User Accounts service (200 OK) and HTTP PUT to Package and Delivery services (201 Created).",
+      "educational_value": "high"
+    },
+    {
+      "id": "md_microservices_img002",
+      "local_path": "images/md_microservices_img002.png",
+      "mime_type": "image/png",
+      "size_bytes": 8812,
+      "width": 0,
+      "height": 0,
+      "alt_text": "Simple diagram of the repository pattern: a GetDrone() call goes to a Drone Repository which reads from a data store and returns a Drone domain entity.",
+      "educational_value": "medium"
+    },
+    {
+      "id": "md_microservices_img003",
+      "local_path": "images/md_microservices_img003.png",
+      "mime_type": "image/png",
+      "size_bytes": 23192,
+      "width": 0,
+      "height": 0,
+      "alt_text": "Diagram of the Scheduler Service calling GET /api/drone on the Drone Service, whose internal HTTP request handler and repository fetch the Drone entity from a data store and return it serialized as JSON over the service boundary.",
+      "educational_value": "high"
+    },
+    {
+      "id": "md_microservices_img004",
+      "local_path": "images/md_microservices_img004.png",
+      "mime_type": "image/png",
+      "size_bytes": 13483,
+      "width": 0,
+      "height": 0,
+      "alt_text": "Two API versioning strategies side by side: a single service exposing both v1 and v2 interfaces to v1 and v2 clients, versus side-by-side deployment where separate v1 and v2 service instances each serve their matching client.",
+      "educational_value": "high"
+    },
+    {
+      "id": "md_microservices_img005",
+      "local_path": "images/md_microservices_img005.png",
+      "mime_type": "image/png",
+      "size_bytes": 4291,
+      "width": 0,
+      "height": 0,
+      "alt_text": "Database-per-service illustration: Service A writes to its own private data store while a red X blocks Service B from reading that store directly.",
+      "educational_value": "high"
+    },
+    {
+      "id": "md_microservices_img006",
+      "local_path": "images/md_microservices_img006.svg",
+      "mime_type": "image/svg+xml",
+      "size_bytes": 88563,
+      "width": 0,
+      "height": 0,
+      "alt_text": "Data considerations diagram for the Drone Delivery application: Gateway, Ingestion, and Scheduler fan out to Account, 3rd Party Transport, Package, Drone, and Delivery services, with each service using its own storage technology (Cosmos DB for Package and Delivery History, Redis cache for Delivery, blob storage for history), illustrating polyglot persistence.",
+      "educational_value": "high"
+    },
+    {
+      "id": "md_microservices_img007",
+      "local_path": "images/md_microservices_img007.png",
+      "mime_type": "image/png",
+      "size_bytes": 83621,
+      "width": 0,
+      "height": 0,
+      "alt_text": "API gateway architecture diagram: client apps connect over TLS to an API gateway (platform or custom) that performs routing, aggregation, TLS offloading/mTLS, and response caching for Services A and B, with dotted links to an identity provider for authentication and a monitoring component for logging and metrics.",
+      "educational_value": "high"
+    },
+    {
+      "id": "md_microservices_img008",
+      "local_path": "images/md_microservices_img008.png",
+      "mime_type": "image/png",
+      "size_bytes": 14290,
+      "width": 0,
+      "height": 0,
+      "alt_text": "Interservice communication map of the Drone Delivery app with a legend distinguishing REST API calls (solid arrows) from events (dashed): Ingestion sends events to the Scheduler, which calls Account, 3rd Party Transport, Package, Drone, and Delivery via REST, while Delivery emits events to Delivery History and the Supervisor listens via events.",
+      "educational_value": "high"
+    },
+    {
+      "id": "md_microservices_img009",
+      "local_path": "images/md_microservices_img009.png",
+      "mime_type": "image/png",
+      "size_bytes": 20723,
+      "width": 0,
+      "height": 0,
+      "alt_text": "Compensating-transaction (saga) diagram: the Scheduler's calls to Account, 3rd Party Transport, and Drone succeed (OK) but the Package call fails, so a Supervisor reads from a shared message queue and sends Cancel commands to the services that had succeeded.",
+      "educational_value": "high"
+    },
+    {
+      "id": "md_microservices_img010",
+      "local_path": "images/md_microservices_img010.png",
+      "mime_type": "image/png",
+      "size_bytes": 29740,
+      "width": 0,
+      "height": 0,
+      "alt_text": "Azure architecture diagram of a web app in a multiple-container AKS cluster: users reach an Application Gateway routing to three nodes that host reverse proxy and Service A/B containers, all managed by an orchestrator (Azure Kubernetes Service) operated by DevOps.",
+      "educational_value": "high"
+    },
+    {
+      "id": "md_microservices_img011",
+      "local_path": "images/md_microservices_img011.png",
+      "mime_type": "image/png",
+      "size_bytes": 86766,
+      "width": 0,
+      "height": 0,
+      "alt_text": "Detailed container topology diagram: an API gateway routes through two reverse proxy containers to service layers for Microservices A and B, each with multiple containers (including an auto-scaled new instance, an unhealthy instance being bypassed, and a replacement healthy instance) backed by separate Azure Cosmos DB cluster databases.",
+      "educational_value": "high"
+    },
+    {
+      "id": "md_microservices_img012",
+      "local_path": "images/md_microservices_img012.png",
+      "mime_type": "image/png",
+      "size_bytes": 436621,
+      "width": 0,
+      "height": 0,
+      "alt_text": "Composite Azure design-patterns diagram showing a client application reaching a microservices application through Strangler Fig and an API gateway (offloading, routing, aggregation), with Backends for Frontends for desktop and mobile, a Sidecar, an event bus between services, and an Anti-corruption layer in front of a legacy system.",
+      "educational_value": "high"
+    },
+    {
+      "id": "md_microservices_img013",
+      "local_path": "images/md_microservices_img013.png",
+      "mime_type": "image/png",
+      "size_bytes": 13618,
+      "width": 0,
+      "height": 0,
+      "alt_text": "Four-step domain-driven design process flow: analyze domain, define bounded contexts, define entities, aggregates, and services, then identify microservices.",
+      "educational_value": "high"
+    },
+    {
+      "id": "md_microservices_img014",
+      "local_path": "images/md_microservices_img014.svg",
+      "mime_type": "image/svg+xml",
+      "size_bytes": 202782,
+      "width": 0,
+      "height": 0,
+      "alt_text": "Hand-drawn style domain model bubble map for the drone delivery business with Shipping at the center connected to subdomains such as Drone management, Accounts, Invoicing, Returns, Video surveillance, Drone sharing, Predictive analysis, Drone repair, Third party, Call center, Loyalty, User rating, and ETA analysis.",
+      "educational_value": "high"
+    },
+    {
+      "id": "md_microservices_img015",
+      "local_path": "images/md_microservices_img015.svg",
+      "mime_type": "image/svg+xml",
+      "size_bytes": 42940,
+      "width": 0,
+      "height": 0,
+      "alt_text": "Bounded-context map of the drone delivery domain with dashed boundary lines grouping Shipping, Drone management, Video surveillance, Drone sharing, and Accounts, while Third-party transportation and Call center are shaded and labeled as external systems.",
+      "educational_value": "high"
+    },
+    {
+      "id": "md_microservices_img016",
+      "local_path": "images/md_microservices_img016.png",
+      "mime_type": "image/png",
+      "size_bytes": 25091,
+      "width": 0,
+      "height": 0,
+      "alt_text": "Diagram of the Shipping bounded context containing Scheduler, Package, Delivery, and Delivery history, with the Scheduler also calling out to Accounts, Third-party transportation, and Drone management outside the context boundary.",
+      "educational_value": "high"
+    },
+    {
+      "id": "md_microservices_img017",
+      "local_path": "images/md_microservices_img017.png",
+      "mime_type": "image/png",
+      "size_bytes": 115853,
+      "width": 0,
+      "height": 0,
+      "alt_text": "Drone Delivery microservices design: an Ingestion service feeds a message queue consumed by the Scheduler service (watched by a Supervisor service), which calls User Account, 3rd-party transportation (external), Drone Scheduling, Package, and Delivery services, with Delivery emitting delivery events to a Delivery History service.",
+      "educational_value": "high"
+    },
+    {
+      "id": "md_microservices_img018",
+      "local_path": "images/md_microservices_img018.png",
+      "mime_type": "image/png",
+      "size_bytes": 6864,
+      "width": 0,
+      "height": 0,
+      "alt_text": "DDD tactical-patterns diagram showing a request flowing from an Application service through a Domain service to Aggregates — one expanded to show a root entity with a child entity and value object — and an aggregate publishing a domain event.",
+      "educational_value": "high"
+    },
+    {
+      "id": "md_microservices_img019",
+      "local_path": "images/md_microservices_img019.png",
+      "mime_type": "image/png",
+      "size_bytes": 6561,
+      "width": 0,
+      "height": 0,
+      "alt_text": "UML-style class box for the Delivery entity listing attributes (Id, OwnerId, Pickup and Dropoff locations, Packages REF, Expedited boolean, Confirmation, DroneId) with association multiplicities to Account (1), Package (1..*), and Drone (0..1).",
+      "educational_value": "high"
+    },
+    {
+      "id": "md_microservices_img020",
+      "local_path": "images/md_microservices_img020.png",
+      "mime_type": "image/png",
+      "size_bytes": 31021,
+      "width": 0,
+      "height": 0,
+      "alt_text": "Domain relationship diagram for drone delivery: a Supervisor observes the Scheduler, which coordinates the Account, Package (with Tag), Drone, and Delivery aggregates; Drone emits DroneStatus messages consumed by Delivery, which holds Confirmation and Notification and emits DeliveryStatus.",
+      "educational_value": "high"
+    }
+  ]
+}

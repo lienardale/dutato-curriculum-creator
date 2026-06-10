@@ -1,0 +1,357 @@
+{
+  "concepts": [
+    {
+      "name": "What Software Architecture Is",
+      "sources": ["clean-architecture.json", "architecture-styles.json"],
+      "coverage": "strong",
+      "prerequisites": [],
+      "notes": "Design vs architecture, behaviour vs structure as the two values of software, architecture's goals (facilitate development, deployment, operation, maintenance), keeping options open. Clean Architecture book summary is the primary source; architecture-styles adds the 'styles as constraints' framing."
+    },
+    {
+      "name": "Programming Paradigms as Architectural Tools",
+      "sources": ["clean-architecture.json"],
+      "coverage": "moderate",
+      "prerequisites": ["What Software Architecture Is"],
+      "notes": "Structured programming, OO (encapsulation/inheritance/polymorphism, dependency inversion as OO's architectural superpower), functional immutability and event sourcing. Single source but coherent treatment."
+    },
+    {
+      "name": "SOLID Design Principles",
+      "sources": ["clean-architecture.json", "modern-web-apps.json"],
+      "coverage": "strong",
+      "prerequisites": ["Programming Paradigms as Architectural Tools"],
+      "notes": "SRP, OCP, LSP, ISP, DIP from the book summary; modern-web-apps' 'Architectural principles' adds separation of concerns, encapsulation, explicit dependencies, DRY, persistence ignorance, bounded contexts. Some SRP subsections in the summary are placeholder-thin (1-9 words) — synthesis happens at exercise/objective level, content stays source-faithful."
+    },
+    {
+      "name": "Component Principles",
+      "sources": ["clean-architecture.json"],
+      "coverage": "moderate",
+      "prerequisites": ["SOLID Design Principles"],
+      "notes": "Component cohesion (REP, CCP, CRP), the tension diagram, coupling (ADP, SDP, SAP), stability and abstraction metrics. Single source, summary-level depth."
+    },
+    {
+      "name": "Layers, Boundaries, and Policy",
+      "sources": ["clean-architecture.json"],
+      "coverage": "strong",
+      "prerequisites": ["SOLID Design Principles"],
+      "notes": "Vertical/horizontal layers, decoupling modes, drawing boundary lines, boundary anatomy and crossing, policy and level, business rules (entities vs use cases), screaming architecture, plugin architecture."
+    },
+    {
+      "name": "The Clean Architecture Pattern",
+      "sources": ["clean-architecture.json", "modern-web-apps.json"],
+      "coverage": "strong",
+      "prerequisites": ["Layers, Boundaries, and Policy"],
+      "notes": "The concentric-circles model, Dependency Rule, the four layers, crossing boundaries, Humble Object, partial boundaries, when (not) to use it, web application example with sample code. modern-web-apps gives the ASP.NET Core organization of the same pattern — strong two-source coverage."
+    },
+    {
+      "name": "Architectural Details: Database, Web, Frameworks",
+      "sources": ["clean-architecture.json"],
+      "coverage": "moderate",
+      "prerequisites": ["The Clean Architecture Pattern"],
+      "notes": "'The database is a detail', 'the web is a detail', frameworks as an asymmetric marriage, package-by-layer/feature/component strategies, case study. Distinctive Clean Architecture material rounding out the book."
+    },
+    {
+      "name": "Monoliths, Layered (N-tier) Architecture",
+      "sources": ["modern-web-apps.json", "architecture-styles.json"],
+      "coverage": "strong",
+      "prerequisites": ["What Software Architecture Is"],
+      "notes": "All-in-one apps, what layers are, traditional N-layer apps, monoliths in containers; N-tier style page with when-to-use/benefits/challenges. Good two-source coverage with different vocabularies (DDD-flavoured vs ops-flavoured)."
+    },
+    {
+      "name": "Architecture Styles Catalog",
+      "sources": ["architecture-styles.json"],
+      "coverage": "strong",
+      "prerequisites": ["Monoliths, Layered (N-tier) Architecture"],
+      "notes": "The tour of styles (N-tier, Web-Queue-Worker, Microservices, Event-driven, Big data, Big compute), styles as constraints, challenge/benefit trade-off thinking. Big data and big compute are out of scope for a web-focused curriculum — referenced only in the overview."
+    },
+    {
+      "name": "Event-Driven Architecture",
+      "sources": ["architecture-styles.json", "system-design-primer.json"],
+      "coverage": "moderate",
+      "prerequisites": ["Architecture Styles Catalog", "Asynchronous Processing and Message Queues"],
+      "notes": "Pub/sub vs event streaming, consumer patterns, when to use, challenges (1021w architecture section + 920w challenges). The system-design-primer asynchronism sections complement it."
+    },
+    {
+      "name": "Web-Queue-Worker Architecture",
+      "sources": ["architecture-styles.json"],
+      "coverage": "moderate",
+      "prerequisites": ["Architecture Styles Catalog"],
+      "notes": "Simple cloud-native style bridging monoliths and microservices; pairs naturally with background-jobs best practices from api-best-practices.json."
+    },
+    {
+      "name": "Microservices Fundamentals",
+      "sources": ["architecture-styles.json", "system-design-primer.json", "clean-architecture.json"],
+      "coverage": "strong",
+      "prerequisites": ["Architecture Styles Catalog", "Layers, Boundaries, and Policy"],
+      "notes": "What microservices are, components, benefits/challenges/best practices/antipatterns. Clean Architecture's 'Services: Great and Small' provides a valuable critical counterpoint (decoupling hype, services by functional decomposition pitfall)."
+    },
+    {
+      "name": "Domain Analysis and DDD for Microservices",
+      "sources": ["microservices-design.json", "modern-web-apps.json"],
+      "coverage": "strong",
+      "prerequisites": ["Microservices Fundamentals"],
+      "notes": "Strategic DDD (domain analysis, bounded contexts), tactical DDD (entities, value objects, aggregates, domain services/events), drone-delivery worked example, microservice boundary derivation. modern-web-apps adds 'should you apply DDD?'."
+    },
+    {
+      "name": "Interservice Communication",
+      "sources": ["microservices-design.json", "system-design-primer.json"],
+      "coverage": "strong",
+      "prerequisites": ["Microservices Fundamentals"],
+      "notes": "Sync vs async messaging trade-offs, service mesh, distributed transactions/saga, RPC vs REST comparison, message encoding formats (JSON, Protobuf, Avro...) from api-best-practices message-encode sections."
+    },
+    {
+      "name": "API Gateways",
+      "sources": ["microservices-design.json"],
+      "coverage": "moderate",
+      "prerequisites": ["Interservice Communication"],
+      "notes": "Gateway routing/aggregation/offloading, options and technology choice. Single source but focused treatment; reverse-proxy sections in system-design-primer are adjacent."
+    },
+    {
+      "name": "RESTful API Design",
+      "sources": ["api-best-practices.json", "microservices-design.json", "system-design-primer.json"],
+      "coverage": "strong",
+      "prerequisites": ["HTTP and Web Protocols"],
+      "notes": "Resource URIs, HTTP methods semantics, pagination/filtering, partial responses, HATEOAS, maturity model, OpenAPI; microservices-design adds REST-to-DDD mapping and idempotency; three-source coverage."
+    },
+    {
+      "name": "API Versioning and Evolution",
+      "sources": ["api-best-practices.json", "microservices-design.json"],
+      "coverage": "strong",
+      "prerequisites": ["RESTful API Design"],
+      "notes": "No/URI/query/header/media-type versioning trade-offs from both sources."
+    },
+    {
+      "name": "Web API Implementation Practices",
+      "sources": ["api-best-practices.json"],
+      "coverage": "strong",
+      "prerequisites": ["RESTful API Design"],
+      "notes": "Idempotent processing, exception handling, client-side caching with ETags, optimistic concurrency, large payloads, async long-running requests, statelessness, throttling, API documentation/SDKs, testing and monitoring a web API. Azure API Management subsections are vendor-specific — referenced selectively."
+    },
+    {
+      "name": "HTTP and Web Protocols",
+      "sources": ["system-design-primer.json"],
+      "coverage": "moderate",
+      "prerequisites": [],
+      "notes": "HTTP, TCP, UDP, RPC, REST fundamentals — the communication groundwork for API design and distributed systems topics."
+    },
+    {
+      "name": "Modern Web Application Architecture",
+      "sources": ["modern-web-apps.json"],
+      "coverage": "strong",
+      "prerequisites": ["Monoliths, Layered (N-tier) Architecture"],
+      "notes": "Characteristics of modern web apps, traditional server-rendered vs SPA decision, Blazor, client-side technology landscape (HTML/CSS/JS, Angular/React/Vue), choosing a SPA framework. Web-only scope per user requirement — no native mobile."
+    },
+    {
+      "name": "Server-Side Web Implementation Patterns (ASP.NET Core)",
+      "sources": ["modern-web-apps.json"],
+      "coverage": "strong",
+      "prerequisites": ["Modern Web Application Architecture", "SOLID Design Principles"],
+      "notes": "MVC and Razor Pages, request routing/filters, dependency injection in practice, feature organization, cross-cutting concerns, security (Identity, authn/authz), deployment. Framework-specific but illustrates the general patterns; treated as the curriculum's concrete implementation case study."
+    },
+    {
+      "name": "Data Access and Persistence in Web Apps",
+      "sources": ["modern-web-apps.json", "system-design-primer.json"],
+      "coverage": "strong",
+      "prerequisites": ["Server-Side Web Implementation Patterns (ASP.NET Core)"],
+      "notes": "EF Core patterns, repository/encapsulation, micro-ORMs, SQL vs NoSQL decision (both sources), NoSQL store types, response/data caching in the app tier."
+    },
+    {
+      "name": "Testing Web Applications",
+      "sources": ["modern-web-apps.json", "clean-architecture.json"],
+      "coverage": "strong",
+      "prerequisites": ["Server-Side Web Implementation Patterns (ASP.NET Core)"],
+      "notes": "Unit/integration/functional tests, testing pyramid, organizing and naming tests; Clean Architecture's test boundary and design-for-testability sections give the architectural rationale."
+    },
+    {
+      "name": "Scalability Fundamentals",
+      "sources": ["system-design-primer.json"],
+      "coverage": "strong",
+      "prerequisites": ["What Software Architecture Is"],
+      "notes": "Performance vs scalability, latency vs throughput, CAP theorem, consistency patterns, availability patterns and the 9s, fail-over modes."
+    },
+    {
+      "name": "Web Infrastructure Building Blocks",
+      "sources": ["system-design-primer.json", "api-best-practices.json"],
+      "coverage": "strong",
+      "prerequisites": ["Scalability Fundamentals", "HTTP and Web Protocols"],
+      "notes": "DNS, CDNs (primer + cdn-content best practices), load balancers L4/L7, reverse proxies, horizontal scaling, application-layer separation and service discovery."
+    },
+    {
+      "name": "Database Scaling and Partitioning",
+      "sources": ["system-design-primer.json", "api-best-practices.json"],
+      "coverage": "strong",
+      "prerequisites": ["Web Infrastructure Building Blocks", "Data Access and Persistence in Web Apps"],
+      "notes": "Replication (master-slave/master-master), federation, sharding, denormalization, SQL tuning from the primer; horizontal/vertical/functional partitioning design from best practices."
+    },
+    {
+      "name": "Caching Strategies",
+      "sources": ["system-design-primer.json", "api-best-practices.json", "modern-web-apps.json"],
+      "coverage": "strong",
+      "prerequisites": ["Web Infrastructure Building Blocks"],
+      "notes": "Cache levels (client, CDN, web server, database, application), update patterns (cache-aside, write-through, write-behind, refresh-ahead), expiration/invalidation, concurrency, eventual consistency. Azure Managed Redis subsections are vendor-specific — used selectively for the cache-aside implementation example."
+    },
+    {
+      "name": "Asynchronous Processing and Message Queues",
+      "sources": ["system-design-primer.json", "api-best-practices.json"],
+      "coverage": "strong",
+      "prerequisites": ["Web Infrastructure Building Blocks"],
+      "notes": "Message queues, task queues, back pressure from the primer; background-jobs best practices (triggers, idempotency, partitioning, coordination, reliability) from best practices."
+    },
+    {
+      "name": "The Twelve-Factor Methodology",
+      "sources": ["twelve-factor-app.json"],
+      "coverage": "strong",
+      "prerequisites": ["Modern Web Application Architecture"],
+      "notes": "All 12 factors with full original text. Note: extraction kept the descriptive taglines as section titles (e.g. 'One codebase tracked in revision control, many deploys' = Codebase); topics will restore the canonical factor names."
+    },
+    {
+      "name": "Deployment and Delivery for Distributed Systems",
+      "sources": ["microservices-design.json", "twelve-factor-app.json", "modern-web-apps.json"],
+      "coverage": "strong",
+      "prerequisites": ["Microservices Fundamentals", "The Twelve-Factor Methodology"],
+      "notes": "CI/CD for microservices, monorepo vs multirepo, rolling/blue-green/canary releases, GitOps; container orchestration advantages; 12factor build-release-run underpins it."
+    },
+    {
+      "name": "Resilience and Transient Fault Handling",
+      "sources": ["api-best-practices.json"],
+      "coverage": "strong",
+      "prerequisites": ["Interservice Communication"],
+      "notes": "Why transient faults occur, retry strategies/intervals, antipatterns, circuit-breaker adjacency, testing retry logic. Single source but thorough."
+    },
+    {
+      "name": "Monitoring and Observability",
+      "sources": ["api-best-practices.json", "microservices-design.json"],
+      "coverage": "strong",
+      "prerequisites": ["Deployment and Delivery for Distributed Systems"],
+      "notes": "Health/availability/performance/security/SLA monitoring, instrumentation, the monitoring pipeline, hot/warm/cold analysis, dashboards and alerting; distributed tracing appears in API best practices and compute-options observability."
+    },
+    {
+      "name": "Autoscaling",
+      "sources": ["api-best-practices.json"],
+      "coverage": "moderate",
+      "prerequisites": ["Web Infrastructure Building Blocks", "Monitoring and Observability"],
+      "notes": "Autoscaling components and design considerations; the Azure Monitor walkthrough is vendor-specific and used selectively."
+    },
+    {
+      "name": "Microservices Data Management",
+      "sources": ["microservices-design.json"],
+      "coverage": "strong",
+      "prerequisites": ["Domain Analysis and DDD for Microservices", "Database Scaling and Partitioning"],
+      "notes": "Database-per-service, polyglot persistence, eventual consistency challenges, drone-delivery data store choices."
+    },
+    {
+      "name": "Microservices Compute and Orchestration",
+      "sources": ["microservices-design.json"],
+      "coverage": "moderate",
+      "prerequisites": ["Microservices Fundamentals", "Deployment and Delivery for Distributed Systems"],
+      "notes": "Container orchestration rationale and platform decision factors (interservice communication, independent scaling/deployability, observability, state). Azure platform comparisons are vendor-specific — the decision factors generalize."
+    }
+  ],
+  "gaps": [
+    {
+      "concept": "Web security architecture (OWASP-style threat modeling, OAuth2/OIDC flows in depth)",
+      "severity": "recommended",
+      "suggestion": "Sources cover authentication/authorization in ASP.NET Core, API throttling, and cache data protection, but there is no dedicated security-architecture source. A source like the OWASP Cheat Sheet Series (github.com/OWASP/CheatSheetSeries) would fill this.",
+      "resolution": "user_accepted: network allowlist constrains sources to verified GitHub repos; security is covered at moderate depth via modern-web-apps Security sections and API best practices (throttling, protecting cached data). Flagged for a future curriculum iteration."
+    },
+    {
+      "concept": "Architecture documentation and decision records (C4 model, ADRs)",
+      "severity": "nice-to-have",
+      "suggestion": "Could add joelparkerhenderson/architecture-decision-record or the C4 model docs as a small supplementary source.",
+      "resolution": "descoped"
+    },
+    {
+      "concept": "Serverless / FaaS architecture style",
+      "severity": "nice-to-have",
+      "suggestion": "Mentioned in compute options and background-jobs hosting but not treated as a style. Azure Architecture Center has a serverless section that could be added.",
+      "resolution": "descoped"
+    },
+    {
+      "concept": "GraphQL and gRPC in depth",
+      "severity": "nice-to-have",
+      "suggestion": "Both are mentioned (generic data access APIs, RPC) but not covered in depth. Official graphql.github.io / grpc.io docs repos could supplement.",
+      "resolution": "descoped"
+    }
+  ],
+  "concept_order": [
+    "What Software Architecture Is",
+    "Programming Paradigms as Architectural Tools",
+    "SOLID Design Principles",
+    "Component Principles",
+    "Layers, Boundaries, and Policy",
+    "The Clean Architecture Pattern",
+    "Architectural Details: Database, Web, Frameworks",
+    "Monoliths, Layered (N-tier) Architecture",
+    "Architecture Styles Catalog",
+    "Web-Queue-Worker Architecture",
+    "HTTP and Web Protocols",
+    "Modern Web Application Architecture",
+    "Server-Side Web Implementation Patterns (ASP.NET Core)",
+    "Data Access and Persistence in Web Apps",
+    "Testing Web Applications",
+    "RESTful API Design",
+    "API Versioning and Evolution",
+    "Web API Implementation Practices",
+    "Scalability Fundamentals",
+    "Web Infrastructure Building Blocks",
+    "Caching Strategies",
+    "Database Scaling and Partitioning",
+    "Asynchronous Processing and Message Queues",
+    "Event-Driven Architecture",
+    "Microservices Fundamentals",
+    "Domain Analysis and DDD for Microservices",
+    "Microservices Data Management",
+    "Interservice Communication",
+    "API Gateways",
+    "Microservices Compute and Orchestration",
+    "The Twelve-Factor Methodology",
+    "Deployment and Delivery for Distributed Systems",
+    "Resilience and Transient Fault Handling",
+    "Monitoring and Observability",
+    "Autoscaling"
+  ],
+  "coverage_summary": "Seven GitHub-hosted sources give strong, multi-perspective coverage of the requested scope: principles (SOLID, component principles), Clean Architecture, architectural styles, microservices (design, DDD, communication, data, CI/CD), web implementation technologies (ASP.NET Core as the concrete stack, SPA-vs-traditional, client-side landscape), API design/implementation, scalability building blocks (caching, partitioning, queues, CDNs, load balancing), and cloud-native operations (twelve-factor, resilience, monitoring, autoscaling). Microsoft sources carry some Azure-specific subsections which are used selectively; system-design-primer carries interview-prep meta sections which are deliberately not mapped into topics. Total ~150k tokens of source material — appropriate for an 'extensive' variant.",
+  "per_source_analysis": {
+    "clean-architecture.json": {
+      "section_count": 161,
+      "key_concepts": ["design vs architecture", "programming paradigms", "SOLID", "component cohesion and coupling", "boundaries", "the Dependency Rule", "Clean Architecture layers", "Humble Object", "services great and small", "database/web/frameworks as details"],
+      "quality": 4,
+      "notes": "Faithful chapter-by-chapter summary of Robert C. Martin's book with the book's figures. Some subsections are placeholder-thin (heading + 1-10 words) where the summarizer relied on an image; overall coherent and well-structured. Authoritative for principles and the Clean Architecture pattern."
+    },
+    "system-design-primer.json": {
+      "section_count": 109,
+      "key_concepts": ["performance vs scalability", "CAP theorem", "consistency/availability patterns", "DNS", "CDN", "load balancer", "reverse proxy", "database replication/federation/sharding", "NoSQL types", "cache update patterns", "message queues", "HTTP/TCP/UDP/RPC/REST"],
+      "quality": 4,
+      "notes": "Dense, well-organized reference on scalable system building blocks. Contains interview-prep meta sections (study guide, question banks, company blogs, Anki) that are deliberately left unmapped. Many sections are terse bullet summaries — exercises must lean on the strong conceptual skeleton."
+    },
+    "twelve-factor-app.json": {
+      "section_count": 14,
+      "key_concepts": ["codebase", "dependencies", "config", "backing services", "build/release/run", "stateless processes", "port binding", "concurrency", "disposability", "dev/prod parity", "logs", "admin processes"],
+      "quality": 5,
+      "notes": "The canonical twelve-factor text, complete and unabridged. Section titles are the factor taglines (the roman-numeral factor headings were empty containers); topics restore canonical factor names."
+    },
+    "modern-web-apps.json": {
+      "section_count": 115,
+      "key_concepts": ["architectural principles", "monoliths and layers", "clean architecture in ASP.NET Core", "SPA vs traditional web", "client-side frameworks", "MVC/Razor Pages", "dependency injection", "security", "EF Core", "SQL vs NoSQL", "testing", "deployment"],
+      "quality": 4,
+      "notes": "Microsoft's e-book on architecting modern web apps. ASP.NET Core-specific in implementation chapters but principles generalize; serves as the curriculum's concrete implementation case study. Azure-hosting chapters were excluded at extraction."
+    },
+    "architecture-styles.json": {
+      "section_count": 54,
+      "key_concepts": ["architecture styles as constraints", "N-tier", "Web-Queue-Worker", "microservices", "event-driven", "big data", "big compute"],
+      "quality": 4,
+      "notes": "Azure Architecture Center style catalog with consistent when-to-use/benefits/challenges/best-practices framing per style. Big-compute/big-data pages are out of the web-focused scope and only used via the overview tour."
+    },
+    "microservices-design.json": {
+      "section_count": 78,
+      "key_concepts": ["domain analysis", "bounded contexts", "tactical DDD", "microservice boundaries", "API design and versioning", "API gateways", "interservice communication", "distributed transactions", "data per service", "CI/CD", "orchestration"],
+      "quality": 5,
+      "notes": "The strongest microservices source: complete design methodology with the drone-delivery running example. Azure compute-options chapter is vendor-specific; its decision factors are still teachable."
+    },
+    "api-best-practices.json": {
+      "section_count": 235,
+      "key_concepts": ["RESTful API design", "HTTP method semantics", "HATEOAS", "versioning", "ETags/optimistic concurrency", "throttling", "autoscaling", "background jobs", "caching", "CDN", "data partitioning", "message encoding", "monitoring", "transient fault handling"],
+      "quality": 4,
+      "notes": "Broad best-practices collection. Vendor-neutral guidance dominates; Azure-specific implementation walkthroughs (Azure Monitor autoscale, Azure Managed Redis, API Management) are present and used selectively. The pure-Azure data-partitioning-strategies file was excluded at extraction."
+    }
+  }
+}

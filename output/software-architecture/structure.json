@@ -1,0 +1,3219 @@
+[
+  {
+    "title": "Foundations of Software Architecture",
+    "depth": 0,
+    "sort_order": 0,
+    "description": "What software architecture is, why it matters, the two values of software, and the paradigms and style vocabulary architects work with.",
+    "suggested_level": 1,
+    "learning_objectives": [
+      {
+        "text": "By the end of this topic, you will be able to explain what software architecture is and why structure is as valuable as behaviour.",
+        "bloom_level": "understand"
+      }
+    ],
+    "prerequisites": [],
+    "children": [
+      {
+        "title": "Design, Architecture, and the Two Values",
+        "depth": 1,
+        "sort_order": 0,
+        "description": "Design vs architecture, and the tension between behaviour and structure as the two values every system delivers.",
+        "suggested_level": 1,
+        "learning_objectives": [
+          {
+            "text": "Explain why the distinction between design and architecture is artificial — both form a continuous fabric of decisions.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Compare the two values of software (behaviour and structure) and justify why structure is the greater value over time.",
+            "bloom_level": "evaluate"
+          },
+          {
+            "text": "Identify the symptoms of a system whose architecture has been neglected in favour of feature delivery.",
+            "bloom_level": "remember"
+          }
+        ],
+        "source_sections": [
+          "What is Design and Architecture?",
+          "A tale of two values",
+          "Behaviour",
+          "Architecture (Structure)",
+          "The Greater Value"
+        ]
+      },
+      {
+        "title": "What Good Architecture Enables",
+        "depth": 1,
+        "sort_order": 1,
+        "description": "Architecture's purpose: facilitating development, deployment, operation, and maintenance while keeping options open.",
+        "suggested_level": 1,
+        "learning_objectives": [
+          {
+            "text": "List the four activities good architecture must facilitate: development, deployment, operation, and maintenance.",
+            "bloom_level": "remember"
+          },
+          {
+            "text": "Explain why 'keeping options open' — deferring decisions about details — is the core strategy of good architecture.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Describe how team size changes the architectural pressure on a codebase.",
+            "bloom_level": "understand"
+          }
+        ],
+        "source_sections": [
+          "What is Architecture?",
+          "Facilitate Development",
+          "The Paradox of Small Teams",
+          "Large Teams",
+          "Facilitate Deployment",
+          "Facilitate Operation",
+          "Operation Performance",
+          "Cognitive Load",
+          "Facilitate Maintenance",
+          "Good Architecture: Keeping Options Open"
+        ]
+      },
+      {
+        "title": "Programming Paradigms",
+        "depth": 1,
+        "sort_order": 2,
+        "description": "How structured, object-oriented, and functional programming each remove a capability and what that discipline buys architects.",
+        "suggested_level": 1,
+        "learning_objectives": [
+          {
+            "text": "Summarize how each major paradigm imposes discipline by removing a programming capability.",
+            "bloom_level": "understand"
+          }
+        ],
+        "children": [
+          {
+            "title": "Structured and Object-Oriented Programming",
+            "depth": 2,
+            "sort_order": 0,
+            "description": "Structured programming's testability argument and OO's real architectural gift: safe polymorphism enabling dependency inversion.",
+            "suggested_level": 1,
+            "learning_objectives": [
+              {
+                "text": "Explain why tests can prove a program wrong but never prove it correct, and what that means for falsifiable units.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Assess the claims that OO 'gave us' encapsulation, inheritance, and polymorphism, identifying which one matters architecturally.",
+                "bloom_level": "evaluate"
+              },
+              {
+                "text": "Describe how polymorphism lets a dependency point against the flow of control (dependency inversion).",
+                "bloom_level": "understand"
+              }
+            ],
+            "source_sections": [
+              "Paradigm Overview",
+              "Structured Programming",
+              "Mathematical Proof",
+              "Tests",
+              "Object Oriented Programming",
+              "OO gave us Encapsulation? (not really)",
+              "OO gave us Inheritance? (sort of)",
+              "OO gave us Polymorphism? (sort of, but it made it safe to use)",
+              "Dependency Inversion (this is the important thing)"
+            ]
+          },
+          {
+            "title": "Functional Programming and Immutability",
+            "depth": 2,
+            "sort_order": 1,
+            "description": "Immutability as discipline over assignment, and the practical compromises: segregating mutable components and event sourcing.",
+            "suggested_level": 1,
+            "learning_objectives": [
+              {
+                "text": "Explain why race conditions, deadlocks, and concurrency problems disappear in the absence of mutable state.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Describe the two practical compromises to full immutability: segregation of mutable components and event sourcing.",
+                "bloom_level": "understand"
+              }
+            ],
+            "source_sections": [
+              "Immutability and Architecture",
+              "Compromise 1: Segregation of mutable and immutable components",
+              "Compromise 2: Event Sourcing"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "A Tour of Architecture Styles",
+        "depth": 1,
+        "sort_order": 3,
+        "description": "The catalog of architecture styles — N-tier, Web-Queue-Worker, microservices, event-driven, big data, big compute — and styles as constraints.",
+        "suggested_level": 1,
+        "learning_objectives": [
+          {
+            "text": "Name the major architecture styles and the workload each is suited for.",
+            "bloom_level": "remember"
+          },
+          {
+            "text": "Explain how an architecture style acts as a set of constraints that shape a design and create an opinionated 'grain'.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Given a workload description, choose a candidate architecture style and defend the choice in terms of its benefits and challenges.",
+            "bloom_level": "evaluate"
+          }
+        ],
+        "source_sections": [
+          "Architecture styles",
+          "A quick tour of the styles",
+          "N-tier",
+          "Web-Queue-Worker",
+          "architecture-styles.json::Microservices",
+          "Event-driven architecture",
+          "Big data",
+          "Big compute",
+          "Architecture styles as constraints",
+          "Consider challenges and benefits"
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Design Principles",
+    "depth": 0,
+    "sort_order": 1,
+    "description": "The mid-level principles for arranging code: general architectural principles, SOLID, and the component cohesion/coupling principles.",
+    "suggested_level": 1,
+    "learning_objectives": [
+      {
+        "text": "By the end of this topic, you will be able to apply SOLID and component principles when organizing classes, modules, and components.",
+        "bloom_level": "apply"
+      }
+    ],
+    "prerequisites": [
+      {
+        "topic": "Foundations of Software Architecture",
+        "strength": "required"
+      }
+    ],
+    "children": [
+      {
+        "title": "General Architectural Principles",
+        "depth": 1,
+        "sort_order": 0,
+        "description": "Separation of concerns, encapsulation, dependency inversion, explicit dependencies, single responsibility, DRY, persistence ignorance, and bounded contexts.",
+        "suggested_level": 1,
+        "learning_objectives": [
+          {
+            "text": "Define separation of concerns, encapsulation, DRY, persistence ignorance, and bounded contexts.",
+            "bloom_level": "remember"
+          },
+          {
+            "text": "Explain how the explicit dependencies principle makes classes honest about their collaborators.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Identify violations of these principles in a described codebase and propose corrections.",
+            "bloom_level": "analyze"
+          }
+        ],
+        "source_sections": [
+          "Architectural principles",
+          "Separation of concerns",
+          "Encapsulation",
+          "Dependency inversion",
+          "Explicit dependencies",
+          "Single responsibility",
+          "Don't repeat yourself (DRY)",
+          "Persistence ignorance",
+          "Bounded contexts"
+        ]
+      },
+      {
+        "title": "The SOLID Principles at a Glance",
+        "depth": 1,
+        "sort_order": 1,
+        "description": "What SOLID is for — arranging functions and data into modules and defining their interconnections — and the executive summary of all five principles.",
+        "suggested_level": 1,
+        "learning_objectives": [
+          {
+            "text": "List the five SOLID principles and state each in one sentence.",
+            "bloom_level": "remember"
+          },
+          {
+            "text": "Explain at which level (class/module vs component vs architecture) SOLID applies.",
+            "bloom_level": "understand"
+          }
+        ],
+        "source_sections": [
+          "Design Principles",
+          "Executive Summary"
+        ]
+      },
+      {
+        "title": "The Single Responsibility Principle",
+        "depth": 1,
+        "sort_order": 2,
+        "description": "A module should be responsible to one and only one actor — violation symptoms (accidental duplication, merge conflicts) and remedies.",
+        "suggested_level": 1,
+        "learning_objectives": [
+          {
+            "text": "State the SRP in terms of actors rather than 'doing one thing'.",
+            "bloom_level": "remember"
+          },
+          {
+            "text": "Diagnose accidental duplication and merge-conflict symptoms as SRP violations.",
+            "bloom_level": "analyze"
+          },
+          {
+            "text": "Apply the facade-based refactorings that separate methods serving different actors.",
+            "bloom_level": "apply"
+          }
+        ],
+        "source_sections": [
+          "The Single Responsibility Principle",
+          "Violation of SRP Symptom 1: Accidental duplication",
+          "Violation of SRP Symptom 2: Merge Conflicts",
+          "Solutions to SRP Violations",
+          "Approach 1: Separate all Methods from Data and Introduce a Facade",
+          "Approach 2: Use class as Facade",
+          "Common Objections and Rebuttal"
+        ]
+      },
+      {
+        "title": "The Open-Closed Principle",
+        "depth": 1,
+        "sort_order": 3,
+        "description": "Systems should be open for extension but closed for modification — achieved by separating change reasons into components and protecting by level.",
+        "suggested_level": 1,
+        "learning_objectives": [
+          {
+            "text": "State the OCP and explain its goal: making behaviour extensible without modifying existing code.",
+            "bloom_level": "remember"
+          },
+          {
+            "text": "Explain how component separation, a protection hierarchy, and dependency inversion together enforce the OCP.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Apply the OCP to a described change scenario by proposing which components should be protected from which.",
+            "bloom_level": "apply"
+          }
+        ],
+        "source_sections": [
+          "The Open-Closed Principle",
+          "Idea 1: Separate things that should change for different reasons into `components`",
+          "Idea 2: Create a hierarchy of protection based on the level of the component",
+          "Idea 3: Use dependency inversion to enforce the hierarchy and ensure unidirectional boundaries"
+        ]
+      },
+      {
+        "title": "Liskov Substitution and Interface Segregation",
+        "depth": 1,
+        "sort_order": 4,
+        "description": "Subtypes must be substitutable for their base types, and clients should not depend on things they don't use — at language and architecture level.",
+        "suggested_level": 1,
+        "learning_objectives": [
+          {
+            "text": "Recognize LSP violations from their symptoms (type-checking conditionals, surprising subtype behaviour).",
+            "bloom_level": "analyze"
+          },
+          {
+            "text": "Explain why ISP matters more in statically typed languages and what it means at the architectural level.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Explain the general wisdom of not depending on things that carry baggage you don't need.",
+            "bloom_level": "understand"
+          }
+        ],
+        "source_sections": [
+          "The Liskov Substitution Principle",
+          "Symptoms of LSP violations",
+          "A Possible Solution: Configuration Data",
+          "ISP at the programming language level",
+          "ISP at the architectural level"
+        ]
+      },
+      {
+        "title": "The Dependency Inversion Principle",
+        "depth": 1,
+        "sort_order": 5,
+        "description": "Depend on abstractions, not volatile concretions — coding practices and the abstract factory pattern for managing unavoidable concrete creation.",
+        "suggested_level": 1,
+        "learning_objectives": [
+          {
+            "text": "State the DIP and distinguish volatile concrete classes from stable ones it's safe to depend on.",
+            "bloom_level": "remember"
+          },
+          {
+            "text": "Apply abstract factories to keep source-code dependencies pointing at abstractions when instances must be created.",
+            "bloom_level": "apply"
+          }
+        ],
+        "source_sections": [
+          "The Dependency Inversion Principle",
+          "Coding practice 1: Don't refer to volatile concrete classes",
+          "`Abstract Factories`"
+        ]
+      },
+      {
+        "title": "Component Principles",
+        "depth": 1,
+        "sort_order": 6,
+        "description": "SOLID's bigger sibling: which classes belong together in a component (cohesion) and how components may depend on each other (coupling).",
+        "suggested_level": 1,
+        "learning_objectives": [
+          {
+            "text": "Distinguish component cohesion questions from component coupling questions.",
+            "bloom_level": "understand"
+          }
+        ],
+        "children": [
+          {
+            "title": "Component Cohesion",
+            "depth": 2,
+            "sort_order": 0,
+            "description": "REP, CCP, and CRP, and the tension diagram showing why you can't fully satisfy all three at once.",
+            "suggested_level": 1,
+            "learning_objectives": [
+              {
+                "text": "Define the REP, CCP, and CRP cohesion principles.",
+                "bloom_level": "remember"
+              },
+              {
+                "text": "Explain the tension diagram and how the balance between cohesion principles shifts as a project matures.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Decide which cohesion principle to favour for a project at a given maturity stage.",
+                "bloom_level": "evaluate"
+              }
+            ],
+            "source_sections": [
+              "Component Principles",
+              "What Components Are",
+              "Component Cohesion Principles",
+              "The Reuse / Release Equivalence Principle (REP)",
+              "The Common Closure Principle (CCP)",
+              "The Common Reuse Principle (CRP)",
+              "The Tension Diagram For Component Cohesion"
+            ]
+          },
+          {
+            "title": "Component Coupling and Stability",
+            "depth": 2,
+            "sort_order": 1,
+            "description": "Acyclic dependencies, breaking cycles, and the stable dependencies / stable abstractions principles with their metrics.",
+            "suggested_level": 1,
+            "learning_objectives": [
+              {
+                "text": "Detect a dependency cycle between components and break it using dependency inversion or a new component.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Compute component stability from fan-in/fan-out and explain why dependencies should point toward stability.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Explain the SAP: stable components should be abstract so they can be extended without modification.",
+                "bloom_level": "understand"
+              }
+            ],
+            "source_sections": [
+              "Component Coupling",
+              "The Acyclic Component Dependencies Principle",
+              "Technique 1: Use Dependency Inversion",
+              "Technique 2: Create a new component",
+              "Top-Down Design: The develop-ability VS logical",
+              "The Stable Dependencies Principle (SDP)",
+              "What is Stability?",
+              "Component Stability Metrics",
+              "The Stable Abstractions Principle (SAP)",
+              "Measuring Abstraction and The Main Sequence"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Clean Architecture",
+    "depth": 0,
+    "sort_order": 2,
+    "description": "Layers, boundaries, the Dependency Rule, and the Clean Architecture pattern — including how to apply it in a web application and organize the code.",
+    "suggested_level": 2,
+    "learning_objectives": [
+      {
+        "text": "By the end of this topic, you will be able to design a system around the Dependency Rule with business rules independent of frameworks, UI, and databases.",
+        "bloom_level": "create"
+      }
+    ],
+    "prerequisites": [
+      {
+        "topic": "Design Principles",
+        "strength": "required"
+      }
+    ],
+    "children": [
+      {
+        "title": "Layers and Decoupling",
+        "depth": 1,
+        "sort_order": 0,
+        "description": "Vertical and horizontal layers, independence dimensions, the fear-of-duplication trap, and decoupling modes from source level to services.",
+        "suggested_level": 2,
+        "learning_objectives": [
+          {
+            "text": "Differentiate horizontal layers from vertical slices and what independence each provides.",
+            "bloom_level": "analyze"
+          },
+          {
+            "text": "Compare source-level, deployment-level, and service-level decoupling modes and their costs.",
+            "bloom_level": "analyze"
+          },
+          {
+            "text": "Explain why defaulting to microservices is a pitfall and describe the recommended decoupling-mode progression.",
+            "bloom_level": "understand"
+          }
+        ],
+        "source_sections": [
+          "Vertical and Horizontal Layers and Independence",
+          "Thinking in Layers",
+          "Vertical Layers and Operation Performance",
+          "Layers and Independent Develop-ability",
+          "Layers and Independent Deploy-ability",
+          "The Fear of Duplication Trap",
+          "Decoupling Modes",
+          "The pitfall of micro-services by default",
+          "Uncle Bob's Preferred Decoupling Mode Strategy"
+        ]
+      },
+      {
+        "title": "Boundaries",
+        "depth": 1,
+        "sort_order": 1,
+        "description": "Where to draw architectural lines, what crossing a boundary means physically, and when partial boundaries are the right trade-off.",
+        "suggested_level": 2,
+        "learning_objectives": [
+          {
+            "text": "Decide where to draw boundary lines between core business rules and details.",
+            "bloom_level": "evaluate"
+          }
+        ],
+        "children": [
+          {
+            "title": "Drawing Boundary Lines",
+            "depth": 2,
+            "sort_order": 0,
+            "description": "Boundaries between business rules and the database/GUI, and the plugin architecture as Clean Architecture's foundational idea.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Explain why the database and the GUI are plugins to the business rules, not the other way around.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Apply the plugin-architecture idea to position a new subsystem on the right side of a boundary.",
+                "bloom_level": "apply"
+              }
+            ],
+            "source_sections": [
+              "Boundaries: Drawing Lines",
+              "Which lines do you draw, and when do you draw them?",
+              "The relationship between the database and the business rules",
+              "The role of the GUI in the system",
+              "The Plugin Architecture - The Foundational Idea of Clean Architecture"
+            ]
+          },
+          {
+            "title": "Boundary Anatomy",
+            "depth": 2,
+            "sort_order": 1,
+            "description": "What boundary crossings look like at runtime: monolith function calls, threads, local processes, and services.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Describe the mechanics of boundary crossings in monoliths, across threads, local processes, and services.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Classify a given runtime separation (thread, process, service) by the strength of the boundary it creates.",
+                "bloom_level": "analyze"
+              }
+            ],
+            "source_sections": [
+              "Boundary Anatomy",
+              "What is boundary crossing?",
+              "Boundaries and Monoliths",
+              "Are Threads Boundaries?",
+              "Are Local Processes Boundaries?",
+              "Are Services Boundaries?"
+            ]
+          },
+          {
+            "title": "Partial Boundaries and Their Costs",
+            "depth": 2,
+            "sort_order": 2,
+            "description": "Three ways to build a cheaper, partial boundary and the trade-off between implementing and ignoring boundaries.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Describe the three partial-boundary strategies: source-level decoupling, grouped interfaces, and facades.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Weigh the cost of implementing a full boundary against the risk of ignoring it for a given subsystem.",
+                "bloom_level": "evaluate"
+              }
+            ],
+            "source_sections": [
+              "Partial Boundaries",
+              "Partial Boundary 1: Use Source Level Decoupling Mode",
+              "Partial Boundary 2: Group Service Interfaces or Implementations",
+              "Partial Boundary 3: Reduce Cognitive Load Introducing a Facade",
+              "The Cost of Implementing VS Ignoring Boundaries"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Policy, Level, and Business Rules",
+        "depth": 1,
+        "sort_order": 2,
+        "description": "Policies and their levels, entities vs use cases, request/response models, and architectures that scream their domain.",
+        "suggested_level": 2,
+        "learning_objectives": [
+          {
+            "text": "Define 'level' as distance from inputs/outputs and explain why higher-level policy should not depend on lower-level detail.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Distinguish entities (application-independent rules) from use cases (application-specific rules).",
+            "bloom_level": "analyze"
+          },
+          {
+            "text": "Explain what a 'screaming architecture' reveals about a system's intent and why frameworks should not dominate the top-level structure.",
+            "bloom_level": "understand"
+          }
+        ],
+        "source_sections": [
+          "Policy and Level",
+          "Business Rules",
+          "Entities (Application-independent Business Rules)",
+          "Use Cases (Application-specific Business Rules)",
+          "Requests and Response Models",
+          "Screaming Architecture",
+          "Testable Architectures"
+        ]
+      },
+      {
+        "title": "The Clean Architecture Pattern",
+        "depth": 1,
+        "sort_order": 3,
+        "description": "The concentric-circle model, the Dependency Rule, crossing boundaries with the Humble Object pattern, and a worked web example.",
+        "suggested_level": 2,
+        "learning_objectives": [
+          {
+            "text": "Apply the Dependency Rule to keep all source-code dependencies pointing inward toward higher-level policy.",
+            "bloom_level": "apply"
+          }
+        ],
+        "children": [
+          {
+            "title": "The Dependency Rule and the Four Layers",
+            "depth": 2,
+            "sort_order": 0,
+            "description": "Entities, use cases, interface adapters, and frameworks & drivers — and the rule that all dependencies point inward.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Name the four layers of the Clean Architecture and what belongs in each.",
+                "bloom_level": "remember"
+              },
+              {
+                "text": "Apply the Dependency Rule to decide whether a proposed dependency between two classes is legal.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Explain why the layer count is not fixed at four as long as the Dependency Rule holds.",
+                "bloom_level": "understand"
+              }
+            ],
+            "source_sections": [
+              "The Clean Architecture",
+              "The Dependency Rule",
+              "clean-architecture.json::Entities",
+              "Use Cases",
+              "Interface Adapters",
+              "UI Interface Adapters",
+              "DB Interface Adapters",
+              "External Service Interface Adapters",
+              "Frameworks and Drivers",
+              "Can I use more than four layers?"
+            ]
+          },
+          {
+            "title": "Crossing Boundaries in Practice",
+            "depth": 2,
+            "sort_order": 1,
+            "description": "What data crosses boundaries, the Humble Object pattern, presenters and view models, and where ORMs and external-service calls live.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Explain why simple data structures, not entities or database rows, should cross architectural boundaries.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Apply the Humble Object pattern to split hard-to-test behaviour from testable logic at a boundary.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Place data mappers, ORMs, and external-service calls in the correct Clean Architecture layer.",
+                "bloom_level": "apply"
+              }
+            ],
+            "source_sections": [
+              "Crossing Boundaries",
+              "Which Data Crosses the Boundaries",
+              "The Humble Object Pattern",
+              "More on Presenters and View Models and Views",
+              "Where do Data Mappers and ORMs go?",
+              "Where do calls to external services go?"
+            ]
+          },
+          {
+            "title": "A Clean Web Application Example",
+            "depth": 2,
+            "sort_order": 2,
+            "description": "When to use (and not use) the Clean Architecture, a worked web example with controller, use case, and presenter, and the Main component.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Decide whether the Clean Architecture is warranted for a given project profile.",
+                "bloom_level": "evaluate"
+              },
+              {
+                "text": "Trace a web request through controller, use-case input port, interactor, output port, and presenter.",
+                "bloom_level": "analyze"
+              },
+              {
+                "text": "Explain the role of Main as the ultimate detail and lowest-level component that wires everything together.",
+                "bloom_level": "understand"
+              }
+            ],
+            "source_sections": [
+              "When should I use and not use the Clean Architecture?",
+              "When to use it",
+              "When not to use it",
+              "A web application example",
+              "Sample Code",
+              "The Controller Action",
+              "The Use Case and the Use Case Input and Output Ports",
+              "The Presenter and The View Model",
+              "The Main Component, The Ultimate Detail"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Details: Database, Web, and Frameworks",
+        "depth": 1,
+        "sort_order": 4,
+        "description": "Why the database, the web, and frameworks are details to be kept at arm's length — and how to use frameworks without marrying them.",
+        "suggested_level": 2,
+        "learning_objectives": [
+          {
+            "text": "Argue why the database schema and the web delivery mechanism are details, not the architecture.",
+            "bloom_level": "evaluate"
+          },
+          {
+            "text": "Describe the asymmetric-marriage risk of frameworks and strategies to use them while limiting coupling.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Identify the framework marriages that are practically unavoidable and how to contain them.",
+            "bloom_level": "analyze"
+          }
+        ],
+        "source_sections": [
+          "The Database is a detail",
+          "Relational Databases",
+          "What about performance?",
+          "The Web is a detail",
+          "Frameworks are details",
+          "An asymmetric marriage",
+          "The risks of marrying into a framework",
+          "Use frameworks but do not marry them",
+          "Unavoidable marriages"
+        ]
+      },
+      {
+        "title": "Organizing Code",
+        "depth": 1,
+        "sort_order": 5,
+        "description": "Concrete packaging strategies — by layer, by feature, ports and adapters, by component — and a component-design case study.",
+        "suggested_level": 2,
+        "learning_objectives": [
+          {
+            "text": "Choose a packaging strategy appropriate to a team's enforcement and encapsulation needs.",
+            "bloom_level": "evaluate"
+          }
+        ],
+        "children": [
+          {
+            "title": "Packaging Strategies",
+            "depth": 2,
+            "sort_order": 0,
+            "description": "Package by layer, by feature, ports and adapters, and package by component — trade-offs between organization and encapsulation.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Compare the four packaging strategies and what architectural violations each can or cannot prevent.",
+                "bloom_level": "analyze"
+              },
+              {
+                "text": "Explain how compiler-enforced visibility (rather than convention) keeps an architecture intact.",
+                "bloom_level": "understand"
+              }
+            ],
+            "source_sections": [
+              "The missing chapter - Actual implementation details of an architecture",
+              "Strategy 1: Package by layer",
+              "Strategy 2: Package by feature",
+              "Strategy 3: Ports and adapters",
+              "Strategy 4: Simon Brown's Package by Component",
+              "Trade-offs",
+              "More on the strategies: Organization VS Encapsulation",
+              "Bottom line on the strategies",
+              "Final note"
+            ]
+          },
+          {
+            "title": "Case Study: Video Sales",
+            "depth": 2,
+            "sort_order": 1,
+            "description": "Uncle Bob's worked example: use-case analysis, preliminary component architecture, and dependency-management verification.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Apply the three-step method: identify actors and use cases, sketch a component architecture, verify dependencies.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Verify that a proposed component diagram respects the Dependency Rule and points toward stability.",
+                "bloom_level": "analyze"
+              }
+            ],
+            "source_sections": [
+              "Case Study: Video Sales",
+              "Step 1: Use Case Analysis: Identify the actors and their use cases",
+              "Step 2: Create a Preliminary Component Architecture",
+              "Step 3: Verify the Dependency Management"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Clean Architecture in ASP.NET Core",
+        "depth": 1,
+        "sort_order": 6,
+        "description": "Microsoft's rendition of the onion: Application Core, Infrastructure, and UI projects, and which types belong in each.",
+        "suggested_level": 2,
+        "learning_objectives": [
+          {
+            "text": "Map Clean Architecture layers onto an ASP.NET Core solution's Application Core, Infrastructure, and UI projects.",
+            "bloom_level": "apply"
+          },
+          {
+            "text": "Classify a given type (entity, interface, EF DbContext, controller, view model) into the correct project.",
+            "bloom_level": "analyze"
+          }
+        ],
+        "source_sections": [
+          "Clean architecture",
+          "Organizing code in Clean Architecture",
+          "Application Core",
+          "Application Core types",
+          "Infrastructure",
+          "Infrastructure types",
+          "UI Layer",
+          "UI Layer types"
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Architecture Styles in Practice",
+    "depth": 0,
+    "sort_order": 3,
+    "description": "Monoliths, layered N-tier systems, containers, Web-Queue-Worker, and event-driven architecture — the styles most web systems are built from.",
+    "suggested_level": 1,
+    "learning_objectives": [
+      {
+        "text": "By the end of this topic, you will be able to select and justify an architecture style for a typical web workload.",
+        "bloom_level": "evaluate"
+      }
+    ],
+    "prerequisites": [
+      {
+        "topic": "Foundations of Software Architecture",
+        "strength": "required"
+      }
+    ],
+    "children": [
+      {
+        "title": "Monoliths and Layered Applications",
+        "depth": 1,
+        "sort_order": 0,
+        "description": "All-in-one applications, what layers buy you, and the traditional N-layer architecture with its limits.",
+        "suggested_level": 1,
+        "learning_objectives": [
+          {
+            "text": "Define a monolithic application and describe when single-project, all-in-one apps are appropriate.",
+            "bloom_level": "remember"
+          },
+          {
+            "text": "Explain the benefits and costs of logical layering (UI, business logic, data access) inside a single deployment unit.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Analyze the dependency problem of traditional N-layer designs where business logic depends on data access.",
+            "bloom_level": "analyze"
+          }
+        ],
+        "source_sections": [
+          "Common web application architectures",
+          "What is a monolithic application?",
+          "All-in-one applications",
+          "What are layers?",
+          "Traditional \"N-Layer\" architecture applications"
+        ]
+      },
+      {
+        "title": "Monoliths in Containers",
+        "depth": 1,
+        "sort_order": 1,
+        "description": "Deploying a monolith as a container: Docker support, scaling out container instances, and common troubleshooting.",
+        "suggested_level": 1,
+        "learning_objectives": [
+          {
+            "text": "Explain how containerizing a monolith changes deployment and horizontal scaling without changing the architecture.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Describe the Docker development workflow for a web app and common port/certificate troubleshooting steps.",
+            "bloom_level": "remember"
+          }
+        ],
+        "source_sections": [
+          "Monolithic applications and containers",
+          "Monolithic application deployed as a container",
+          "Docker support",
+          "Troubleshooting Docker problems",
+          "Other web application architectural styles"
+        ]
+      },
+      {
+        "title": "N-Tier Architecture Style",
+        "depth": 1,
+        "sort_order": 2,
+        "description": "Physical tiers, closed vs open layer access, when N-tier fits, and best practices for running it on VMs.",
+        "suggested_level": 1,
+        "learning_objectives": [
+          {
+            "text": "Distinguish logical layers from physical tiers and explain closed-layer vs open-layer designs.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "List the scenarios where N-tier remains the right choice (lift-and-shift, heterogeneous platforms, simple web apps).",
+            "bloom_level": "remember"
+          },
+          {
+            "text": "Evaluate an N-tier deployment against its best practices (load balancing, caching, autoscaling, async messaging).",
+            "bloom_level": "evaluate"
+          }
+        ],
+        "source_sections": [
+          "N-tier architecture style",
+          "N-tier architecture style: When to use this architecture",
+          "N-tier architecture style: Benefits",
+          "N-tier architecture style: Challenges",
+          "N-tier architecture style: Best practices",
+          "N-tier architecture on VMs",
+          "N-tier architecture on VMs: Other considerations"
+        ]
+      },
+      {
+        "title": "Web-Queue-Worker Style",
+        "depth": 1,
+        "sort_order": 3,
+        "description": "A web front end plus a message queue plus a background worker — the simplest cloud-native step beyond a pure monolith.",
+        "suggested_level": 1,
+        "learning_objectives": [
+          {
+            "text": "Describe the Web-Queue-Worker style and the role the queue plays in decoupling front end from background work.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Identify workloads where Web-Queue-Worker is a better fit than microservices.",
+            "bloom_level": "analyze"
+          },
+          {
+            "text": "Apply the style's best practices: stateless web tier, idempotent workers, polyglot persistence kept simple.",
+            "bloom_level": "apply"
+          }
+        ],
+        "source_sections": [
+          "Web-Queue-Worker architecture style",
+          "Web-Queue-Worker architecture style: When to use this architecture",
+          "Web-Queue-Worker architecture style: Benefits",
+          "Web-Queue-Worker architecture style: Challenges",
+          "Web-Queue-Worker architecture style: Best practices",
+          "Web-Queue-Worker on App Service",
+          "Workflow",
+          "Web-Queue-Worker on App Service: Other considerations"
+        ]
+      },
+      {
+        "title": "Event-Driven Architecture Style",
+        "depth": 1,
+        "sort_order": 4,
+        "description": "Producers, consumers, pub/sub vs event streaming, consumer patterns, and the hard parts: ordering, idempotency, and delivery guarantees.",
+        "suggested_level": 1,
+        "learning_objectives": [
+          {
+            "text": "Differentiate pub/sub messaging from event streaming and the consumer patterns each supports.",
+            "bloom_level": "analyze"
+          },
+          {
+            "text": "Identify when event-driven architecture fits: high volume, real-time processing, decoupled producers and consumers.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Explain the delivery-guarantee challenges (at-least-once, ordering, duplicates) and how consumers must compensate.",
+            "bloom_level": "understand"
+          }
+        ],
+        "source_sections": [
+          "Event-driven architecture style",
+          "Architecture",
+          "Event-driven architecture style: When to use this architecture",
+          "Event-driven architecture style: Benefits",
+          "Event-driven architecture style: Challenges",
+          "Event-driven architecture style: Other considerations"
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Web Application Architecture",
+    "depth": 0,
+    "sort_order": 4,
+    "description": "Architecting modern web applications: characteristics, front-end choices (traditional vs SPA), server-side patterns, security, data access, and testing — with ASP.NET Core as the concrete stack.",
+    "suggested_level": 2,
+    "learning_objectives": [
+      {
+        "text": "By the end of this topic, you will be able to architect a maintainable, testable web application from the front end through data access.",
+        "bloom_level": "create"
+      }
+    ],
+    "prerequisites": [
+      {
+        "topic": "Architecture Styles in Practice",
+        "strength": "required"
+      },
+      {
+        "topic": "Design Principles",
+        "strength": "recommended"
+      }
+    ],
+    "children": [
+      {
+        "title": "Modern Web App Characteristics",
+        "depth": 1,
+        "sort_order": 0,
+        "description": "What 'modern' means: cloud-hosted, cross-platform, modular, testable, supporting both traditional and SPA behaviours.",
+        "suggested_level": 2,
+        "learning_objectives": [
+          {
+            "text": "List the characteristics of modern web applications and why each matters for maintainability and scale.",
+            "bloom_level": "remember"
+          },
+          {
+            "text": "Explain how modularity and loose coupling make a web app easier to test and evolve.",
+            "bloom_level": "understand"
+          }
+        ],
+        "source_sections": [
+          "Characteristics of Modern Web Applications",
+          "Reference application: eShopOnWeb",
+          "Cloud-hosted and scalable",
+          "Cross platform",
+          "Modular and loosely coupled",
+          "Easily tested with automated tests",
+          "Traditional and SPA behaviors supported",
+          "Simple development and deployment",
+          "Traditional ASP.NET and Web Forms",
+          "Characteristics of Modern Web Applications: Blazor"
+        ]
+      },
+      {
+        "title": "Front-End Architecture",
+        "depth": 1,
+        "sort_order": 1,
+        "description": "Choosing between server-rendered apps and SPAs, and the client-side technology landscape from HTML/CSS/JS to SPA frameworks.",
+        "suggested_level": 2,
+        "learning_objectives": [
+          {
+            "text": "Choose between a traditional web app, a SPA, or a hybrid based on team skills and UX requirements.",
+            "bloom_level": "evaluate"
+          }
+        ],
+        "children": [
+          {
+            "title": "Traditional Web Apps vs SPAs",
+            "depth": 2,
+            "sort_order": 0,
+            "description": "The decision between server-rendered apps, single-page applications, and Blazor, with a decision table.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "State the conditions favouring traditional web apps (simple client requirements, no-JS support, SEO) vs SPAs (rich UX, exposed API).",
+                "bloom_level": "remember"
+              },
+              {
+                "text": "Use the decision table to recommend traditional, SPA, or Blazor for a described product.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Explain the staffing and tooling costs a SPA adds to a project.",
+                "bloom_level": "understand"
+              }
+            ],
+            "source_sections": [
+              "Choose Between Traditional Web Apps and Single Page Apps (SPAs)",
+              "Choose Between Traditional Web Apps and Single Page Apps (SPAs): Blazor",
+              "When to choose traditional web apps",
+              "When to choose SPAs",
+              "When to choose Blazor",
+              "Decision table",
+              "modern-web-apps.json::Other considerations"
+            ]
+          },
+          {
+            "title": "Client-Side Web Technologies",
+            "depth": 2,
+            "sort_order": 1,
+            "description": "HTML, CSS and preprocessors, JavaScript, and the role of jQuery versus modern SPA frameworks.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Describe the responsibilities of HTML, CSS, and JavaScript in a web client and what CSS preprocessors add.",
+                "bloom_level": "remember"
+              },
+              {
+                "text": "Compare jQuery's DOM-centric model with a SPA framework's data-binding model.",
+                "bloom_level": "analyze"
+              }
+            ],
+            "source_sections": [
+              "Common client-side web technologies",
+              "HTML",
+              "CSS",
+              "CSS preprocessors",
+              "JavaScript",
+              "Legacy web apps with jQuery",
+              "jQuery vs a SPA Framework"
+            ]
+          },
+          {
+            "title": "SPA Frameworks",
+            "depth": 2,
+            "sort_order": 2,
+            "description": "Angular, React, Vue, and Blazor WebAssembly — and how to choose among them, including data flow to WebAssembly clients.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Summarize the architectural models of Angular, React, Vue, and Blazor WebAssembly.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Choose a SPA framework using criteria like team experience, ecosystem maturity, and tooling.",
+                "bloom_level": "evaluate"
+              },
+              {
+                "text": "Describe how a Blazor WebAssembly client obtains data through web APIs.",
+                "bloom_level": "understand"
+              }
+            ],
+            "source_sections": [
+              "Angular SPAs",
+              "React",
+              "Vue",
+              "Blazor WebAssembly",
+              "Choosing a SPA Framework",
+              "Getting data to Blazor WebAssembly apps"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Server-Side Application Patterns",
+        "depth": 1,
+        "sort_order": 2,
+        "description": "MVC and Razor Pages, dependency injection, application structuring, cross-cutting concerns, and security in ASP.NET Core.",
+        "suggested_level": 2,
+        "learning_objectives": [
+          {
+            "text": "Structure a server-side web application with clear request mapping, explicit dependencies, and centralized cross-cutting concerns.",
+            "bloom_level": "apply"
+          }
+        ],
+        "children": [
+          {
+            "title": "MVC and Razor Pages",
+            "depth": 2,
+            "sort_order": 0,
+            "description": "Page-based vs controller-based models, routing requests to responses, thin controllers, and real-time client communication.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Decide between Razor Pages and MVC controllers for a given application's page and API mix.",
+                "bloom_level": "evaluate"
+              },
+              {
+                "text": "Explain routing, model binding, model validation, and filters in the request pipeline.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Apply techniques for keeping controllers thin (mediator-style handlers, pushing logic into services).",
+                "bloom_level": "apply"
+              }
+            ],
+            "source_sections": [
+              "Develop ASP.NET Core MVC apps",
+              "MVC and Razor Pages",
+              "Why Razor Pages?",
+              "When to use MVC",
+              "Mapping requests to responses",
+              "Keeping controllers under control",
+              "Client communication"
+            ]
+          },
+          {
+            "title": "Dependency Injection and Application Structure",
+            "depth": 2,
+            "sort_order": 1,
+            "description": "Declaring dependencies, configuring services, feature-based organization, and handling cross-cutting concerns.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Configure constructor-injected services and explain why explicit dependencies improve testability.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Organize an application by feature folders or areas instead of technical file types.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Identify cross-cutting concerns (logging, caching, validation) and address them with filters or decorators rather than duplication.",
+                "bloom_level": "analyze"
+              }
+            ],
+            "source_sections": [
+              "Working with dependencies",
+              "Declare your dependencies",
+              "Configure services in _Program.cs_",
+              "Configure services in _Startup.cs_",
+              "Structuring the application",
+              "Feature organization",
+              "APIs and Blazor applications",
+              "Cross-cutting concerns"
+            ]
+          },
+          {
+            "title": "Web Application Security",
+            "depth": 2,
+            "sort_order": 2,
+            "description": "Identity management, authentication (including external providers), authorization with roles and claims, and securing web APIs.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Differentiate authentication from authorization and describe where each happens in the request pipeline.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Apply claims- and role-based authorization to protect pages, actions, and APIs.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Explain how token-based authentication secures APIs consumed by SPAs and mobile clients.",
+                "bloom_level": "understand"
+              }
+            ],
+            "source_sections": [
+              "modern-web-apps.json::Security",
+              "Identity",
+              "Configure Identity in _Program.cs_",
+              "Configuring Identity in app startup",
+              "Authentication",
+              "Authentication in Blazor apps",
+              "Authorization",
+              "Claims",
+              "Securing web APIs",
+              "Custom Security"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Data Access",
+        "depth": 1,
+        "sort_order": 3,
+        "description": "EF Core patterns, choosing relational vs NoSQL stores, and caching data within the application.",
+        "suggested_level": 2,
+        "learning_objectives": [
+          {
+            "text": "Design a data-access layer that encapsulates persistence behind abstractions and matches the store to the workload.",
+            "bloom_level": "create"
+          }
+        ],
+        "children": [
+          {
+            "title": "Entity Framework Core Patterns",
+            "depth": 2,
+            "sort_order": 0,
+            "description": "DbContext lifetime, configuration, fetching and storing data, loading related data, encapsulation with repositories, and resilient connections.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Explain DbContext scoping and why request-scoped contexts suit web applications.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Compare eager, explicit, and lazy loading of related data and their pitfalls in web apps.",
+                "bloom_level": "analyze"
+              },
+              {
+                "text": "Encapsulate data access behind repository-style abstractions with connection resiliency for transient failures.",
+                "bloom_level": "apply"
+              }
+            ],
+            "source_sections": [
+              "Working with Data in ASP.NET Core Apps",
+              "Entity Framework Core (for relational databases)",
+              "The DbContext",
+              "Configuring EF Core",
+              "Fetching and storing Data",
+              "Fetching related data",
+              "Encapsulating data",
+              "Resilient connections",
+              "Execution strategies and explicit transactions using BeginTransaction and multiple DbContexts"
+            ]
+          },
+          {
+            "title": "Choosing a Data Store",
+            "depth": 2,
+            "sort_order": 1,
+            "description": "Full ORM vs micro-ORM, the SQL vs NoSQL decision from two perspectives, and the NoSQL store taxonomy.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Weigh EF Core against a micro-ORM like Dapper on productivity vs performance.",
+                "bloom_level": "evaluate"
+              },
+              {
+                "text": "Classify NoSQL stores (key-value, document, wide-column, graph) and the access patterns each optimizes.",
+                "bloom_level": "analyze"
+              },
+              {
+                "text": "Recommend SQL, NoSQL, or a hybrid for a workload based on consistency, schema, and scale needs.",
+                "bloom_level": "evaluate"
+              }
+            ],
+            "source_sections": [
+              "EF Core or micro-ORM?",
+              "modern-web-apps.json::SQL or NoSQL",
+              "Azure Cosmos DB",
+              "Other persistence options",
+              "NoSQL",
+              "Key-value store",
+              "Document store",
+              "Wide column store",
+              "Graph database",
+              "system-design-primer.json::SQL or NoSQL"
+            ]
+          },
+          {
+            "title": "Application-Level Caching",
+            "depth": 2,
+            "sort_order": 2,
+            "description": "Response caching and data caching in the web application tier, with cache keys, expiration, and invalidation.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Differentiate response caching from data caching and where each applies in a web app.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Implement cache-aside data caching with sensible keys, durations, and invalidation on updates.",
+                "bloom_level": "apply"
+              }
+            ],
+            "source_sections": [
+              "Caching",
+              "ASP.NET Core response caching",
+              "Data caching"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Testing",
+        "depth": 1,
+        "sort_order": 4,
+        "description": "The testing pyramid, the architectural test boundary, and writing unit, integration, and functional tests for web apps.",
+        "suggested_level": 2,
+        "learning_objectives": [
+          {
+            "text": "Design a test strategy that covers business logic with unit tests and critical paths with integration and functional tests.",
+            "bloom_level": "create"
+          }
+        ],
+        "children": [
+          {
+            "title": "Testing Strategy and the Test Boundary",
+            "depth": 2,
+            "sort_order": 0,
+            "description": "Kinds of automated tests, the testing pyramid, what to test, and tests as an architectural boundary with design-for-testability.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Distinguish unit, integration, and functional tests and the failure modes each catches.",
+                "bloom_level": "analyze"
+              },
+              {
+                "text": "Explain the testing pyramid and why over-investing in UI tests is fragile.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Explain why tests are part of the system and how structural coupling to internals makes them brittle.",
+                "bloom_level": "understand"
+              }
+            ],
+            "source_sections": [
+              "Test ASP.NET Core MVC apps",
+              "Kinds of automated tests",
+              "Unit tests",
+              "Integration tests",
+              "Functional tests",
+              "Testing Pyramid",
+              "What to test",
+              "The Test Boundary",
+              "Design for Testability",
+              "The Pitfall of Structural Coupling"
+            ]
+          },
+          {
+            "title": "Writing and Organizing Tests",
+            "depth": 2,
+            "sort_order": 1,
+            "description": "Organizing test projects, naming conventions, and concrete unit/integration/functional testing of ASP.NET Core apps.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Organize test projects to mirror production code and name tests so failures explain themselves.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Write an integration test against a real database and a functional test against the app's HTTP surface using a test host.",
+                "bloom_level": "apply"
+              }
+            ],
+            "source_sections": [
+              "Organizing test projects",
+              "Test naming",
+              "Unit testing ASP.NET Core apps",
+              "Integration testing ASP.NET Core apps",
+              "Functional testing ASP.NET Core apps"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "API Design and Integration",
+    "depth": 0,
+    "sort_order": 5,
+    "description": "HTTP fundamentals, RESTful API design, versioning, implementation practices for robust APIs, and operating published APIs.",
+    "suggested_level": 2,
+    "learning_objectives": [
+      {
+        "text": "By the end of this topic, you will be able to design and implement a well-behaved, versioned, documented web API.",
+        "bloom_level": "create"
+      }
+    ],
+    "prerequisites": [
+      {
+        "topic": "Web Application Architecture",
+        "strength": "recommended"
+      }
+    ],
+    "children": [
+      {
+        "title": "HTTP and Web Protocols",
+        "depth": 1,
+        "sort_order": 0,
+        "description": "HTTP request/response semantics, TCP vs UDP, and RPC vs REST as API paradigms.",
+        "suggested_level": 2,
+        "learning_objectives": [
+          {
+            "text": "Describe HTTP's request/response model, methods, and status-code classes.",
+            "bloom_level": "remember"
+          },
+          {
+            "text": "Compare TCP and UDP guarantees and when each transport fits.",
+            "bloom_level": "analyze"
+          },
+          {
+            "text": "Contrast RPC's behaviour-centric calls with REST's resource-centric design and pick the right paradigm for a use case.",
+            "bloom_level": "evaluate"
+          }
+        ],
+        "source_sections": [
+          "Communication",
+          "Hypertext transfer protocol (HTTP)",
+          "Transmission control protocol (TCP)",
+          "User datagram protocol (UDP)",
+          "Remote procedure call (RPC)",
+          "Disadvantage(s): RPC",
+          "Representational state transfer (REST)",
+          "Disadvantage(s): REST",
+          "RPC and REST calls comparison"
+        ]
+      },
+      {
+        "title": "RESTful API Design",
+        "depth": 1,
+        "sort_order": 1,
+        "description": "Designing resources, URIs, and method semantics; pagination, HATEOAS, OpenAPI; and versioning an evolving API.",
+        "suggested_level": 2,
+        "learning_objectives": [
+          {
+            "text": "Design a resource-oriented API with correct HTTP method semantics and an explicit versioning strategy.",
+            "bloom_level": "create"
+          }
+        ],
+        "children": [
+          {
+            "title": "Resources and URIs",
+            "depth": 2,
+            "sort_order": 0,
+            "description": "Platform-independent resource modelling and URI naming conventions oriented around nouns, collections, and relationships.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Model an API around resources and collections rather than operations.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Apply URI naming conventions: plural nouns, shallow nesting, no verbs.",
+                "bloom_level": "apply"
+              }
+            ],
+            "source_sections": [
+              "Best practices for RESTful web API design",
+              "RESTful web API design concepts",
+              "Define RESTful web API resource URIs",
+              "Resource URI naming conventions"
+            ]
+          },
+          {
+            "title": "HTTP Methods and Semantics",
+            "depth": 2,
+            "sort_order": 1,
+            "description": "GET, POST, PUT, PATCH, DELETE semantics, idempotency expectations, and resource MIME types.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Select the correct HTTP method and status codes for create, replace, partial-update, and delete operations.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Explain PATCH semantics (JSON merge patch vs JSON patch) and when PATCH beats PUT.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Use media types and content negotiation to version and shape representations.",
+                "bloom_level": "apply"
+              }
+            ],
+            "source_sections": [
+              "Define RESTful web API methods",
+              "HTTP request methods",
+              "GET requests",
+              "POST requests",
+              "PUT request",
+              "PATCH requests",
+              "DELETE requests",
+              "Resource MIME types"
+            ]
+          },
+          {
+            "title": "Advanced API Capabilities",
+            "depth": 2,
+            "sort_order": 2,
+            "description": "Async methods returning 202, pagination and filtering, partial responses, HATEOAS, the maturity model, and OpenAPI.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Implement pagination, filtering, and partial responses for large collections and binary resources.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Explain HATEOAS and the Richardson maturity model's levels.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Document an API contract with OpenAPI definitions.",
+                "bloom_level": "apply"
+              }
+            ],
+            "source_sections": [
+              "Implement asynchronous methods",
+              "Implement data pagination and filtering",
+              "Support partial responses",
+              "Implement HATEOAS",
+              "Web API maturity model",
+              "OpenAPI Initiative"
+            ]
+          },
+          {
+            "title": "API Versioning",
+            "depth": 2,
+            "sort_order": 3,
+            "description": "No versioning, URI, query-string, header, and media-type versioning — trade-offs for clients, caches, and HATEOAS.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Compare the four explicit versioning mechanisms and their effects on caching and client code.",
+                "bloom_level": "analyze"
+              },
+              {
+                "text": "Choose a versioning strategy for a public API and justify it against breaking-change policy.",
+                "bloom_level": "evaluate"
+              }
+            ],
+            "source_sections": [
+              "Implement versioning",
+              "No versioning",
+              "URI versioning",
+              "Query string versioning",
+              "Header versioning",
+              "Media type versioning"
+            ]
+          },
+          {
+            "title": "Multitenancy and Tracing",
+            "depth": 2,
+            "sort_order": 4,
+            "description": "Tenant isolation via subdomains, headers, or URI paths, and propagating distributed trace context through APIs.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Compare DNS-level, header-based, and URI-path tenancy models for multitenant APIs.",
+                "bloom_level": "analyze"
+              },
+              {
+                "text": "Explain W3C trace-context propagation and why APIs should forward correlation identifiers.",
+                "bloom_level": "understand"
+              }
+            ],
+            "source_sections": [
+              "Multitenant web APIs",
+              "Use subdomain or domain-based isolation (DNS-level tenancy)",
+              "Pass tenant-specific HTTP headers",
+              "Pass tenant-specific information through the URI path",
+              "Enable distributed tracing and trace context in APIs"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Web API Implementation",
+        "depth": 1,
+        "sort_order": 2,
+        "description": "Implementing APIs that honour HTTP: idempotent processing, exception handling, ETags, large payloads, long-running work, and API operations.",
+        "suggested_level": 2,
+        "learning_objectives": [
+          {
+            "text": "Implement an API that is idempotent where required, fails informatively, and stays responsive under large or slow operations.",
+            "bloom_level": "apply"
+          }
+        ],
+        "children": [
+          {
+            "title": "Request Processing Practices",
+            "depth": 2,
+            "sort_order": 0,
+            "description": "Idempotency rules per method, avoiding chatty operations, honouring the HTTP spec in responses, content negotiation, and HATEOAS links.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Implement handlers that keep GET/PUT/DELETE idempotent and POST free of unrelated side effects.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Explain how content negotiation selects representations and what the Accept/Content-Type headers promise.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Refactor a chatty API surface into coarser-grained operations.",
+                "bloom_level": "analyze"
+              }
+            ],
+            "source_sections": [
+              "Web API implementation",
+              "Processing requests",
+              "GET, PUT, DELETE, HEAD, and PATCH actions should be idempotent",
+              "POST actions that create new resources should not have unrelated side-effects",
+              "Avoid implementing chatty POST, PUT, and DELETE operations",
+              "Follow the HTTP specification when sending a response",
+              "Support content negotiation",
+              "Provide links to support HATEOAS-style navigation and discovery of resources"
+            ]
+          },
+          {
+            "title": "Exceptions, Caching, and Concurrency",
+            "depth": 2,
+            "sort_order": 1,
+            "description": "Returning meaningful errors, distinguishing client from server faults, HTTP caching with Cache-Control, and ETags for queries and optimistic concurrency.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Map exceptions to appropriate 4xx/5xx responses with consistent logging.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Implement client-side caching with Cache-Control and validate with ETags to avoid re-sending unchanged data.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Implement optimistic concurrency using ETags and If-Match to prevent lost updates.",
+                "bloom_level": "apply"
+              }
+            ],
+            "source_sections": [
+              "Handling exceptions",
+              "Capture exceptions and return a meaningful response to clients",
+              "Handle exceptions consistently and log information about errors",
+              "Distinguish between client-side errors and server-side errors",
+              "Optimizing client-side data access",
+              "Support client-side caching",
+              "Provide ETags to optimize query processing",
+              "Use ETags to Support Optimistic Concurrency"
+            ]
+          },
+          {
+            "title": "Large Payloads and Long-Running Work",
+            "depth": 2,
+            "sort_order": 2,
+            "description": "Streaming and chunking large objects, partial GETs with ranges, 100-Continue handling, pagination, async 202 patterns, and stateless requests.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Implement HEAD-plus-range partial retrieval for large binary resources.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Implement the 202 Accepted + status-endpoint pattern for long-running operations.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Explain why statelessness is a precondition for horizontal API scaling.",
+                "bloom_level": "understand"
+              }
+            ],
+            "source_sections": [
+              "Handling large requests and responses",
+              "Optimize requests and responses that involve large objects",
+              "Implement partial responses for clients that don't support asynchronous operations",
+              "Avoid sending unnecessary 100-Continue status messages in client applications",
+              "Support pagination for requests that might return large numbers of objects",
+              "Maintaining responsiveness, scalability, and availability",
+              "Provide asynchronous support for long-running requests",
+              "Ensure that each request is stateless"
+            ]
+          },
+          {
+            "title": "Protecting and Operating APIs",
+            "depth": 2,
+            "sort_order": 3,
+            "description": "Throttling against abuse, connection management, publishing, testing, documenting, client SDKs, and monitoring a web API.",
+            "suggested_level": 2,
+            "learning_objectives": [
+              {
+                "text": "Implement client tracking and throttling to protect an API from overload and DoS.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Plan the operational surface of a published API: docs, SDKs, testing, and monitoring.",
+                "bloom_level": "create"
+              }
+            ],
+            "source_sections": [
+              "Track clients and implement throttling to reduce the chances of DoS attacks",
+              "Manage persistent HTTP connections carefully",
+              "Publishing and managing a web API",
+              "Testing a web API",
+              "Supporting client-side developers",
+              "Document the REST operations for a web API",
+              "Implement a client SDK",
+              "Monitoring a web API"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Scalability and Distributed Systems",
+    "depth": 0,
+    "sort_order": 6,
+    "description": "The building blocks of scalable systems: CAP and consistency, availability, DNS/CDN/load balancing, database scaling and partitioning, caching, async work, and autoscaling.",
+    "suggested_level": 3,
+    "learning_objectives": [
+      {
+        "text": "By the end of this topic, you will be able to scale a web system by combining edge infrastructure, database scaling, caching, and asynchronous work.",
+        "bloom_level": "create"
+      }
+    ],
+    "prerequisites": [
+      {
+        "topic": "Architecture Styles in Practice",
+        "strength": "required"
+      }
+    ],
+    "children": [
+      {
+        "title": "Scalability Fundamentals",
+        "depth": 1,
+        "sort_order": 0,
+        "description": "Performance vs scalability, latency vs throughput, the CAP theorem, and consistency/availability patterns.",
+        "suggested_level": 3,
+        "learning_objectives": [
+          {
+            "text": "Reason about distributed-system trade-offs using CAP and consistency models.",
+            "bloom_level": "analyze"
+          }
+        ],
+        "children": [
+          {
+            "title": "Performance, Scalability, and CAP",
+            "depth": 2,
+            "sort_order": 0,
+            "description": "Definitions of performance vs scalability and latency vs throughput, the CAP theorem, and weak/eventual/strong consistency.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Distinguish a performance problem from a scalability problem and latency from throughput.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Apply the CAP theorem to classify a data store as CP or AP for a given failure scenario.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Match weak, eventual, and strong consistency models to appropriate use cases.",
+                "bloom_level": "analyze"
+              }
+            ],
+            "source_sections": [
+              "Performance vs scalability",
+              "Latency vs throughput",
+              "CAP theorem",
+              "CP - consistency and partition tolerance",
+              "AP - availability and partition tolerance",
+              "Consistency patterns",
+              "Weak consistency",
+              "Eventual consistency",
+              "Strong consistency"
+            ]
+          },
+          {
+            "title": "Availability Patterns",
+            "depth": 2,
+            "sort_order": 1,
+            "description": "Active-passive and active-active fail-over, availability arithmetic in 9s, and availability in sequence vs in parallel.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Compare active-passive and active-active fail-over including their data-loss risks.",
+                "bloom_level": "analyze"
+              },
+              {
+                "text": "Calculate composite availability for components in sequence and in parallel.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Translate 99.9% and 99.99% availability into acceptable downtime per year.",
+                "bloom_level": "apply"
+              }
+            ],
+            "source_sections": [
+              "Availability patterns",
+              "Active-passive",
+              "Active-active",
+              "Disadvantage(s): failover",
+              "Availability in numbers",
+              "99.9% availability - three 9s",
+              "99.99% availability - four 9s",
+              "Availability in parallel vs in sequence",
+              "In sequence",
+              "In parallel"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Traffic and Edge Infrastructure",
+        "depth": 1,
+        "sort_order": 1,
+        "description": "DNS, content delivery networks, load balancers, and reverse proxies — getting requests to healthy servers fast.",
+        "suggested_level": 3,
+        "learning_objectives": [
+          {
+            "text": "Design the edge path of a web system from DNS resolution through CDN and load balancer to origin.",
+            "bloom_level": "create"
+          }
+        ],
+        "children": [
+          {
+            "title": "DNS and Content Delivery",
+            "depth": 2,
+            "sort_order": 0,
+            "description": "How DNS routing works, push vs pull CDNs, and the trade-offs of serving content from the edge.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Describe DNS resolution and routing methods (weighted, latency-based, geolocation).",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Choose between push and pull CDN strategies for sites with different traffic patterns.",
+                "bloom_level": "evaluate"
+              }
+            ],
+            "source_sections": [
+              "Domain name system",
+              "Disadvantage(s): DNS",
+              "Content delivery network",
+              "Push CDNs",
+              "Pull CDNs",
+              "Disadvantage(s): CDN"
+            ]
+          },
+          {
+            "title": "CDN Best Practices",
+            "depth": 2,
+            "sort_order": 1,
+            "description": "Operating CDNs: challenges, deployment of static assets, routing and versioning, cache control, securing edge content, and fallback.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Plan cache-control and versioning policies so deployments don't serve stale assets.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Design a CDN fallback path for origin failures and explain edge security controls.",
+                "bloom_level": "create"
+              }
+            ],
+            "source_sections": [
+              "Cdn Content: Introduction",
+              "How and why a CDN is used",
+              "api-best-practices.json::Introduction: Challenges",
+              "General guidelines and good practices",
+              "api-best-practices.json::Deployment",
+              "Routing and versioning",
+              "Cache control",
+              "api-best-practices.json::Security",
+              "CDN fallback"
+            ]
+          },
+          {
+            "title": "Load Balancers and Reverse Proxies",
+            "depth": 2,
+            "sort_order": 2,
+            "description": "Layer 4 vs layer 7 load balancing, horizontal scaling implications, and load balancers vs reverse proxies.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Compare layer 4 and layer 7 load balancing and what each can route on.",
+                "bloom_level": "analyze"
+              },
+              {
+                "text": "Explain the statelessness and session implications of scaling out behind a load balancer.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Differentiate the roles of a load balancer and a reverse proxy and when to deploy each.",
+                "bloom_level": "analyze"
+              }
+            ],
+            "source_sections": [
+              "Load balancer",
+              "Layer 4 load balancing",
+              "Layer 7 load balancing",
+              "Horizontal scaling",
+              "Disadvantage(s): horizontal scaling",
+              "Disadvantage(s): load balancer",
+              "Reverse proxy (web server)",
+              "Load balancer vs reverse proxy",
+              "Disadvantage(s): reverse proxy"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Database Scaling",
+        "depth": 1,
+        "sort_order": 2,
+        "description": "Scaling the data tier: replication, federation, sharding, denormalization, SQL tuning, and designing partitions deliberately.",
+        "suggested_level": 3,
+        "learning_objectives": [
+          {
+            "text": "Select and combine replication, sharding, and partitioning strategies for a growing dataset.",
+            "bloom_level": "evaluate"
+          }
+        ],
+        "children": [
+          {
+            "title": "Replication and Federation",
+            "depth": 2,
+            "sort_order": 0,
+            "description": "Master-slave and master-master replication with their failure modes, and functional federation of databases.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Compare master-slave and master-master replication including consistency and fail-over trade-offs.",
+                "bloom_level": "analyze"
+              },
+              {
+                "text": "Explain replication lag and the data-loss window it creates.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Describe federation by function and the join/complexity costs it introduces.",
+                "bloom_level": "understand"
+              }
+            ],
+            "source_sections": [
+              "Database",
+              "Relational database management system (RDBMS)",
+              "Master-slave replication",
+              "Disadvantage(s): master-slave replication",
+              "Master-master replication",
+              "Disadvantage(s): master-master replication",
+              "Disadvantage(s): replication",
+              "Federation",
+              "Disadvantage(s): federation"
+            ]
+          },
+          {
+            "title": "Sharding, Denormalization, and SQL Tuning",
+            "depth": 2,
+            "sort_order": 1,
+            "description": "Sharding data across machines, denormalizing to avoid expensive joins, and core SQL tuning techniques.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Design a sharding scheme and identify its rebalancing and hot-spot risks.",
+                "bloom_level": "create"
+              },
+              {
+                "text": "Decide when denormalization's read benefits outweigh its write and consistency costs.",
+                "bloom_level": "evaluate"
+              },
+              {
+                "text": "Apply schema tightening and indexing to address slow queries.",
+                "bloom_level": "apply"
+              }
+            ],
+            "source_sections": [
+              "Sharding",
+              "Disadvantage(s): sharding",
+              "Denormalization",
+              "Disadvantage(s): denormalization",
+              "SQL tuning",
+              "Tighten up the schema",
+              "Use good indices",
+              "Avoid expensive joins",
+              "Partition tables",
+              "Tune the query cache"
+            ]
+          },
+          {
+            "title": "Designing Data Partitions",
+            "depth": 2,
+            "sort_order": 2,
+            "description": "Horizontal, vertical, and functional partitioning, and designing partitions for scalability, query performance, and availability.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Differentiate horizontal, vertical, and functional partitioning and combine them where appropriate.",
+                "bloom_level": "analyze"
+              },
+              {
+                "text": "Choose a partition key that balances load and avoids hot partitions.",
+                "bloom_level": "evaluate"
+              },
+              {
+                "text": "Design partitions so the most critical data is the most available.",
+                "bloom_level": "create"
+              }
+            ],
+            "source_sections": [
+              "Data Partitioning Content: Introduction",
+              "Why partition data?",
+              "Designing partitions",
+              "Horizontal partitioning (sharding)",
+              "Vertical partitioning",
+              "Functional partitioning",
+              "Designing partitions for scalability",
+              "Designing partitions for query performance",
+              "Designing partitions for availability"
+            ]
+          },
+          {
+            "title": "Operating Partitioned Systems",
+            "depth": 2,
+            "sort_order": 3,
+            "description": "Application design considerations for partitioned data and rebalancing partitions offline or online.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Explain how partitioning changes application code: routing, cross-partition queries, and transactions.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Compare offline and online partition-rebalancing migrations and their availability impact.",
+                "bloom_level": "analyze"
+              }
+            ],
+            "source_sections": [
+              "Introduction: Application design considerations",
+              "Rebalancing partitions",
+              "Offline migration",
+              "Online migration"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Caching",
+        "depth": 1,
+        "sort_order": 3,
+        "description": "Cache placement across the stack, update patterns, and running shared caches correctly: expiration, invalidation, concurrency, and consistency.",
+        "suggested_level": 3,
+        "learning_objectives": [
+          {
+            "text": "Design a multi-level caching strategy with explicit update, expiration, and invalidation policies.",
+            "bloom_level": "create"
+          }
+        ],
+        "children": [
+          {
+            "title": "Cache Layers",
+            "depth": 2,
+            "sort_order": 0,
+            "description": "Caching at the client, CDN, web server, database, and application levels, including query-level vs object-level caching.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Map the cache locations available in a web stack and what each can serve.",
+                "bloom_level": "remember"
+              },
+              {
+                "text": "Choose between query-level and object-level application caching for given access patterns.",
+                "bloom_level": "evaluate"
+              }
+            ],
+            "source_sections": [
+              "Cache",
+              "Client caching",
+              "CDN caching",
+              "Web server caching",
+              "Database caching",
+              "Application caching",
+              "Caching at the database query level",
+              "Caching at the object level"
+            ]
+          },
+          {
+            "title": "Cache Update Patterns",
+            "depth": 2,
+            "sort_order": 1,
+            "description": "Cache-aside, write-through, write-behind, and refresh-ahead — mechanics, advantages, and failure modes of each.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Implement cache-aside and explain its stale-data window.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Compare write-through, write-behind, and refresh-ahead on latency, durability, and complexity.",
+                "bloom_level": "analyze"
+              },
+              {
+                "text": "Select an update pattern for a workload given its read/write mix and consistency tolerance.",
+                "bloom_level": "evaluate"
+              }
+            ],
+            "source_sections": [
+              "When to update the cache",
+              "Cache-aside",
+              "Disadvantage(s): cache-aside",
+              "Write-through",
+              "Disadvantage(s): write through",
+              "Write-behind (write-back)",
+              "Disadvantage(s): write-behind",
+              "Refresh-ahead",
+              "Disadvantage(s): refresh-ahead",
+              "Disadvantage(s): cache"
+            ]
+          },
+          {
+            "title": "Distributed Caching in Practice",
+            "depth": 2,
+            "sort_order": 2,
+            "description": "Private vs shared caches, deciding what and when to cache, caching dynamic data, and caching effectively at scale.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Differentiate private and shared caching and the consistency implications of each.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Decide which data is worth caching based on volatility, access frequency, and reconstruction cost.",
+                "bloom_level": "evaluate"
+              }
+            ],
+            "source_sections": [
+              "Caching Content: Introduction",
+              "Caching in distributed applications",
+              "Private caching",
+              "Shared caching",
+              "Considerations for using caching",
+              "Decide when to cache data",
+              "Determine how to cache data effectively",
+              "Cache highly dynamic data"
+            ]
+          },
+          {
+            "title": "Cache Consistency and Protection",
+            "depth": 2,
+            "sort_order": 3,
+            "description": "Expiration policy, client-side invalidation, concurrent updates (optimistic vs pessimistic), high availability, eventual consistency, and protecting cached data.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Set expiration policies that balance staleness against cache effectiveness.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Handle concurrent cache updates with optimistic or pessimistic approaches as appropriate.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Explain how caching interacts with eventual consistency and what data protection a shared cache needs.",
+                "bloom_level": "understand"
+              }
+            ],
+            "source_sections": [
+              "Manage data expiration in a cache",
+              "Invalidate data in a client-side cache",
+              "Managing concurrency in a cache",
+              "Implement high availability and scalability, and improve performance",
+              "Caching and eventual consistency",
+              "Protect cached data"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Asynchronous Work",
+        "depth": 1,
+        "sort_order": 4,
+        "description": "Message queues, task queues, back pressure, and designing reliable background jobs.",
+        "suggested_level": 3,
+        "learning_objectives": [
+          {
+            "text": "Move slow or bursty work off the request path using queues and well-designed background jobs.",
+            "bloom_level": "apply"
+          }
+        ],
+        "children": [
+          {
+            "title": "Message and Task Queues",
+            "depth": 2,
+            "sort_order": 0,
+            "description": "Queues as buffers between producers and workers, task queues, and back pressure when queues grow.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Explain how message queues decouple producers from consumers and smooth bursty load.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Apply back pressure when queue depth signals that the system is saturated.",
+                "bloom_level": "apply"
+              }
+            ],
+            "source_sections": [
+              "Asynchronism",
+              "Message queues",
+              "Task queues",
+              "Back pressure",
+              "Disadvantage(s): asynchronism"
+            ]
+          },
+          {
+            "title": "Background Job Design",
+            "depth": 2,
+            "sort_order": 1,
+            "description": "Job types, event-driven vs schedule-driven triggers, returning results to callers, and designing for idempotency.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Choose event-driven or schedule-driven triggers for a background task.",
+                "bloom_level": "evaluate"
+              },
+              {
+                "text": "Design a result-reporting path so callers learn the outcome of asynchronous work.",
+                "bloom_level": "create"
+              },
+              {
+                "text": "Design idempotent job handlers that tolerate at-least-once execution.",
+                "bloom_level": "create"
+              }
+            ],
+            "source_sections": [
+              "Best practices for background jobs",
+              "Types of background jobs",
+              "Triggers",
+              "Event-driven triggers",
+              "Schedule-driven triggers",
+              "Returning results",
+              "Design for idempotency"
+            ]
+          },
+          {
+            "title": "Background Job Coordination and Reliability",
+            "depth": 2,
+            "sort_order": 2,
+            "description": "Partitioning job workloads, resolving conflicts, coordinating multi-instance workers, and reliability, security, observability, and scaling concerns.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Coordinate multiple worker instances safely using leases, locks, or queue semantics.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Analyze a background-job design for reliability gaps: poison messages, retries, and partial failures.",
+                "bloom_level": "analyze"
+              }
+            ],
+            "source_sections": [
+              "Partitioning",
+              "Conflicts",
+              "Coordination",
+              "Reliability considerations",
+              "Security considerations",
+              "Observability considerations",
+              "Scaling and performance considerations"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Autoscaling",
+        "depth": 1,
+        "sort_order": 5,
+        "description": "Scaling out automatically: components of an autoscaling system and the application-design considerations that make scaling safe.",
+        "suggested_level": 3,
+        "learning_objectives": [
+          {
+            "text": "Describe the components of an autoscaling loop: instrumentation, decision logic, and scaling actions.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Identify application-design prerequisites for safe scale-in/scale-out (statelessness, graceful shutdown, queue-length signals).",
+            "bloom_level": "analyze"
+          },
+          {
+            "text": "Choose scaling metrics beyond CPU — queue depth, custom business counters — for a given workload.",
+            "bloom_level": "evaluate"
+          }
+        ],
+        "source_sections": [
+          "Autoscaling",
+          "Autoscaling components",
+          "Autoscaling: Application design considerations",
+          "Other scaling criteria"
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Microservices",
+    "depth": 0,
+    "sort_order": 7,
+    "description": "Designing microservices: the style and its critics, domain-driven decomposition, interservice communication, gateways, APIs, data ownership, and orchestration.",
+    "suggested_level": 3,
+    "learning_objectives": [
+      {
+        "text": "By the end of this topic, you will be able to decompose a domain into microservices and design their communication, APIs, and data ownership.",
+        "bloom_level": "create"
+      }
+    ],
+    "prerequisites": [
+      {
+        "topic": "Scalability and Distributed Systems",
+        "strength": "required"
+      },
+      {
+        "topic": "Clean Architecture",
+        "strength": "recommended"
+      },
+      {
+        "topic": "API Design and Integration",
+        "strength": "recommended"
+      }
+    ],
+    "children": [
+      {
+        "title": "Microservices Architecture Style",
+        "depth": 1,
+        "sort_order": 0,
+        "description": "What microservices are, the supporting components, benefits, challenges, best practices, and antipatterns.",
+        "suggested_level": 3,
+        "learning_objectives": [
+          {
+            "text": "Define the characteristics of a microservice: small, independently deployable, owning its data.",
+            "bloom_level": "remember"
+          },
+          {
+            "text": "Weigh the benefits (independent deployment, fault isolation) against the challenges (complexity, data integrity, network congestion).",
+            "bloom_level": "evaluate"
+          },
+          {
+            "text": "Recognize microservices antipatterns such as the distributed monolith.",
+            "bloom_level": "analyze"
+          }
+        ],
+        "source_sections": [
+          "Microservices architecture style",
+          "What are microservices?",
+          "Components",
+          "Microservices architecture style: Benefits",
+          "Microservices architecture style: Challenges",
+          "Microservices architecture style: Best practices",
+          "Antipatterns for microservices",
+          "Build a microservices architecture"
+        ]
+      },
+      {
+        "title": "A Critical View of Services",
+        "depth": 1,
+        "sort_order": 1,
+        "description": "Uncle Bob's critique: services are not an architecture by themselves, the decoupling hype, and the functional-decomposition pitfall.",
+        "suggested_level": 3,
+        "learning_objectives": [
+          {
+            "text": "Explain why splitting into services does not by itself create architectural boundaries.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Critique the claims of total decoupling and independent development used to justify microservices.",
+            "bloom_level": "evaluate"
+          },
+          {
+            "text": "Analyze the cross-cutting-change weakness of services decomposed purely by function, and the vertical-layers remedy.",
+            "bloom_level": "analyze"
+          }
+        ],
+        "source_sections": [
+          "Services: Great and Small",
+          "Are Services an Architecture?",
+          "The Decoupling Hype",
+          "The Independence of Development and Deployment Hype",
+          "The Pitfall of Services by Functional Decomposition",
+          "Services by Vertical Layers",
+          "Distributed Vertical Layers"
+        ]
+      },
+      {
+        "title": "Microservices Design Patterns",
+        "depth": 1,
+        "sort_order": 2,
+        "description": "The catalog of patterns that address common microservices challenges: ambassador, anti-corruption layer, BFF, bulkhead, sidecar, strangler fig, and more.",
+        "suggested_level": 3,
+        "learning_objectives": [
+          {
+            "text": "Match common microservices design patterns to the problems they solve.",
+            "bloom_level": "analyze"
+          },
+          {
+            "text": "Select supporting patterns (gateway, sidecar, bulkhead) when designing a service deployment.",
+            "bloom_level": "evaluate"
+          }
+        ],
+        "source_sections": [
+          "Design patterns for microservices",
+          "Common design patterns",
+          "Supporting patterns"
+        ]
+      },
+      {
+        "title": "Domain-Driven Design",
+        "depth": 1,
+        "sort_order": 3,
+        "description": "Decomposing a system the DDD way: strategic domain analysis, tactical patterns, and deriving microservice boundaries.",
+        "suggested_level": 3,
+        "learning_objectives": [
+          {
+            "text": "Derive service boundaries from domain analysis rather than organizational or technical convenience.",
+            "bloom_level": "create"
+          }
+        ],
+        "children": [
+          {
+            "title": "Domain Analysis and Bounded Contexts",
+            "depth": 2,
+            "sort_order": 0,
+            "description": "Mapping the business domain, subdomains, and bounded contexts using the drone-delivery scenario.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Analyze a business domain to identify subdomains and their relationships.",
+                "bloom_level": "analyze"
+              },
+              {
+                "text": "Define bounded contexts and explain why models need not be consistent across them.",
+                "bloom_level": "understand"
+              }
+            ],
+            "source_sections": [
+              "Use domain analysis to model microservices",
+              "Use domain analysis to model microservices: Introduction",
+              "Scenario: Drone delivery",
+              "Analyze the domain",
+              "Example: Drone delivery application",
+              "Define bounded contexts"
+            ]
+          },
+          {
+            "title": "Tactical DDD Patterns",
+            "depth": 2,
+            "sort_order": 1,
+            "description": "Entities, value objects, aggregates, domain and application services, and domain events — applied to the drone-delivery domain.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Distinguish entities from value objects by identity and mutability.",
+                "bloom_level": "analyze"
+              },
+              {
+                "text": "Design aggregates as consistency boundaries with a single root.",
+                "bloom_level": "create"
+              },
+              {
+                "text": "Apply domain events to communicate state changes between aggregates and services.",
+                "bloom_level": "apply"
+              }
+            ],
+            "source_sections": [
+              "Use tactical DDD to design microservices",
+              "Overview of the tactical patterns",
+              "microservices-design.json::Entities",
+              "Value objects",
+              "Aggregates",
+              "Domain and application services",
+              "Domain events",
+              "Other patterns",
+              "Drone delivery: Apply the patterns"
+            ]
+          },
+          {
+            "title": "Defining Microservice Boundaries",
+            "depth": 2,
+            "sort_order": 2,
+            "description": "From domain model to services: sizing rules, when to split aggregates, and whether DDD is worth applying at all.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Apply the boundary heuristics: a service should be no smaller than an aggregate and no larger than a bounded context.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Evaluate whether the DDD investment is justified for a given project's complexity.",
+                "bloom_level": "evaluate"
+              }
+            ],
+            "source_sections": [
+              "Microservice Boundaries Content: Introduction",
+              "From domain model to microservices",
+              "Example: Defining microservices for the Drone Delivery application",
+              "Domain-driven design – Should you apply it?",
+              "When should you apply DDD",
+              "When shouldn't you apply DDD"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Communication",
+        "depth": 1,
+        "sort_order": 4,
+        "description": "How services talk: sync vs async messaging, service meshes, distributed transactions, gateways, and message encoding.",
+        "suggested_level": 3,
+        "learning_objectives": [
+          {
+            "text": "Design the communication fabric of a microservices system, choosing protocols, patterns, and encodings deliberately.",
+            "bloom_level": "create"
+          }
+        ],
+        "children": [
+          {
+            "title": "Interservice Communication",
+            "depth": 2,
+            "sort_order": 0,
+            "description": "Synchronous vs asynchronous messaging trade-offs, service meshes, distributed transactions, and service discovery.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Choose between synchronous calls and asynchronous messages for each service interaction.",
+                "bloom_level": "evaluate"
+              },
+              {
+                "text": "Explain what a service mesh offloads from application code.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Apply saga-style compensation instead of distributed transactions across services.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Describe service discovery and why dynamic environments need it.",
+                "bloom_level": "remember"
+              }
+            ],
+            "source_sections": [
+              "Interservice Communication Content: Introduction",
+              "microservices-design.json::Introduction: Challenges",
+              "Synchronous versus asynchronous messaging",
+              "Drone Delivery: Choosing the messaging patterns",
+              "Using a service mesh",
+              "Distributed transactions",
+              "Application layer",
+              "system-design-primer.json::Microservices",
+              "Service Discovery",
+              "Disadvantage(s): application layer"
+            ]
+          },
+          {
+            "title": "API Gateways",
+            "depth": 2,
+            "sort_order": 1,
+            "description": "Gateway routing, aggregation, and offloading; deployment options and choosing a gateway technology.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Explain the three gateway functions: routing, aggregation, and offloading.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Choose a gateway approach (reverse proxy, service mesh ingress, managed gateway) for a deployment.",
+                "bloom_level": "evaluate"
+              }
+            ],
+            "source_sections": [
+              "Gateway Content: Introduction",
+              "What is an API gateway?",
+              "Why use an API gateway?",
+              "How to use an API gateway",
+              "API gateway options",
+              "Choose an API gateway technology"
+            ]
+          },
+          {
+            "title": "Message Encoding",
+            "depth": 2,
+            "sort_order": 2,
+            "description": "Encoding considerations for messages: readability, size, payload understanding, schema versioning, and payload structure.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Identify the encoding requirements of a message exchange: human readability, size, schema evolution.",
+                "bloom_level": "analyze"
+              },
+              {
+                "text": "Plan schema versioning so producers and consumers can evolve independently.",
+                "bloom_level": "create"
+              }
+            ],
+            "source_sections": [
+              "Best practices for message encoding",
+              "Message exchange needs",
+              "Encoding format considerations",
+              "Human readability",
+              "Encryption",
+              "Encoding size",
+              "Understanding the payload",
+              "Schema versioning",
+              "Payload structure"
+            ]
+          },
+          {
+            "title": "Choosing Encoding Formats",
+            "depth": 2,
+            "sort_order": 3,
+            "description": "JSON, CSV, Protocol Buffers, Avro, Parquet, MessagePack, and CBOR — strengths, library support, and interoperability.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Compare text formats (JSON, CSV) with binary formats (Protobuf, Avro, MessagePack, CBOR) on size, speed, and tooling.",
+                "bloom_level": "analyze"
+              },
+              {
+                "text": "Select an encoding format for a high-throughput interservice exchange and justify it.",
+                "bloom_level": "evaluate"
+              }
+            ],
+            "source_sections": [
+              "Library support",
+              "Interoperability",
+              "Choices for encoding formats",
+              "JSON",
+              "CSV",
+              "Protocol Buffers",
+              "Apache Avro",
+              "Apache Parquet",
+              "MessagePack",
+              "CBOR"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Microservice APIs",
+        "depth": 1,
+        "sort_order": 5,
+        "description": "Designing the public and internal APIs of microservices: REST over HTTP, mapping REST to DDD, versioning, and idempotency.",
+        "suggested_level": 3,
+        "learning_objectives": [
+          {
+            "text": "Differentiate public (client-facing) from backend (interservice) API requirements.",
+            "bloom_level": "analyze"
+          },
+          {
+            "text": "Map REST resources and verbs onto DDD aggregates and domain operations.",
+            "bloom_level": "apply"
+          },
+          {
+            "text": "Design idempotent operations so retried requests cannot corrupt state.",
+            "bloom_level": "create"
+          }
+        ],
+        "source_sections": [
+          "API design",
+          "API design: Considerations",
+          "RESTful API design",
+          "Generic data access APIs: OData and GraphQL considerations",
+          "When to consider generic data access APIs",
+          "Map REST to DDD patterns",
+          "API versioning",
+          "Idempotent operations"
+        ]
+      },
+      {
+        "title": "Data Management",
+        "depth": 1,
+        "sort_order": 6,
+        "description": "Data ownership per service, polyglot persistence, eventual consistency across services, and the drone-delivery data-store choices.",
+        "suggested_level": 3,
+        "learning_objectives": [
+          {
+            "text": "Explain the database-per-service rule and the integration problems it prevents.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Analyze the consistency challenges of data spread across services and apply patterns to manage them.",
+            "bloom_level": "analyze"
+          },
+          {
+            "text": "Choose appropriate, possibly different, data stores for each service in a described system.",
+            "bloom_level": "evaluate"
+          }
+        ],
+        "source_sections": [
+          "Data considerations for microservices",
+          "Data considerations for microservices: Challenges",
+          "Approaches to managing data",
+          "Example: Choose data stores for the drone delivery application",
+          "Delivery service",
+          "Delivery history service",
+          "Package service"
+        ]
+      },
+      {
+        "title": "Containers and Orchestration",
+        "depth": 1,
+        "sort_order": 7,
+        "description": "Containerized microservices, what an orchestrator does, and the decision factors for choosing a compute platform.",
+        "suggested_level": 3,
+        "learning_objectives": [
+          {
+            "text": "Explain what container orchestration provides: scheduling, scaling, service discovery, and self-healing.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Evaluate compute platforms for microservices against the key decision factors: communication, scaling, deployability, observability, and state.",
+            "bloom_level": "evaluate"
+          }
+        ],
+        "source_sections": [
+          "Orchestration Content: Introduction",
+          "Containerized microservices architecture",
+          "Advantages of container orchestration",
+          "Choose an Azure container orchestrator",
+          "Key decision factors",
+          "Interservice communication",
+          "Independent scaling",
+          "Independent deployability",
+          "Distributed observability",
+          "State management"
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Cloud-Native Operations",
+    "depth": 0,
+    "sort_order": 8,
+    "description": "Running web systems well: the twelve-factor methodology, CI/CD and deployment strategies, resilience to transient faults, and monitoring/observability.",
+    "suggested_level": 3,
+    "learning_objectives": [
+      {
+        "text": "By the end of this topic, you will be able to take a web system from commit to production with safe deployments, fault tolerance, and full observability.",
+        "bloom_level": "create"
+      }
+    ],
+    "prerequisites": [
+      {
+        "topic": "Microservices",
+        "strength": "required"
+      }
+    ],
+    "children": [
+      {
+        "title": "The Twelve-Factor App",
+        "depth": 1,
+        "sort_order": 0,
+        "description": "The twelve factors for building software-as-a-service apps that are portable, scalable, and continuously deployable.",
+        "suggested_level": 3,
+        "learning_objectives": [
+          {
+            "text": "Audit an application against all twelve factors and identify violations.",
+            "bloom_level": "analyze"
+          }
+        ],
+        "children": [
+          {
+            "title": "Codebase Through Build-Release-Run",
+            "depth": 2,
+            "sort_order": 0,
+            "description": "Factors I-V: one codebase many deploys, explicit dependencies, config in the environment, backing services as attached resources, and separated build/release/run stages.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Explain why config belongs in environment variables and what the litmus test for config is.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Treat backing services as attached resources swappable without code changes.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Describe the strict separation of build, release, and run stages and why releases must be immutable.",
+                "bloom_level": "understand"
+              }
+            ],
+            "source_sections": [
+              "twelve-factor-app.json::Introduction",
+              "One codebase tracked in revision control, many deploys",
+              "Explicitly declare and isolate dependencies",
+              "Store config in the environment",
+              "Treat backing services as attached resources",
+              "Strictly separate build and run stages"
+            ]
+          },
+          {
+            "title": "Processes Through Admin Processes",
+            "depth": 2,
+            "sort_order": 1,
+            "description": "Factors VI-XII: stateless processes, port binding, scaling via the process model, disposability, dev/prod parity, logs as event streams, and one-off admin processes.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Explain why processes must be stateless and share-nothing, with state in backing services.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Apply fast startup and graceful shutdown to make processes disposable.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Explain logs as event streams written to stdout and why apps should not manage log files.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Keep development, staging, and production as similar as possible and identify the gaps that break parity.",
+                "bloom_level": "analyze"
+              }
+            ],
+            "source_sections": [
+              "Execute the app as one or more stateless processes",
+              "Export services via port binding",
+              "Scale out via the process model",
+              "Maximize robustness with fast startup and graceful shutdown",
+              "Keep development, staging, and production as similar as possible",
+              "Treat logs as event streams",
+              "Run admin/management tasks as one-off processes"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "CI/CD and Deployment",
+        "depth": 1,
+        "sort_order": 1,
+        "description": "Continuous integration and delivery for distributed systems, and deployment strategies that release safely.",
+        "suggested_level": 3,
+        "learning_objectives": [
+          {
+            "text": "Design a delivery pipeline that ships independent services safely and frequently.",
+            "bloom_level": "create"
+          }
+        ],
+        "children": [
+          {
+            "title": "CI/CD for Microservices",
+            "depth": 2,
+            "sort_order": 0,
+            "description": "Why a robust pipeline matters more with many services, the challenges, and monorepo vs multirepo.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Explain why independent deployability demands per-service pipelines and automated quality gates.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Weigh monorepo against multirepo for a multi-team microservices organization.",
+                "bloom_level": "evaluate"
+              }
+            ],
+            "source_sections": [
+              "CI/CD for microservices",
+              "What is CI/CD?",
+              "Why a robust CI/CD pipeline matters",
+              "CI/CD for microservices: Challenges",
+              "Monorepo vs. multirepo"
+            ]
+          },
+          {
+            "title": "Deployment Strategies",
+            "depth": 2,
+            "sort_order": 1,
+            "description": "Rolling updates, blue-green deployment, canary releases, progressive delivery with GitOps, and deploying web apps.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Compare rolling, blue-green, and canary deployments on risk, cost, and rollback speed.",
+                "bloom_level": "analyze"
+              },
+              {
+                "text": "Select a deployment strategy for a service given its traffic and failure tolerance.",
+                "bloom_level": "evaluate"
+              }
+            ],
+            "source_sections": [
+              "Update services",
+              "Rolling updates",
+              "Blue-green deployment",
+              "Canary release",
+              "Progressive delivery and GitOps",
+              "modern-web-apps.json::Deployment"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Resilience",
+        "depth": 1,
+        "sort_order": 2,
+        "description": "Handling the transient faults inherent to cloud environments with disciplined retry strategies.",
+        "suggested_level": 3,
+        "learning_objectives": [
+          {
+            "text": "Build fault-handling that retries transient errors safely without amplifying outages.",
+            "bloom_level": "create"
+          }
+        ],
+        "children": [
+          {
+            "title": "Transient Fault Handling",
+            "depth": 2,
+            "sort_order": 0,
+            "description": "Why transient faults occur in the cloud, the challenges they pose, and determining retry counts and intervals.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Explain why shared, commodity cloud infrastructure makes transient faults normal rather than exceptional.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Determine whether an operation is safe to retry and choose an appropriate retry count and backoff.",
+                "bloom_level": "evaluate"
+              },
+              {
+                "text": "Use built-in client retry mechanisms where they exist instead of reinventing them.",
+                "bloom_level": "apply"
+              }
+            ],
+            "source_sections": [
+              "Best practices for transient fault handling",
+              "Why do transient faults occur in the cloud?",
+              "Best practices for transient fault handling: Challenges",
+              "General guidelines",
+              "Check whether a built-in retry mechanism exists",
+              "Check whether retrying suits the operation",
+              "Determine an appropriate retry count and interval"
+            ]
+          },
+          {
+            "title": "Retry Strategy in Practice",
+            "depth": 2,
+            "sort_order": 1,
+            "description": "Retry antipatterns, testing retry logic, managing policy configuration, logging transient faults, and handling operations that keep failing.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Identify retry antipatterns — nested retries, retry storms without backoff — and their blast radius.",
+                "bloom_level": "analyze"
+              },
+              {
+                "text": "Apply circuit-breaker-style handling for operations that continually fail.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Test and tune retry policies against injected faults before production.",
+                "bloom_level": "apply"
+              }
+            ],
+            "source_sections": [
+              "Avoid antipatterns",
+              "Test your retry strategy and implementation",
+              "Manage retry policy configurations",
+              "Log and track transient and nontransient faults",
+              "Manage operations that continually fail",
+              "api-best-practices.json::Other considerations"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Monitoring and Observability",
+        "depth": 1,
+        "sort_order": 3,
+        "description": "Monitoring scenarios from health to SLA, instrumenting applications, the telemetry pipeline, and turning data into dashboards and alerts.",
+        "suggested_level": 3,
+        "learning_objectives": [
+          {
+            "text": "Design end-to-end observability: scenarios, instrumentation, collection, analysis, and alerting.",
+            "bloom_level": "create"
+          }
+        ],
+        "children": [
+          {
+            "title": "Monitoring Scenarios and Health",
+            "depth": 2,
+            "sort_order": 0,
+            "description": "The monitoring scenario landscape, health monitoring with alerts, and availability monitoring with its data needs.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Differentiate health, availability, performance, security, SLA, usage, and audit monitoring scenarios.",
+                "bloom_level": "understand"
+              },
+              {
+                "text": "Design health checks and alerts that detect 'is it up?' failures quickly.",
+                "bloom_level": "create"
+              }
+            ],
+            "source_sections": [
+              "Best practices for monitoring and diagnostics",
+              "Monitoring and diagnostics scenarios",
+              "Health monitoring",
+              "Set up alerts",
+              "Collect health data",
+              "Analyze health data",
+              "Availability monitoring",
+              "Collect availability data",
+              "Analyze availability data"
+            ]
+          },
+          {
+            "title": "Performance and Security Monitoring",
+            "depth": 2,
+            "sort_order": 1,
+            "description": "Detecting degradation under load, capacity signals, and monitoring for security events and anomalies.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Define performance baselines and detect gradual degradation before users do.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Identify the security signals worth monitoring: failed logins, anomalous access, resource abuse.",
+                "bloom_level": "analyze"
+              }
+            ],
+            "source_sections": [
+              "Performance monitoring",
+              "Requirements for performance monitoring",
+              "Collect performance data",
+              "Analyze performance data",
+              "Security monitoring",
+              "Requirements for security monitoring",
+              "Collect security data",
+              "Analyze security data"
+            ]
+          },
+          {
+            "title": "SLA, Usage, and Audit Monitoring",
+            "depth": 2,
+            "sort_order": 2,
+            "description": "Proving SLA compliance, auditing regulated operations, and understanding feature usage.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Define the data needed to prove SLA compliance and compute availability against targets.",
+                "bloom_level": "apply"
+              },
+              {
+                "text": "Explain audit-trail requirements for regulated operations and how usage data informs capacity and product decisions.",
+                "bloom_level": "understand"
+              }
+            ],
+            "source_sections": [
+              "SLA monitoring",
+              "Requirements for SLA monitoring",
+              "Collect SLA data",
+              "Analyze SLA data",
+              "Auditing",
+              "Requirements for auditing",
+              "Collect auditing data",
+              "Analyze audit data",
+              "Usage monitoring",
+              "Requirements for usage monitoring",
+              "Collect usage data"
+            ]
+          },
+          {
+            "title": "Instrumentation",
+            "depth": 2,
+            "sort_order": 3,
+            "description": "The monitoring pipeline, sources of telemetry, and instrumenting applications with correlatable, complete event data.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Enumerate telemetry sources: application logs, framework counters, OS metrics, and infrastructure logs.",
+                "bloom_level": "remember"
+              },
+              {
+                "text": "Instrument an application with correlation IDs and context-rich events that support cross-service tracing.",
+                "bloom_level": "apply"
+              }
+            ],
+            "source_sections": [
+              "The monitoring and diagnostics pipeline",
+              "Sources of monitoring and diagnostic data",
+              "Instrument an application",
+              "Information for correlating data",
+              "Information to include in the instrumentation data",
+              "Ensure compatibility with telemetry systems",
+              "Best practices for instrumenting applications"
+            ]
+          },
+          {
+            "title": "Collecting and Storing Telemetry",
+            "depth": 2,
+            "sort_order": 4,
+            "description": "Pull vs push collection, consolidating instrumentation data, storage strategies, retention, and down-sampling.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Compare pull and push collection models and when each fits.",
+                "bloom_level": "analyze"
+              },
+              {
+                "text": "Plan telemetry storage with rotation, retention, and down-sampling appropriate to each analysis tier.",
+                "bloom_level": "create"
+              }
+            ],
+            "source_sections": [
+              "Collect and store data",
+              "Strategies for collecting instrumentation data",
+              "Pull and push instrumentation data",
+              "Consolidate instrumentation data",
+              "Store instrumentation data",
+              "Log rotation and data retention",
+              "Data down-sampling",
+              "Best practices for collecting and storing logging information"
+            ]
+          },
+          {
+            "title": "Analysis, Dashboards, and Alerting",
+            "depth": 2,
+            "sort_order": 5,
+            "description": "Hot, warm, and cold analysis paths, correlating data, troubleshooting, dashboards, alerting, and reporting.",
+            "suggested_level": 3,
+            "learning_objectives": [
+              {
+                "text": "Match hot, warm, and cold analysis paths to incident response, trending, and forensics.",
+                "bloom_level": "analyze"
+              },
+              {
+                "text": "Design dashboards and alert thresholds that surface problems without alert fatigue.",
+                "bloom_level": "create"
+              }
+            ],
+            "source_sections": [
+              "Analyze data and diagnose problems",
+              "Support hot, warm, and cold analysis",
+              "Correlate data",
+              "Troubleshoot and diagnose problems",
+              "Visualize data and raise alerts",
+              "Visualization by using dashboards",
+              "Raise alerts",
+              "Reporting"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
