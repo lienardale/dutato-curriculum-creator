@@ -363,7 +363,20 @@ def check_structure(input_dir: Path) -> list[Finding]:
                             "extracted section — it will produce zero content",
                         ))
                 for ref in source_sections:
-                    if _key(ref) in extracted_keys:
+                    if "::" in ref:
+                        # File-qualified ref: "file.json::Section Title"
+                        ref_file, ref_title = ref.split("::", 1)
+                        file_keys = {_key(t) for t in by_file.get(ref_file, []) if t}
+                        if _key(ref_title) in file_keys:
+                            referenced_keys.add(_key(ref_title))
+                        else:
+                            findings.append(Finding(
+                                "structure.stale_ref", "error", loc,
+                                f"source_sections entry {ref!r} matches no section "
+                                f"title in extracted/{ref_file} — the chunker will "
+                                f"pull nothing for it",
+                            ))
+                    elif _key(ref) in extracted_keys:
                         referenced_keys.add(_key(ref))
                     else:
                         findings.append(Finding(

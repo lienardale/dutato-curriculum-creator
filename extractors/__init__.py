@@ -38,6 +38,8 @@ _EXTENSION_MAP = {
     ".csv": "tabular",
     ".tsv": "tabular",
     ".zip": "notion",
+    ".md": "markdown",
+    ".markdown": "markdown",
     ".mp4": "video",
     ".m4a": "video",
     ".mkv": "video",
@@ -109,6 +111,9 @@ def _get_extractor(source_type: str):
     elif source_type == "video":
         from extractors.video import extract_video
         return extract_video
+    elif source_type == "markdown":
+        from extractors.markdown import extract_markdown
+        return extract_markdown
     else:
         raise ValueError(f"Unknown source type: {source_type}")
 
@@ -135,7 +140,7 @@ def extract_source(source: str, output_dir: str | None = None, **kwargs) -> dict
         kwargs["images_dir"] = str(Path(output_dir) / "images")
 
     # Extractors that accept kwargs
-    _kwarg_extractors = {"web", "notion_api", "pdf", "office", "notion", "video", "code"}
+    _kwarg_extractors = {"web", "notion_api", "pdf", "office", "notion", "video", "code", "markdown"}
     if source_type in _kwarg_extractors and kwargs:
         result = extractor(source, **kwargs)
     else:
