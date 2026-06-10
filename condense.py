@@ -37,6 +37,33 @@ TIER_DESCRIPTIONS = {
     "core": "Cheat-sheet curriculum covering absolute fundamentals only",
 }
 
+# Token budgets relative to the extensive curriculum (see rubrics/condensation.md)
+TIER_TARGET_RATIO = {"detailed": 0.10, "classic": 0.01, "core": 0.001}
+
+
+def find_missing_content(plan: dict, tiers: list[str]) -> list[str]:
+    """Find merge/synthesize plan entries that lack the mandatory 'content'.
+
+    The agent must write the condensed text itself — assembling without it
+    degrades to raw concatenation of source chunks.
+    """
+    violations: list[str] = []
+
+    def _check(entry: dict, loc: str) -> None:
+        strategy = entry.get("condensation_strategy", "keep")
+        if strategy in ("merge", "synthesize") and "content" not in entry:
+            violations.append(f"{loc} (strategy: {strategy})")
+
+    for tier in tiers:
+        for topic in plan.get(tier, []):
+            loc = f"{tier} > {topic.get('title', '?')}"
+            children = topic.get("children") or []
+            if not children:
+                _check(topic, loc)
+            for child in children:
+                _check(child, f"{loc} > {child.get('title', '?')}")
+    return violations
+
 
 # ---------------------------------------------------------------------------
 # Load inputs
@@ -448,6 +475,11 @@ def main():
         "--tiers", default=None,
         help="Comma-separated tiers to assemble (default: all tiers in the plan)",
     )
+    parser.add_argument(
+        "--allow-concat", action="store_true",
+        help="Permit merge/synthesize entries without inline 'content' to fall "
+             "back to raw concatenation (normally an error)",
+    )
     args = parser.parse_args()
 
     input_dir = Path(args.input)
@@ -474,6 +506,22 @@ def main():
                 f"Available: {', '.join(available_tiers)}"
             )
             sys.exit(1)
+
+    # merge/synthesize entries must carry agent-written content — collect ALL
+    # violations up front so the agent can fix the plan in one pass.
+    violations = find_missing_content(plan, tiers)
+    if violations and not args.allow_concat:
+        console.print(
+            f"[red]Error:[/] {len(violations)} merge/synthesize entries are "
+            f"missing their 'content' field:"
+        )
+        for v in violations:
+            console.print(f"  - {v}")
+        console.print(
+            "Write the condensed text into the plan for each entry, or re-run "
+            "with --allow-concat to accept raw concatenation."
+        )
+        sys.exit(1)
 
     # Load curriculum
     console.print(f"[bold blue]Loading curriculum from:[/] {input_dir}")
@@ -529,6 +577,18 @@ def main():
             original_structure=structure, exercises=exercises,
         )
         all_stats[tier] = tier_stats
+
+        # Operator feedback: compare against the tier's token budget
+        ratio = TIER_TARGET_RATIO.get(tier)
+        if ratio:
+            target = original_stats["total_tokens"] * ratio
+            actual = tier_stats.get("condensed_tokens", 0)
+            if actual and not (target / 3 <= actual <= target * 3):
+                console.print(
+                    f"  [yellow]Warning:[/] {tier} has {actual:,} tokens vs "
+                    f"target ~{target:,.0f} ({ratio:.1%} of extensive) — "
+                    f"outside 3x tolerance"
+                )
 
     print_summary(all_stats)
     console.print("\n[bold green]Done![/] Variants ready for upload.")

@@ -52,11 +52,12 @@ def _load_extracted_sections(extracted_dir: Path) -> list[dict]:
 
 def _build_section_index(
     sections: list[dict],
-) -> tuple[dict[str, str], dict[str, str], dict[str, list[dict]]]:
-    """Build lookups: normalized_title → content, source_path, and images."""
+) -> tuple[dict[str, str], dict[str, str], dict[str, list[dict]], dict[str, dict]]:
+    """Build lookups: normalized_title → content, source_path, images, metadata."""
     content_index: dict[str, str] = {}
     source_index: dict[str, str] = {}
     images_index: dict[str, list[dict]] = {}
+    meta_index: dict[str, dict] = {}
     for section in sections:
         title = section.get("title", "")
         if title:
@@ -69,7 +70,11 @@ def _build_section_index(
             if imgs:
                 images_index[norm] = imgs
                 images_index[norm.lower()] = imgs
-    return content_index, source_index, images_index
+            meta = section.get("metadata") or {}
+            if meta:
+                meta_index[norm] = meta
+                meta_index[norm.lower()] = meta
+    return content_index, source_index, images_index, meta_index
 
 
 def _assign_synthetic_pages(sections: list[dict]) -> list[dict]:
@@ -219,79 +224,153 @@ def _has_source_sections(topics: list[dict]) -> bool:
     return False
 
 
+# Target token range used for report flagging (the rubric range; the
+# chunker's own splitting bounds are the --max-tokens/--min-tokens args).
+REPORT_TOKEN_RANGE = (500, 1500)
+
+
+def _image_offset(img: dict, sec_start: int, sec_end: int, meta: dict) -> int:
+    """Estimate an image's char offset within [sec_start, sec_end).
+
+    PDF images carry ``context: "page:N"`` and PDF sections carry
+    ``metadata.page_start/page_end`` — interpolate the page position into
+    the section's char span. Without a position signal, anchor at the
+    start of the owning section.
+    """
+    context = img.get("context", "")
+    page_start = meta.get("page_start")
+    page_end = meta.get("page_end")
+    if context.startswith("page:") and page_start and page_end and page_end > page_start:
+        try:
+            page = int(context.split(":", 1)[1])
+        except ValueError:
+            return sec_start
+        frac = (page - page_start + 0.5) / (page_end - page_start + 1)
+        frac = min(max(frac, 0.0), 1.0)
+        return sec_start + int(frac * (sec_end - sec_start))
+    return sec_start
+
+
+def _attach_images(
+    chunks: list[dict],
+    placements: list[tuple[dict, int]],
+    total_text_len: int,
+) -> None:
+    """Assign each image to the chunk covering its source-text offset.
+
+    Chunk contents are paragraph-joins of the same text (modulo whitespace
+    normalization), so cumulative content length maps offsets to chunks
+    proportionally.
+    """
+    if not chunks or not placements:
+        return
+    lengths = [len(c["content"]) + 2 for c in chunks]
+    total_chunk_len = sum(lengths)
+    for img, offset in placements:
+        frac = offset / max(total_text_len, 1)
+        target = frac * total_chunk_len
+        cum = 0
+        idx = len(chunks) - 1
+        for i, length in enumerate(lengths):
+            cum += length
+            if target < cum:
+                idx = i
+                break
+        chunks[idx].setdefault("images", []).append(img)
+
+
 def _chunk_by_source_sections(
     topics: list[dict],
     section_index: dict[str, str],
     source_index: dict[str, str],
     images_index: dict[str, list[dict]] | None = None,
+    meta_index: dict[str, dict] | None = None,
+    max_tokens: int = 1500,
+    min_tokens: int = 200,
+    report: dict | None = None,
 ) -> list[dict]:
     """
     Chunk by directly mapping source_sections to extracted content.
 
     This approach bypasses the synthetic page system and works correctly
     regardless of how many sections exist in the extracted data.
+
+    When *report* is given, coverage problems (unmatched source_sections,
+    leaves with zero chunks, out-of-range token counts) are recorded in it
+    instead of being silently dropped.
     """
     leaves = _collect_leaf_topics(topics)
     all_chunks = []
     images_index = images_index or {}
+    meta_index = meta_index or {}
+
+    def _lookup(title: str):
+        """Resolve one section title -> (content, source, images, meta) or None."""
+        norm = _normalize(title)
+        content = section_index.get(norm) or section_index.get(norm.lower())
+        if not content:
+            return None
+        if report is not None:
+            report["_used_keys"].add(norm.lower())
+        return (
+            content,
+            source_index.get(norm) or source_index.get(norm.lower(), ""),
+            images_index.get(norm) or images_index.get(norm.lower(), []),
+            meta_index.get(norm) or meta_index.get(norm.lower(), {}),
+        )
 
     for leaf in leaves:
-        parts = []
+        parts: list[str] = []
         sources = set()
-        leaf_images: list[dict] = []
+        # (image, char offset into full_text)
+        image_placements: list[tuple[dict, int]] = []
+        unmatched: list[str] = []
+        offset = 0
+
+        def _add_part(content: str, src: str, imgs: list[dict], meta: dict) -> None:
+            nonlocal offset
+            sec_start = offset
+            sec_end = offset + len(content)
+            parts.append(content)
+            if src:
+                sources.add(src)
+            for img in imgs:
+                image_placements.append(
+                    (img, _image_offset(img, sec_start, sec_end, meta))
+                )
+            offset = sec_end + 2  # account for the "\n\n" join
 
         # Collect content from all source_sections
         for sec_title in leaf["source_sections"]:
-            norm = _normalize(sec_title)
-            content = (
-                section_index.get(norm)
-                or section_index.get(norm.lower())
-            )
-            if content:
-                parts.append(content)
-                src = (
-                    source_index.get(norm)
-                    or source_index.get(norm.lower(), "")
-                )
-                if src:
-                    sources.add(src)
-                # Collect images from this section
-                imgs = (
-                    images_index.get(norm)
-                    or images_index.get(norm.lower(), [])
-                )
-                leaf_images.extend(imgs)
+            found = _lookup(sec_title)
+            if found:
+                _add_part(*found)
+            else:
+                unmatched.append(sec_title)
 
         # Fallback: try matching the topic title itself
         if not parts:
-            norm = _normalize(leaf["title"])
-            content = (
-                section_index.get(norm)
-                or section_index.get(norm.lower())
-            )
-            if content:
-                parts.append(content)
-                src = (
-                    source_index.get(norm)
-                    or source_index.get(norm.lower(), "")
-                )
-                if src:
-                    sources.add(src)
-                imgs = (
-                    images_index.get(norm)
-                    or images_index.get(norm.lower(), [])
-                )
-                leaf_images.extend(imgs)
+            found = _lookup(leaf["title"])
+            if found:
+                _add_part(*found)
+
+        if unmatched and report is not None:
+            report["unmatched_source_sections"].append({
+                "topic_path": leaf["topic_path"],
+                "missing": unmatched,
+            })
 
         if not parts:
+            if report is not None:
+                report["empty_topics"].append(leaf["topic_path"])
             continue
 
         full_text = "\n\n".join(parts)
         source_path = next(iter(sources), "")
         chunks = chunk_text(
             full_text,
-            max_tokens=1500,
-            min_tokens=200,
+            max_tokens=max_tokens,
+            min_tokens=min_tokens,
             split_after_headings=leaf.get("split_after_headings"),
         )
 
@@ -301,24 +380,69 @@ def _chunk_by_source_sections(
             chunk["page_number"] = 1
             if source_path:
                 chunk["_source"] = source_path
+            if report is not None:
+                lo, hi = REPORT_TOKEN_RANGE
+                if not (lo <= chunk["token_count"] <= hi):
+                    report["out_of_range_chunks"].append({
+                        "topic_path": leaf["topic_path"],
+                        "chunk_index": i,
+                        "token_count": chunk["token_count"],
+                    })
             all_chunks.append(chunk)
 
-        # Attach images: first chunk gets all images (best-effort distribution)
-        if leaf_images and chunks:
-            first_chunk = all_chunks[len(all_chunks) - len(chunks)]
-            first_chunk["images"] = leaf_images
+        # Attach images to the chunk nearest their source position
+        _attach_images(chunks, image_placements, len(full_text))
 
     return all_chunks
 
 
-def bridge_and_chunk(structure_path: Path, extracted_dir: Path) -> list[dict]:
+def _new_report() -> dict:
+    return {
+        "unmatched_source_sections": [],
+        "empty_topics": [],
+        "orphan_sections": [],
+        "out_of_range_chunks": [],
+        "totals": {},
+        "_used_keys": set(),
+    }
+
+
+def _finalize_report(report: dict, sections: list[dict], chunks: list[dict]) -> dict:
+    """Compute orphan sections + totals; strip internal bookkeeping."""
+    used = report.pop("_used_keys")
+    seen: set[str] = set()
+    for section in sections:
+        title = _normalize(section.get("title", ""))
+        if not title or title.lower() in seen:
+            continue
+        seen.add(title.lower())
+        if title.lower() not in used:
+            report["orphan_sections"].append({
+                "source": section.get("_source", ""),
+                "title": title,
+            })
+    report["totals"] = {
+        "sections": len(seen),
+        "sections_used": len(used),
+        "chunks": len(chunks),
+        "tokens": sum(c.get("token_count", 0) for c in chunks),
+    }
+    return report
+
+
+def bridge_and_chunk(
+    structure_path: Path,
+    extracted_dir: Path,
+    max_tokens: int = 1500,
+    min_tokens: int = 200,
+) -> tuple[list[dict], dict | None]:
     """
     Main bridge function: reads structure + extracted data,
-    converts formats, runs chunking, returns chunks.
+    converts formats, runs chunking, returns (chunks, coverage_report).
 
     Uses source_sections-based direct chunking when available (works for
     any document size). Falls back to synthetic page alignment for legacy
-    structures without source_sections.
+    structures without source_sections (no coverage report in that mode).
     """
     # Load structure
     with open(structure_path, encoding="utf-8") as f:
@@ -329,21 +453,26 @@ def bridge_and_chunk(structure_path: Path, extracted_dir: Path) -> list[dict]:
 
     # Load all extracted sections
     sections = _load_extracted_sections(extracted_dir)
-    section_index, source_index, images_index = _build_section_index(sections)
+    section_index, source_index, images_index, meta_index = _build_section_index(sections)
 
     # Prefer source_sections-based chunking (handles large documents correctly)
     if _has_source_sections(topics):
-        return _chunk_by_source_sections(topics, section_index, source_index, images_index)
+        report = _new_report()
+        chunks = _chunk_by_source_sections(
+            topics, section_index, source_index, images_index, meta_index,
+            max_tokens=max_tokens, min_tokens=min_tokens, report=report,
+        )
+        return chunks, _finalize_report(report, sections, chunks)
 
     # Legacy fallback: synthetic page alignment (for structures without source_sections)
     topic_tree, _ = _convert_structure_to_topic_tree(topics, section_index)
     pages = _sections_to_pages(sections)
 
     if not pages:
-        return []
+        return [], None
 
     chunks = chunk_by_topics(pages, topic_tree)
-    return chunks
+    return chunks, None
 
 
 def main():
@@ -351,6 +480,10 @@ def main():
     parser.add_argument("--structure", required=True, help="Path to structure.json")
     parser.add_argument("--extracted", required=True, help="Path to extracted/ directory")
     parser.add_argument("-o", "--output", required=True, help="Output chunks.json path")
+    parser.add_argument("--max-tokens", type=int, default=1500,
+                        help="Maximum tokens per chunk (default: 1500)")
+    parser.add_argument("--min-tokens", type=int, default=200,
+                        help="Minimum tokens before a chunk may be split off (default: 200)")
     args = parser.parse_args()
 
     structure_path = Path(args.structure)
@@ -370,7 +503,10 @@ def main():
     console.print(f"[bold blue]Chunking:[/] {structure_path.name}")
     console.print(f"  Extracted dir: {extracted_dir}")
 
-    chunks = bridge_and_chunk(structure_path, extracted_dir)
+    chunks, report = bridge_and_chunk(
+        structure_path, extracted_dir,
+        max_tokens=args.max_tokens, min_tokens=args.min_tokens,
+    )
 
     # Write output
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -381,6 +517,35 @@ def main():
     console.print(
         f"  [green]✓[/] {len(chunks)} chunks, {total_tokens:,} tokens → {output_path}"
     )
+
+    # Write the coverage report and surface its findings
+    if report is not None:
+        report_path = output_path.parent / "chunk_report.json"
+        with open(report_path, "w", encoding="utf-8") as f:
+            json.dump(report, f, ensure_ascii=False, indent=2)
+        console.print(f"  Coverage report → {report_path}")
+
+        for entry in report["unmatched_source_sections"]:
+            console.print(
+                f"  [yellow]Warning:[/] {' > '.join(entry['topic_path'])} — "
+                f"unmatched source_sections: {entry['missing']}"
+            )
+        for topic_path in report["empty_topics"]:
+            console.print(
+                f"  [yellow]Warning:[/] {' > '.join(topic_path)} produced NO "
+                f"chunks — its content is missing from the curriculum"
+            )
+        for orphan in report["orphan_sections"]:
+            console.print(
+                f"  [yellow]Warning:[/] extracted section {orphan['title']!r} "
+                f"({orphan['source']}) is referenced by no topic — dropped"
+            )
+        if report["out_of_range_chunks"]:
+            console.print(
+                f"  [yellow]Warning:[/] {len(report['out_of_range_chunks'])} "
+                f"chunk(s) outside the {REPORT_TOKEN_RANGE[0]}-"
+                f"{REPORT_TOKEN_RANGE[1]} token target range"
+            )
 
 
 if __name__ == "__main__":
