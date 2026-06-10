@@ -1,0 +1,743 @@
+[
+  {
+    "topic_path": [
+      "Foundations of Software Architecture",
+      "Design, Architecture, and the Two Values"
+    ],
+    "exercises": [
+      {
+        "title": "Which Program Is More Valuable?",
+        "problem_statement": "A colleague argues: 'Our program works perfectly today, so its architecture doesn't matter — behaviour is what stakeholders pay for.' Using the two values of software, explain in your own words which of the two programs is ultimately more valuable: (a) a program that works perfectly but is impossible to change, or (b) a program that does not work but is easy to change. Justify your answer in terms of what happens when requirements change.",
+        "hints": [
+          "Recall that every software system provides two values to stakeholders: behaviour and structure.",
+          "Consider what happens to each program the first time the requirements change — which one can be brought back to a useful state?",
+          "Program (a) becomes useless when requirements change because it cannot be made to work again; program (b) can be made to work and kept working."
+        ],
+        "expected_solution": "Program (b) — the one that is easy to change — is ultimately more valuable. Software provides two values: behaviour (features that make or save money, bug fixes) and structure (the ability to change easily). If a program works perfectly but is impossible to change, it stops working the moment requirements change, and since it cannot be changed, it cannot be made to work again — it becomes useless. If a program does not work but is easy to change, it can be made to work and kept working as requirements evolve, so it remains continually useful. Structure is therefore the greater of the two values: it is what makes software 'soft'. The difficulty of a change should be proportional to the scope of the change, not blocked by a rigid structure.",
+        "common_mistakes": [
+          "Choosing the program that works because behaviour feels like the obvious, immediate value stakeholders pay for",
+          "Treating the two values as equally important rather than recognising structure as the greater value over time",
+          "Arguing the question is moot because 'real programs are somewhere in between', instead of engaging with what the thought experiment shows about changeability"
+        ],
+        "bloom_level": "understand",
+        "difficulty": 1
+      }
+    ]
+  },
+  {
+    "topic_path": [
+      "Foundations of Software Architecture",
+      "What Good Architecture Enables"
+    ],
+    "exercises": [
+      {
+        "title": "Defer or Decide Now?",
+        "problem_statement": "Your team is starting a new system. For each of the following decisions, classify it as a 'detail' whose decision can be deferred, or part of the 'policy' that must be the focus from the start, and briefly say why: (1) which relational or NoSQL database to use, (2) the business rules for calculating customer discounts, (3) whether the API will be REST or GraphQL, (4) which dependency injection framework to adopt, (5) whether the system is delivered over the web at all.",
+        "hints": [
+          "Recall the high-level split of a system into policies (business rules and procedures) and details (things that let humans and other systems communicate with the policy but do not affect it).",
+          "Good architecture's core strategy is to leave as many options open as possible, for as long as possible — ask for each item whether the policy needs to know about it.",
+          "Only one of the five items is a policy; databases, API styles, DI frameworks, and the web itself are all interfaces or mechanisms the policy should be unaware of."
+        ],
+        "expected_solution": "(1) Database choice — detail, deferrable. The policy should not care which kind of DB is used (it could even use flat files); even the query language and schema are technical details. (2) Discount calculation rules — policy. Business rules are the main elements the architect must shape the system around; everything else should be irrelevant to them. (3) REST vs GraphQL — detail, deferrable. These are interfaces to the outside world that high-level policy is not concerned about. (4) DI framework — detail, deferrable. High-level policy should not care how dependencies are resolved. (5) Web delivery — detail, deferrable. The web is a delivery mechanism the policy should be unaware of; the same policy could be used in non-web systems without change. Deferring these decisions means more information is available when they are finally made, allows experimentation (e.g. trying different databases), and makes the program device- and technology-independent. Even if the company has already committed to a detail, a good architect pretends the decision has not been made and keeps it changeable.",
+        "common_mistakes": [
+          "Treating the database as central to the system and choosing it first, when it is a detail the policy should not depend on",
+          "Assuming 'deferred' means 'never decided' rather than 'decided later with more information'",
+          "Classifying the web as fixed because the product is 'a web app' — the web is a delivery mechanism, not the system",
+          "Forgetting that an existing company commitment to a technology doesn't change the architectural treatment: shape the system as if the decision were still open"
+        ],
+        "bloom_level": "apply",
+        "difficulty": 1
+      }
+    ]
+  },
+  {
+    "topic_path": [
+      "Design Principles",
+      "The SOLID Principles"
+    ],
+    "exercises": [
+      {
+        "title": "Three Actors, One Employee Class",
+        "problem_statement": "An `Employee` class contains `calculatePay()` (specified by the finance organisation under the CFO), `reportHours()` (specified by operations under the COO), and `save()` (specified by the technical organisation under the CTO). Two engineers from different teams recently edited the class at the same time and produced a painful merge conflict. State the SRP correctly (not the 'do one thing' version), explain why this class violates it, and propose how to fix it.",
+        "hints": [
+          "The SRP is phrased in terms of 'reasons to change' — and a reason to change is a group of users or stakeholders, called an actor.",
+          "Count the actors this single class is responsible to, and connect that to why simultaneous edits and merge conflicts happen.",
+          "The fix always involves moving the functions serving different actors into different classes — the rebuttal to 'every class will have one function' is that classes will have one or a few public methods but possibly many private ones."
+        ],
+        "expected_solution": "The SRP states: 'A module should have one, and only one, reason to change' — equivalently, 'a module should be responsible to one, and only one, actor', where an actor is a group of users or stakeholders who would want the module changed in the same way. It is NOT 'every module should do one thing' (that is a separate, lower-level rule about functions). The `Employee` class violates the SRP because it is responsible to three different actors: the CFO (calculatePay), the COO (reportHours), and the CTO (save). Problems occur because code that different actors depend on is put in close proximity: an engineer working for the CTO editing `save()` and an engineer working for the COO editing `reportHours()` unknowingly create a merge conflict, which is risky for all actors depending on the module. The fix is to separate the code that different actors depend on by moving the functions into different classes — one class per actor's concerns (optionally recombined behind a facade). The objection 'every class will contain only one function' is false: each class will expose one or a few public methods but may contain many private methods, and small interfaces reduce blast radius and promote good design.",
+        "common_mistakes": [
+          "Stating the SRP as 'a class should do only one thing', which is the lower-level function rule, not the SRP",
+          "Identifying the responsibilities as 'pay, hours, persistence' without tying each to a distinct actor (CFO, COO, CTO)",
+          "Objecting that splitting produces one-function classes, ignoring that classes keep private helper methods behind a small public interface"
+        ],
+        "bloom_level": "apply",
+        "difficulty": 1
+      },
+      {
+        "title": "Protect the Financial Report Generator",
+        "problem_statement": "In a reporting system, the `Financial Report Generator` (a high-level business component) must read data via the `Database` component to do its job, so a developer wrote a direct source-code dependency: FinancialReportGenerator -> Database. Explain why this arrangement points the 'protection' the wrong way, and propose the fix that keeps the system open for extension but closed for modification. Recall the diagram convention: an arrow A -> B means A explicitly mentions B, so A is vulnerable to changes in B and B is protected from changes in A.",
+        "hints": [
+          "Ask which component deserves more protection: arrows should point towards the components we want to protect, and the higher the level, the more protection it needs.",
+          "Business rules / interactors / use cases belong high in the protection hierarchy; low-level details should be the most vulnerable.",
+          "When the flow of execution goes against the intended protection hierarchy, introduce an interface (e.g. on a Financial Data Mapper) so the source-code dependency is inverted."
+        ],
+        "expected_solution": "With FinancialReportGenerator -> Database, the generator explicitly mentions the Database, making the high-level business component vulnerable to changes in a low-level detail, and protecting the Database instead. This is backwards: business rules should sit high in the protection hierarchy, while low-level details (like persistence or views) should be the most vulnerable. Because the flow of execution must still go from the generator to the database, we use dependency inversion to control the direction of the source-code dependency: introduce an interface (e.g. on a `Financial Data Mapper`) that the Financial Report Generator owns/uses, and have the database-side component implement that interface. Now the source-code arrow points from the database side towards the business component, the generator is protected from database changes, and new data sources can be added by writing new implementations (extension) rather than modifying the generator (closed for modification). It is also important that all dependency lines cross component boundaries in the same direction, which dependency inversion can enforce.",
+        "common_mistakes": [
+          "Reading A -> B as 'B depends on A' and so misjudging which component is vulnerable",
+          "Placing the interface in the database component, which leaves the business component still depending on the low-level side",
+          "Confusing the direction of execution flow with the direction of the source-code dependency — inversion changes the latter, not the former",
+          "Trying to satisfy the OCP by adding if/else branches inside the generator for each data source, which modifies existing code instead of extending it"
+        ],
+        "bloom_level": "apply",
+        "difficulty": 1
+      },
+      {
+        "title": "The acme.com Special Case",
+        "problem_statement": "A dispatch system calls a fleet of taxi services through a common REST interface. Deep in the caller you find: `if service.name == 'acme.com' then build the URL with /dest/ instead of /destination/ else use the standard format`. Identify which principle this code violates, explain what the violation does to the codebase, and describe the recommended way to handle the non-conforming service without the if-statement.",
+        "hints": [
+          "LSP holds when the caller of a substitutable function or REST call needs no knowledge of the specific thing implementing it.",
+          "Type-checking conditionals keyed on which implementation you're talking to are the classic symptom of this violation.",
+          "When a non-complying type can't be fixed, store the per-implementation dispatch formats in configuration (database, config file, flat file) keyed by URI."
+        ],
+        "expected_solution": "This violates the Liskov Substitution Principle. LSP — originally a guide for subclass inheritance, now a broader principle for defining interfaces at the architectural level — is satisfied when the caller of a substitutable function or REST call can invoke it with a pre-agreed signature without any knowledge of the implementing thing. Here the caller must know it is talking to acme.com and format parameters differently, so acme.com is not substitutable. Such type-checking conditionals introduce significant complexity into the codebase and tend to multiply wherever the interface is used. The recommended approach, when the non-conforming implementation cannot be brought into line, is to move the special case out of code and into configuration: store the dispatch format per URI (e.g. a table mapping acme.com to '/pickupAddress/%s/pickupTime/%s/dest/%s' and *.* to '/pickupAddress/%s/pickupTime/%s/destination/%s') in a database, config file, or flat file. The caller then looks up the format and stays free of implementation-specific branching.",
+        "common_mistakes": [
+          "Naming ISP instead of LSP — the issue is a non-substitutable implementation, not depending on unneeded interface members",
+          "Thinking LSP only applies to class inheritance, when it covers any interchangeable implementations including REST services and duck-typed classes",
+          "Proposing a subclass or wrapper that still requires the caller to know which service it is talking to",
+          "Leaving the if-statement 'because it is only one case' — these conditionals accumulate and spread through every caller"
+        ],
+        "bloom_level": "apply",
+        "difficulty": 1
+      }
+    ]
+  },
+  {
+    "topic_path": [
+      "Design Principles",
+      "Component Principles"
+    ],
+    "exercises": [
+      {
+        "title": "REP, CCP, CRP — and the Tension Between Them",
+        "problem_statement": "Explain in your own words what each of the three component-cohesion principles (REP, CCP, CRP) tells you about which classes belong together in a component, which way each principle pushes component size, and why an architect's preferred balance between them changes as a project matures.",
+        "hints": [
+          "REP is about what is releasable together; CCP is the SRP applied at component level (group by reason and time of change); CRP is about not forcing users to depend on classes they don't need.",
+          "Two of the principles are inclusive and tend to make components larger; one is exclusive and drives them smaller.",
+          "Think about what a development team cares about early in a project (ease of change) versus later (reuse by others)."
+        ],
+        "expected_solution": "REP (Reuse/Release Equivalence): classes grouped into a component should be releasable together — sharing the same version number, release tracking, and release documentation should make sense to both author and users. Symptoms of violation: upgrading a component forces changes in multiple unrelated pieces of functionality, or you must upgrade `authentication` to get `avatar processing` improvements. CCP (Common Closure): gather into components those classes that change for the same reasons and at the same times, and separate those that change at different times for different reasons — this is the single responsibility principle applied at the component level, where 'reason for change' relates to actors. CRP (Common Reuse): a component should contain only inseparable classes that are all needed for it to work; if a class is not absolutely needed, it shouldn't be in the component. REP and CCP are inclusive principles that tend to make components larger; CRP is exclusive, driving components smaller — hence an inherent tension. It is the architect's job to position the design within this tension based on the current concerns of the team, and the balance is dynamic: it shifts as the project matures (early on, develop-ability concerns like CCP dominate; later, reuse concerns gain weight).",
+        "common_mistakes": [
+          "Describing CCP as being about runtime coupling rather than about classes changing for the same reasons at the same times",
+          "Missing that REP and CCP push components larger while CRP pushes them smaller — the source of the tension",
+          "Treating the balance point as a one-time decision instead of one that shifts as the project matures"
+        ],
+        "bloom_level": "understand",
+        "difficulty": 1
+      },
+      {
+        "title": "Compute Instability and Check the SDP",
+        "problem_statement": "Component `BankDeposits` has 4 incoming dependencies from other components and 1 outgoing dependency. Component `AndroidPrintProofOfTransaction` has 0 incoming dependencies and 3 outgoing dependencies, one of which points to `BankDeposits`. (1) Compute the Instability metric I for both components. (2) Determine whether the dependency AndroidPrintProofOfTransaction -> BankDeposits complies with the Stable Dependencies Principle. (3) Explain what to add to BankDeposits so it stays changeable despite being depended upon.",
+        "hints": [
+          "Instability is I = Fan-out / (Fan-in + Fan-out), where Fan-in counts incoming dependency arrows and Fan-out counts outgoing ones; I=0 is maximally stable, I=1 maximally unstable.",
+          "The SDP says the I metric should decrease in the direction of dependency — dependencies must point towards stability.",
+          "To keep a heavily-depended-on component changeable, put abstract classes and interfaces in it and have others depend on those abstractions."
+        ],
+        "expected_solution": "(1) BankDeposits: I = 1/(4+1) = 0.2 (quite stable). AndroidPrintProofOfTransaction: I = 3/(0+3) = 1.0 (maximally unstable). (2) Yes, it complies: the dependency runs from I=1.0 to I=0.2, so instability decreases in the direction of the dependency, exactly as the SDP requires — we depend in the direction of stability. This is also the right design intent: AndroidPrintProofOfTransaction should be easy to change, so nothing hard to change should depend on it, while high-level logic like BankDeposits belongs in stable components that others depend on. Note that stability has nothing to do with frequency of change — it reflects the amount of work a change requires, and a component is hard to change when it is big, complex, lacks clarity, or (most relevant here) many other components depend on it. (3) To preserve leeway to change BankDeposits, create abstract classes and interfaces inside the stable component and have other components depend on those abstractions (the Stable Abstractions idea). The component then contains a mix of abstractions that others depend on, plus concrete classes implementing them that are easy to change because nothing depends on them.",
+        "common_mistakes": [
+          "Inverting the formula (using Fan-in in the numerator) and concluding the wrong component is stable",
+          "Believing the SDP is violated whenever a stable component exists, rather than checking that I decreases along each dependency arrow",
+          "Equating stability with low frequency of change, when stability is about the work required to change (especially how many components depend on it)",
+          "Forgetting that stable components risk rigidity unless they expose abstractions for others to depend on"
+        ],
+        "bloom_level": "apply",
+        "difficulty": 1
+      }
+    ]
+  },
+  {
+    "topic_path": [
+      "Clean Architecture",
+      "Drawing Boundary Lines"
+    ],
+    "exercises": [
+      {
+        "title": "Position the New Subsystem as a Plugin",
+        "problem_statement": "Your order-management business rules currently talk to a SQL database. The company now wants (1) a new console-based admin GUI alongside the web GUI, and (2) the option to switch part of the data to a NoSQL store. A teammate proposes putting SQL queries and HTML-specific formatting inside the business-rule classes 'since they are inextricably connected anyway'. Apply the plugin-architecture idea: state where the boundary lines must be drawn, which side each subsystem belongs on, and what the business rules are allowed to know about the GUI and the database.",
+        "hints": [
+          "Draw lines between things that matter and things that don't: the GUI doesn't matter to the business rules, the database doesn't matter to the GUI, and the database doesn't matter to the business rules.",
+          "The business rules only need to know that there is a set of functions to fetch and save data — so what construct hides the database behind the boundary?",
+          "The GUI is just an IO device; the system is the set of business rules that drive it, and it is the business rules that determine which operations the GUI and persistence plugins must implement."
+        ],
+        "expected_solution": "Boundary lines go between the business rules and the GUI, between the business rules and the database, and between the GUI and the database — lines between things that matter and things that don't, and between things that change at different times for different reasons. The database and the GUIs sit on the plugin side; the business rules are the core. The claim that the database is inextricably connected to the business rules is false: the business rules only need to know there is a set of functions to fetch and save data, so the DB can be hidden behind an interface (in a real application, many business-rule classes, many database interfaces, and many implementing classes). Likewise, the GUI is not 'the system' — it is a simple IO device; the system is the set of business rules that drive it, so the business rules should be developed first. With DB and GUI as plugins, you can implement and swap different GUIs (web, console, SOA-based) and different databases (SQL, NoSQL, file system). The business rules determine which operations any GUI and persistence mechanism must support, and it is up to those plugins to implement them. Swapping is still non-trivial, but the plugin structure makes such changes possible — impossible/impractical in systems where business rules contain code tailored to a particular GUI or persistence technology. Coupling business rules to SQL and HTML is exactly the coupling to premature decisions that makes software hard to maintain.",
+        "common_mistakes": [
+          "Letting business rules import the database 'just for reads', which still couples the core to a premature decision",
+          "Putting the interface ownership on the database side, so the business rules still depend outward on the plugin",
+          "Believing the GUI must be developed first because users see it — the business rules are the system and come first",
+          "Claiming the design is worthless unless swapping plugins is trivial — the goal is to make such changes possible, not free"
+        ],
+        "bloom_level": "apply",
+        "difficulty": 2
+      }
+    ]
+  },
+  {
+    "topic_path": [
+      "Clean Architecture",
+      "The Dependency Rule and the Four Layers"
+    ],
+    "exercises": [
+      {
+        "title": "Is This Dependency Legal?",
+        "problem_statement": "Apply the Dependency Rule ('source code dependencies must point only inward, toward higher-level policies') to judge each proposed dependency as legal or illegal, with a one-line reason: (1) a use-case interactor imports a view-model class defined in the interface-adapters layer; (2) an entity class is annotated with attributes from the web framework in the outermost layer; (3) a repository in the interface-adapters layer implements a data-access interface declared in the use-case layer; (4) a presenter in the interface-adapters layer calls methods on use-case output data; (5) a use case consumes a 'row structure' data format generated by the database framework.",
+        "hints": [
+          "Nothing in an inner circle can know anything about something in an outer circle — check which layer each side of the dependency lives in.",
+          "Data formats declared in an outer circle should not be used by an inner circle, especially formats generated by a framework.",
+          "Implementing an interface declared further inward is the legal way for outer code to serve inner code — the source-code arrow points inward."
+        ],
+        "expected_solution": "(1) Illegal — the use-case layer is inner; importing a view-model from the interface-adapters layer makes an inner circle know about an outer one. (2) Illegal — entities are at the highest level and must know nothing about frameworks in the outer circles; framework annotations drag outer-layer knowledge inward. (3) Legal — the interface is declared in the use-case layer and implemented by the adapter-layer repository, so the source-code dependency points inward; this is exactly how repositories should work (SQL knowledge restricted to the adapter layer, nothing inward knowing about the database). (4) Legal — the presenter (outer) depends on data returned by the use case (inner); on the way out of the use cases, presenters wrap data returned by the use case and adapt it to the view. (5) Illegal — data formats declared in an outer circle must not be used by an inner circle, especially formats generated by a framework in an outer circle. Bonus context: the four layers are Entities (enterprise-wide, application-independent Critical Business Rules), Use Cases (application-specific business rules that control the dance of the Entities), Interface Adapters (converting data between the form convenient for use cases/entities and the form convenient for the web or database; contains presenters, view models, controllers), and Frameworks & Drivers (the database, web framework, mostly glue code). The count of four is schematic — more layers are fine as long as dependencies keep pointing inward.",
+        "common_mistakes": [
+          "Judging legality by flow of control instead of by source-code dependency direction",
+          "Allowing 'harmless' framework annotations on entities, which still violates the rule that inner circles know nothing of outer ones",
+          "Marking (3) illegal because the repository 'talks to' the use case, missing that implementing an inward-declared interface points the dependency inward",
+          "Believing exactly four layers are mandatory, when the layer count is schematic so long as the Dependency Rule holds"
+        ],
+        "bloom_level": "apply",
+        "difficulty": 2
+      }
+    ]
+  },
+  {
+    "topic_path": [
+      "Architecture Styles in Practice",
+      "Monoliths and Layered Applications"
+    ],
+    "exercises": [
+      {
+        "title": "Layers, Tiers, and the Upside-Down Dependency",
+        "problem_statement": "A teammate reviews a three-layer monolith (UI, BLL, DAL) and says: \"Since the UI calls the business logic and the business logic calls the data access code, everything is fine — that's exactly how layering is supposed to work.\" In your own words: (1) state the communication rules each layer must follow in this traditional design, (2) explain the key disadvantage of having compile-time dependencies run from top to bottom, and (3) name the principle that can be used to address this problem.",
+        "hints": [
+          "Think about which layer is allowed to talk to which: can the UI ever touch persistence directly?",
+          "Follow the compile-time dependency arrows: UI depends on BLL, BLL depends on DAL. Which layer holds the most important logic, and what does it now depend on?",
+          "Consider what happens when you try to test business logic that depends on data access implementation details — what extra infrastructure do your tests suddenly need?"
+        ],
+        "expected_solution": "(1) Communication rules: users make requests through the UI layer, which interacts only with the BLL. The BLL can call the DAL for data access requests. The UI must not make requests to the DAL directly or interact with persistence through other means, and the BLL should only reach persistence by going through the DAL. Each layer has its own well-known responsibility. (2) The disadvantage: compile-time dependencies run from the top to the bottom, so the BLL — which usually holds the most important logic in the application — ends up dependent on data access implementation details (and often on the existence of a database). This makes testing business logic difficult, typically requiring a test database. (3) The dependency inversion principle can be used to address this issue.",
+        "common_mistakes": [
+          "Claiming the UI may call the DAL directly for 'simple reads' — the traditional layering rules forbid the UI from touching persistence at all",
+          "Confusing logical layers with physical tiers — layers are logical separation within the application; tiers are separate physical deployment targets, and an N-layer app can run on a single tier",
+          "Saying the problem with top-to-bottom dependencies is performance rather than the BLL's coupling to data access details and the resulting test difficulty"
+        ],
+        "bloom_level": "understand",
+        "difficulty": 1
+      }
+    ]
+  },
+  {
+    "topic_path": [
+      "Architecture Styles in Practice",
+      "Beyond the Monolith: Queues and Events"
+    ],
+    "exercises": [
+      {
+        "title": "Assign the Work: Web, Queue, or Worker?",
+        "problem_statement": "You are designing a video-sharing site with a relatively simple domain using the Web-Queue-Worker style. For each operation, decide whether it should be handled directly by the web front end or sent through the message queue to the worker, and justify each choice: (a) a user updates their profile display name, (b) a user uploads a video that must be transcoded into multiple resolutions, (c) a user fetches the homepage feed, (d) a nightly batch job recalculates trending videos. Then state where session state should live and how the front end and worker should be scaled.",
+        "hints": [
+          "The core rule: the web front end handles client requests; the worker does resource-intensive tasks, long-running workflows, or batch jobs.",
+          "Not every transaction must go through the queue — simple reads and writes can be handled by the front end directly. Which of the four operations are simple?",
+          "Both components are stateless. Where can session state go, and what does putting the web app and worker in separate App Service plans buy you?"
+        ],
+        "expected_solution": "(a) Profile name update: handled directly by the web front end — it's a simple write, and not every transaction must go through the queue and worker; the front end can handle simple read and write operations directly. (b) Video transcoding: send a message to the queue for the worker — workers should be reserved for resource-intensive tasks and long-running workflows, and the queue provides asynchronous messaging that decouples the front end from the worker. (c) Homepage feed: web front end — a simple read; use a cache for values from the database for quick reads and a content delivery network for static content. (d) Nightly trending recalculation: the worker — it can be run on a schedule for batch processing (workers can be triggered by queue messages or run on a schedule). State and scaling: the web front end and worker are both stateless; session state is stored in a distributed cache. Scale using the platform's built-in autoscale (schedule-based if load is predictable, metrics-based if not), and consider placing the web app and the worker (e.g., a Functions app) in separate App Service plans so they can scale independently.",
+        "common_mistakes": [
+          "Routing every operation through the queue, adding latency and complexity to simple reads and writes the front end could handle directly",
+          "Storing session state in the web front end's memory, which breaks statelessness",
+          "Putting the front end and worker in one scaling unit so they cannot scale independently",
+          "Sharing data schemas or code modules between front end and worker, creating hidden dependencies that let them grow into hard-to-maintain monolithic components"
+        ],
+        "bloom_level": "apply",
+        "difficulty": 1
+      },
+      {
+        "title": "Pub/Sub or Event Streaming?",
+        "problem_statement": "Two teams need eventing infrastructure. Team A builds order notifications: when an order event is published, every currently subscribed service should react immediately; nobody needs past events. Team B builds IoT telemetry analytics: events arrive at high volume, must be strictly ordered within a partition, and a new analytics consumer added next month must be able to replay last week's events after a bug fix. For each team, choose publish-subscribe or event streaming, and explain the key difference in how each model treats events after delivery and what that means for late-arriving consumers.",
+        "hints": [
+          "The deciding question is: what happens to an event after it is received? Is it stored anywhere a future consumer could read it?",
+          "In one model the messaging infrastructure tracks subscriptions and pushes each published event to subscribers; in the other, events are written to a durable log and clients read from any position.",
+          "Replayability is the giveaway: which model supports recovery scenarios, late-arriving consumers, and reprocessing after a bug fix?"
+        ],
+        "expected_solution": "Team A should use publish-subscribe: the messaging infrastructure tracks subscriptions and sends each published event to every subscriber, so consumers respond immediately. After the event is received it isn't stored in a durable log, so new subscribers don't see past events — acceptable here since nobody needs history. Team B should use event streaming: events are written to a log, are strictly ordered within a partition, and are durable. Clients don't subscribe; instead a client can read from any part of the stream and is responsible for advancing its own position, so it can join at any time and replay events. This replayability supports recovery scenarios, late-arriving consumers, and reprocessing after a bug fix — exactly Team B's requirements (and event streaming platforms like Azure Event Hubs are designed for high-throughput ingestion, fitting IoT-scale volume). Key difference: pub/sub delivers and forgets (no durable log, no history for new subscribers); streaming retains an ordered, durable log that consumers traverse at their own pace.",
+        "common_mistakes": [
+          "Choosing pub/sub for Team B because 'subscribers get events in real time', ignoring the replay and late-consumer requirements that pub/sub cannot satisfy",
+          "Assuming pub/sub subscribers can read missed past events — without a durable log, new subscribers don't see prior events",
+          "Confusing the event stream model with the Competing Consumers pattern, where consumers pull messages from a queue and each message is processed only once"
+        ],
+        "bloom_level": "understand",
+        "difficulty": 1
+      },
+      {
+        "title": "Design for Failure in an Event-Driven Workflow",
+        "problem_statement": "Your event-driven order pipeline has multiple consumer types, each running several instances. In testing you observe: (1) a consumer crashed mid-processing and the event vanished, (2) a malformed event blocked a consumer from processing anything else, and (3) when something fails, nobody can tell which component misbehaved because the transaction spans several producers and consumers. Propose a concrete mechanism from event-driven architecture practice to address each of the three problems.",
+        "hints": [
+          "For the vanished event: think about when an event should be removed or dequeued from the channel — before or after the next component confirms it has it?",
+          "For the malformed event: instead of blocking, where can the consumer immediately send the problematic event so it can keep processing others? What happens if even that handler fails?",
+          "For the mystery failure: in a synchronous system you'd trace a call stack. What must every event carry so logging systems can connect related operations across decoupled components?"
+        ],
+        "expected_solution": "(1) Data loss: persist in-transit events and only remove or dequeue an event when the next component acknowledges receipt — the features known as client acknowledge mode and last participant support. This prevents an event from being dropped when a component crashes before successfully processing and handing it over. (2) Malformed event: use a dedicated error-handler processor. When a consumer encounters an error, it immediately and asynchronously sends the problematic event to the error-handler processor and continues processing other events. The error handler attempts to resolve the problem and resubmits the event to the original ingestion channel if successful; if it fails, it forwards the event to a dead-letter queue (DLQ) for administrator inspection. (Note that resubmitted events are processed out of sequence.) (3) Observability: include a correlation ID in every event so all downstream consumers and logging systems can connect related operations into a single trace. Plan this instrumentation from the start of the design, because retrofitting observability into a decoupled system is substantially more difficult than building it in.",
+        "common_mistakes": [
+          "Having the consumer retry the malformed event in a blocking loop instead of handing it off to an error-handler processor and moving on",
+          "Deleting/dequeuing events as soon as they are read, before the next component acknowledges receipt — the exact cause of the data loss",
+          "Planning to 'add tracing later' — retrofitting correlation IDs into a decoupled system is much harder than designing them in",
+          "Expecting resubmitted error-handled events to arrive in their original order"
+        ],
+        "bloom_level": "apply",
+        "difficulty": 1
+      }
+    ]
+  },
+  {
+    "topic_path": [
+      "Web Application Architecture",
+      "Traditional Web Apps vs SPAs"
+    ],
+    "exercises": [
+      {
+        "title": "Pick the Front-End Approach for Three Products",
+        "problem_statement": "Using the decision factors for traditional web apps, SPAs, and Blazor, recommend an approach for each product and justify it: (A) a public city-services information portal that is read-mostly, must be discoverable by search engines, and must work in browsers without JavaScript; (B) an internal logistics dashboard with complex interactive forms, drag-and-drop scheduling, and an existing web API used by mobile clients — the team is strong in TypeScript; (C) a rich admin console for a .NET shop whose developers are productive in C#/Razor but have minimal JavaScript experience.",
+        "hints": [
+          "Map each product against the decision table factors: required JavaScript/TypeScript familiarity, support for browsers without scripting, minimal vs rich client-side behavior.",
+          "Product A's needs (read-only, SEO, no-JS browsers) all point the same direction; which approach gets unique page URLs indexed by default?",
+          "Products B and C both need a rich UI — the tiebreaker is team skill set: TypeScript-fluent vs .NET-only."
+        ],
+        "expected_solution": "(A) Traditional web app. Its client-side requirements are simple/read-only; traditional apps are well-suited to minimal client-side behavior, support browsers without scripting, and have better SEO — each unique page has its own URL that can be bookmarked and indexed by search engines by default, a clear benefit for a public-facing app that benefits from search discovery. SPAs require client-side JavaScript and their indexing support may be lacking. (B) SPA. The app must expose a rich UI with many features (complex interactive forms, drag-and-drop — behaviors SPAs support much more readily), the team is familiar with TypeScript (required for SPAs), and the application already exposes an API for other clients, so a SPA can leverage those APIs rather than reproducing logic server-side. (C) Blazor. It needs a rich user interface, and the team is more comfortable with .NET development than JavaScript or TypeScript: Blazor lets them build rich, SPA-like client-side behaviors with C# and Razor without significant JavaScript development, requiring only minimal JavaScript familiarity per the decision table, while still calling APIs for data.",
+        "common_mistakes": [
+          "Recommending a SPA for the public portal, sacrificing default SEO and breaking users in browsers without JavaScript support",
+          "Ignoring team skills — choosing a SPA for the .NET-only team (SPAs require JavaScript/TypeScript competence) or Blazor for the TypeScript-fluent team with an established API",
+          "Treating a traditional app as 'outdated' rather than recognizing it is well-suited (not just acceptable) for minimal client-side behavior, where a SPA is overkill",
+          "Forgetting SPA hidden costs: greater architectural/security expertise, framework churn, and more difficult build/deployment automation"
+        ],
+        "bloom_level": "apply",
+        "difficulty": 2
+      }
+    ]
+  },
+  {
+    "topic_path": [
+      "Web Application Architecture",
+      "Server-Side Patterns Essentials"
+    ],
+    "exercises": [
+      {
+        "title": "Untangle the Cluttered Action Method",
+        "problem_statement": "Review this API controller pattern, repeated across a dozen actions in your project:\n\n```csharp\n[HttpPut(\"{id}\")]\npublic async Task<IActionResult> Put(int id, [FromBody]Author author)\n{\n    if ((await _authorRepository.ListAsync()).All(a => a.Id != id))\n    {\n        return NotFound(id);\n    }\n    if (!ModelState.IsValid)\n    {\n        return BadRequest(ModelState);\n    }\n    author.Id = id;\n    await _authorRepository.UpdateAsync(author);\n    return Ok();\n}\n```\n\nAdditionally, one service in the project calls `AuditLogger.WriteStatic(...)`, a static method that writes to the database. Identify the cross-cutting concerns duplicated in the actions, show what the action looks like after refactoring with the recommended ASP.NET Core mechanism, and explain what is wrong with the static call.",
+        "hints": [
+          "Two checks appear in every action: model validation and existence/404 handling. What ASP.NET Core MVC feature lets you run code before or after steps in the request pipeline and is usually applied as an attribute?",
+          "Write an ActionFilterAttribute whose OnActionExecuting sets context.Result to a BadRequestObjectResult when ModelState is invalid; a similar filter can return 404 before the action runs.",
+          "For the static call, recall the 'static cling' code smell and 'new is glue': what makes a method that calls a static database-writing method hard to test?"
+        ],
+        "expected_solution": "The cross-cutting concerns are model validation (return BadRequest when validation fails) and existence checking (return NotFound for keys that don't exist) — common error-handling policies cluttering every action. Pull them into MVC filters, which run code before or after steps in the request pipeline and are applied as attributes at action, controller, or global level. A validation filter:\n\n```csharp\npublic class ValidateModelAttribute : ActionFilterAttribute\n{\n    public override void OnActionExecuting(ActionExecutingContext context)\n    {\n        if (!context.ModelState.IsValid)\n        {\n            context.Result = new BadRequestObjectResult(context.ModelState);\n        }\n    }\n}\n```\n\n(For APIs, the `[ApiController]` attribute enforces this behavior without a separate filter.) A `[ValidateAuthorExists]` filter likewise checks the record and returns 404 before the action executes. The refactored action becomes extremely thin:\n\n```csharp\n[HttpPut(\"{id}\")]\n[ValidateAuthorExists]\npublic async Task<IActionResult> Put(int id, [FromBody]Author author)\n{\n    await _authorRepository.UpdateAsync(author);\n    return Ok();\n}\n```\n\nThe static call is the 'static cling' code smell: the method calls a static method that writes to a database, so it is tightly coupled to that infrastructure — anything that breaks the database call breaks the method, and testing requires either commercial mocking libraries to mock statics or a real test database. Following the Explicit Dependencies Principle, the service should request an abstraction (e.g., an injected logger/auditing interface) through its constructor rather than calling the static implementation directly.",
+        "common_mistakes": [
+          "Copy-pasting the validation and 404 checks into every new action instead of factoring them into filters, creating duplication and inconsistency",
+          "Believing static calls are always fine to test — statics with infrastructure dependencies or side effects are the problem, not stateless helpers",
+          "Putting the filter logic in a base controller class instead of using the filter pipeline, which can't short-circuit requests before model binding/action execution the same way",
+          "Treating 'new is glue' as a ban on the new keyword, rather than a prompt to ask whether an instance with external dependencies should be requested via DI"
+        ],
+        "bloom_level": "analyze",
+        "difficulty": 2
+      },
+      {
+        "title": "Lock Down Pages and APIs the Right Way",
+        "problem_statement": "Your ASP.NET Core solution has (1) a Razor Pages app where only users in the HRManager or Finance role may view SalaryController, and where any page showing employee data should require an \"EmployeeNumber\" claim; and (2) a separate public API project consumed by a Blazor WebAssembly admin app. A junior dev protected the API with the same cookie-based Identity scheme as the website and put role strings on dozens of [Authorize] attributes. Show how to: (a) restrict SalaryController by role, (b) define and apply a claims-based policy for the employee-data pages, (c) explain why cookie authentication is wrong for the API and what to use instead, including how the Blazor client sends credentials.",
+        "hints": [
+          "Roles go directly into the [Authorize] attribute; for the claim requirement, look at services.AddAuthorization and AddPolicy with RequireClaim.",
+          "Ask what a cookie scheme does when an unauthenticated request arrives (redirects to a login page) and whether an HttpClient consuming an API can do anything useful with redirected HTML.",
+          "Token-based auth: the client authenticates once with the provider, receives a JWT, and attaches it to each request — in which HTTP header, with which scheme prefix?"
+        ],
+        "expected_solution": "(a) Role restriction:\n\n```csharp\n[Authorize(Roles = \"HRManager,Finance\")]\npublic class SalaryController : Controller { }\n```\n\nUsers in either role get access; to require multiple roles, apply the attribute multiple times. (b) Claims policy — configure once, apply everywhere:\n\n```csharp\nservices.AddAuthorization(options =>\n{\n    options.AddPolicy(\"EmployeeOnly\", policy => policy.RequireClaim(\"EmployeeNumber\"));\n});\n```\n\nthen `[Authorize(Policy = \"EmployeeOnly\")]` on the relevant pages/actions. Policies separate the kind of action being restricted from the specific roles/rules, so adding a new role later means updating one policy instead of every [Authorize] role list (at minimum, replace repeated role strings with constants). (c) Cookie schemes use redirection to login pages, which suits browser-based web apps but not APIs: API clients are code (e.g., HttpClient) expecting a usable response or a status code — they don't render HTML, so redirecting them to a login page is inappropriate. Instead, most web APIs should use token-based authentication (typically JWT bearer tokens), which is stateless and designed to be scalable: configure `AddAuthentication` with `JwtBearerDefaults.AuthenticationScheme` and `AddJwtBearer` in the API project (keeping the API as a separate project also keeps a single default scheme per project). The Blazor WebAssembly client authenticates with the auth provider, stores the issued token, and adds it to every API call as a header: `new AuthenticationHeaderValue(\"Bearer\", token)`. Also remember all authentication and authorization checks must be performed on the server, since users can bypass the Blazor app and call the APIs directly, and `UseAuthentication`/`UseAuthorization` must appear before `MapRazorPages`.",
+        "common_mistakes": [
+          "Confusing authentication (who is making the request) with authorization (what they may access)",
+          "Relying on authorization logic inside the Blazor WebAssembly app — client-side checks can be bypassed, so the server must enforce everything",
+          "Scattering role-name strings across many [Authorize] attributes instead of using policies (or at least constants), making role changes a shotgun edit",
+          "Storing sensitive data like passwords or keys inside JWTs, whose contents are easily read"
+        ],
+        "bloom_level": "apply",
+        "difficulty": 2
+      },
+      {
+        "title": "Diagnose the Page That Got Slow in Production",
+        "problem_statement": "A catalog page was fast in development but is slow in production. The team enabled `Microsoft.EntityFrameworkCore.Proxies` so navigation properties 'just load', and the page iterates 200 brands, printing each brand's items: `foreach (var brand in brands) { Show(brand.Items); }`. A second method has this signature: `IQueryable<SelectListItem> GetBrandItems()` and callers sometimes get run-time errors when they append operators to the result. Diagnose both problems and rewrite the data access to follow recommended EF Core patterns for web apps.",
+        "hints": [
+          "Enabling proxies turned on a loading strategy that issues a database query each time a navigation property is touched. How many queries does the loop generate, and why did dev-time conditions hide it?",
+          "Related data can be fetched in a single query by specifying navigation properties up front — which extension method on the query does that?",
+          "For the second method: when is an IQueryable actually executed, and what happens if callers add operations EF Core cannot translate? What should the method return instead?"
+        ],
+        "expected_solution": "Problem 1 is lazy loading: it automatically loads related data as it is referenced, so each access to brand.Items inside the loop triggers an additional database query within the web request (~200 extra queries). Lazy loading should typically be disabled for web applications; its overhead goes unnoticed at development time when latency is small and test data sets are small, but in production — more users, more data, more latency — the additional requests cause poor performance. Fix with eager loading so EF Core executes a single query for the whole graph:\n\n```csharp\nvar brandsWithItems = await _context.CatalogBrands\n    .Include(b => b.Items)\n    .ToListAsync();\n```\n\n(ThenInclude or string-based `.Include(\"Items.Products\")` handle subrelationships; explicit loading is likewise not recommended for web apps because it adds extra round trips, and it's worth examining the actual queries for issues like Cartesian Explosion, which AsSplitQuery can address.) Problem 2: returning IQueryable means the statement isn't executed until enumerated; callers can further modify the query, but operations EF Core cannot translate produce errors that only occur at run time. It's generally safer to pass filters into the data access method and return an in-memory collection, e.g. `Task<List<SelectListItem>>` produced by awaiting `ToListAsync()`, which also executes the query immediately. Also use the async methods with async/await in web apps so web server threads aren't blocked during data access.",
+        "common_mistakes": [
+          "Concluding 'the database is slow' and adding indexes/caching instead of recognizing the N+1 query pattern from lazy loading",
+          "Forgetting ToListAsync/ToList, so the 'query' is silently deferred and executes later than expected (or repeatedly)",
+          "Using explicit loading in the loop, which still makes a separate database round trip per entity",
+          "Using synchronous query methods in request handlers, blocking web server threads"
+        ],
+        "bloom_level": "analyze",
+        "difficulty": 2
+      }
+    ]
+  },
+  {
+    "topic_path": [
+      "API Design and Integration",
+      "RESTful API Design Essentials"
+    ],
+    "exercises": [
+      {
+        "title": "Design the URI Scheme for a Bookstore API",
+        "problem_statement": "Design the resource URI scheme for an online bookstore API that must support: listing all customers; fetching one customer; listing a customer's orders; creating an order; fetching one order; and listing the products in an order. Follow RESTful naming conventions (nouns, plurality, hierarchy) and explain how you handle the order-to-products relationship without making URIs too deep. Also show the request a client sends to create an order and what determines the new order's URI.",
+        "hints": [
+          "Base resource URIs on nouns (the resource), not verbs (the operations) — the HTTP methods already imply the verbal action.",
+          "Collections are separate resources from their items: plural noun for the collection, then /{id} for an item; organize collection and item URIs into a hierarchy.",
+          "For the relationship chain customer → orders → products, recall the guideline limiting URI complexity to collection/item/collection, and break deeper navigation into separate lookups."
+        ],
+        "expected_solution": "URI scheme: `/customers` (list all customers), `/customers/5` (one customer), `/customers/5/orders` (orders for customer 5), `/orders` (collection that order creation targets), `/orders/99` (one order), `/orders/99/products` (products in order 99). Use plural nouns for collections and organize collections and items into a hierarchy (`/customers` then `/customers/5`), and never put verbs in URIs — `/create-order` is the anti-pattern; the HTTP methods imply the action. For the relationship: avoid URIs more complex than collection/item/collection, so do NOT expose `/customers/1/orders/99/products`. Instead keep relationships simple and flexible: use `/customers/1/orders` to find a customer's orders, then `/orders/99/products` for the products in a given order — once an application has a reference to a resource, it uses that reference to find related items (and a better approach for discoverability is to include links in the response body, per HATEOAS). Creating an order: the client sends the order information in an HTTP POST request to the collection URI `/orders` (e.g., `https://api.contoso.com/orders`); the HTTP response indicates whether creation succeeded. The server — not the client — assigns the URI for the new resource. Additional cautions: avoid a large number of small resources (chatty APIs forcing many requests; consider denormalizing into bigger resources, balanced against fetching unneeded data) and avoid mirroring the internal database structure — the web API is an abstraction of the database, with a mapping layer if necessary.",
+        "common_mistakes": [
+          "Putting verbs in URIs, e.g. /create-order or /getCustomer, duplicating what the HTTP method already expresses",
+          "Building deep nested chains like /customers/1/orders/99/products that are hard to maintain and inflexible if relationships change",
+          "Mixing singular and plural or using singular collection names (/customer, /order) instead of plural nouns for collections",
+          "Exposing one resource collection per database table, which increases attack surface and couples clients to the schema"
+        ],
+        "bloom_level": "apply",
+        "difficulty": 2
+      },
+      {
+        "title": "Review a Flawed API Surface",
+        "problem_statement": "You inherit this API design:\n\n```\nGET  /api/getCustomerById?id=42\nPOST /api/customer/42/update-address\nGET  /api/customers/42/orders/99/products/7/reviews\nGET  /api/tbl_customer_addresses\nGET  /api/orders/99/product-name\nGET  /api/orders/99/product-price\nGET  /api/orders/99/product-quantity\n```\n\nIdentify every design flaw, naming the principle each one violates, and propose the corrected URI(s) for each.",
+        "hints": [
+          "Scan for verbs in paths, query-parameter lookups that should be hierarchy, nesting depth, anything leaking the database, and endpoints so small that clients must make many calls.",
+          "The guideline caps URI complexity at collection/item/collection; what should replace the five-segment chain?",
+          "Three endpoints each return one field of the same order — what does the guidance about 'chatty web APIs' and 'a large number of small resources' say to do instead?"
+        ],
+        "expected_solution": "Flaws and fixes: (1) `GET /api/getCustomerById?id=42` puts a verb in the URI and bypasses the resource hierarchy — use nouns, not verbs, since GET already implies retrieval: `GET /customers/42`. (2) `POST /api/customer/42/update-address` uses a verb plus a singular collection noun — collections should be plural nouns, and the operation belongs to the method, not the path: update the customer resource at `/customers/42` (address being part of its representation). (3) `/customers/42/orders/99/products/7/reviews` allows navigation through several levels of relationships — URIs should not be more complex than collection/item/collection because deep chains are difficult to maintain and inflexible if relationships change; replace with simpler steps such as `/customers/42/orders` to list orders, then `/orders/99/products`, then `/products/7/reviews`. (4) `/api/tbl_customer_addresses` mirrors the internal database structure — the web API shouldn't expose each table as a collection of resources (it increases attack surface and risks data leakage); model business entities instead and introduce a mapping layer between database and API, e.g. addresses as part of `/customers/{id}`. (5) The three one-field endpoints (`product-name`, `product-price`, `product-quantity`) create a chatty web API with a large number of small resources, forcing clients to send multiple requests to gather data; every web request imposes load on the server. Combine related information into a bigger resource retrievable in a single request: `GET /orders/99` (or `/orders/99/products`) returning a representation containing name, price, and quantity — balanced against the overhead of returning data clients don't need.",
+        "common_mistakes": [
+          "Fixing the verb URIs by just renaming them (e.g., /fetchCustomer) instead of removing operations from paths entirely",
+          "Over-correcting chattiness by returning enormous denormalized objects, ignoring the latency and bandwidth cost of fetching data the client doesn't need",
+          "Leaving the database table exposure in place but renaming it cosmetically, rather than introducing an abstraction/mapping layer over business entities",
+          "Keeping deep nesting because 'it documents the relationship' — links in the response body (HATEOAS) are the recommended way to expose associations"
+        ],
+        "bloom_level": "analyze",
+        "difficulty": 2
+      },
+      {
+        "title": "Choose the Method and Status Code",
+        "problem_statement": "For an e-commerce API with `/customers` and `/customers/{id}`, specify the correct HTTP method, the success status code(s), and key error codes for each operation — then answer the two follow-ups. Operations: (a) create a new customer; (b) fully replace customer 1's details; (c) change only customer 1's price-tier field, deleting their legacy 'color' preference field, using a JSON-based patch format (name the media type and show the patch document for an original resource `{\"name\":\"gizmo\",\"category\":\"widgets\",\"color\":\"blue\",\"price\":10}` that sets price to 12, removes color, and adds size 'small'); (d) delete customer 1. Follow-ups: (e) what should the server return if a client POSTs to `/customers/1` to choose its own URI? (f) what does the server return when the request's Content-Type media type is unsupported, and when nothing in the Accept header can be matched?",
+        "hints": [
+          "POST targets the collection URI and the server assigns the new resource's URI; PUT targets an individual item with a complete representation and must be idempotent.",
+          "For (c): JSON merge patch documents mirror the resource's structure, include only the fields to change or add, and use null to delete a field; its media type embeds 'merge-patch'.",
+          "Status code table highlights: created resources → 201 with Location header; successful delete → 204; malformed patch → 400 vs patch valid but inapplicable → 409; media type problems → 415 (request body format) vs 406 (response format)."
+        ],
+        "expected_solution": "(a) Create: POST to `/customers` (the collection). Success: 201 (Created) with the new resource's URI in the Location header and a representation in the body; 400 (Bad Request) for invalid data. (b) Full replace: PUT to `/customers/1` with a complete representation of the resource. Success: 200 (OK), or 204 (No Content) when no body is returned; 201 (Created) if the route supports creation via PUT and the resource didn't exist; 409 (Conflict) if the request conflicts with the resource's current state. PUT must be idempotent — resubmitting the same request leaves the same resource with the same values. (c) Partial update: PATCH to `/customers/1` using JSON merge patch, media type `application/merge-patch+json`. The patch document has the same structure as the original resource but includes only fields to change or add, with null deleting a field:\n\n```json\n{\n    \"price\": 12,\n    \"color\": null,\n    \"size\": \"small\"\n}\n```\n\nThis updates price, deletes color, adds size, and leaves name and category unmodified. (Caveat: merge patch is unsuitable if the resource can hold explicit null values and doesn't specify the order updates apply; JSON patch, `application/json-patch+json`, is more flexible — a sequence of add/remove/replace/copy/test operations.) PATCH statuses: 200 (OK) on success; 400 (Bad Request) for a malformed patch document; 409 (Conflict) when the patch is valid but can't be applied to the resource in its current state; 415 (Unsupported Media Type) when the patch format isn't supported. (d) Delete: DELETE to `/customers/1`. Success: 204 (No Content); 404 (Not Found) if the resource doesn't exist. (e) The client shouldn't attempt to create its own URI; it should POST to the collection and let the server assign the URI. A POST to a specific URI like `/customers/1` should get 400 (Bad Request) — per the conventions table, POST to an individual item URI is an error (405 Method Not Allowed applies when a URI doesn't support POST at all). (f) Unsupported request media type → 415 (Unsupported Media Type); when the server can't match any media type listed in the Accept header → 406 (Not Acceptable).",
+        "common_mistakes": [
+          "Using PUT with a partial body to do a partial update — PUT requires a complete representation; PATCH exists for partial changes",
+          "Returning 200 without a Location header on resource creation instead of 201 (Created) plus the new URI in Location",
+          "Confusing 415 (server can't process the request's media type) with 406 (server can't produce any media type the Accept header allows)",
+          "Treating POST or PATCH as idempotent like PUT — they aren't guaranteed to be, so blind retries can duplicate effects"
+        ],
+        "bloom_level": "apply",
+        "difficulty": 2
+      }
+    ]
+  },
+  {
+    "topic_path": [
+      "API Design and Integration",
+      "API Versioning"
+    ],
+    "exercises": [
+      {
+        "title": "Version the Customer API Without Breaking Anyone",
+        "problem_statement": "Your public customer API must restructure the flat `address` string into subfields (streetAddress, city, state, zipCode) — a breaking change for existing partner clients you don't control. Many clients sit behind older caching proxies, and your API makes heavy use of HATEOAS links. Compare the four explicit versioning mechanisms (URI, query string, header, media type) on: how the client requests version 2, the impact on caching, and the impact on HATEOAS. Recommend one mechanism for this scenario and justify it. Also: why is adding a 'dateCreated' field NOT a breaking change in the first place?",
+        "hints": [
+          "Write a sample v2 request for each mechanism: a version segment in the path, ?version=2, a custom header like Custom-Header: api-version=2, and Accept: application/vnd.contoso.v1+json.",
+          "Cache-friendliness depends on whether the version is visible in the URI/query string or hidden in headers — and note the warning about older browsers and proxies not caching URIs that include query strings.",
+          "For HATEOAS, ask which mechanism lets links carry version information naturally via MIME types rather than rewriting every URI or requiring custom headers."
+        ],
+        "expected_solution": "URI versioning: client calls `https://api.contoso.com/v2/customers/3`; simple, but the server must route to the right endpoint and it becomes unwieldy as many versions accumulate; purists object that the same data (customer 3) shouldn't have different URIs per version; it complicates HATEOAS because all links must include the version number; cache-friendly since the same URI always refers to the same data. Query string versioning: `https://api.contoso.com/customers/3?version=2` (default to a meaningful value like 1 when omitted); semantic advantage that the same resource is always retrieved from the same URI, but request-handling code must parse the query string; complicates HATEOAS the same way; nominally cache-friendly, but some older web browsers and web proxies don't cache responses for requests that include a query string, which can degrade performance. Header versioning: custom header such as `Custom-Header: api-version=2`; requires clients to add the header on every request (default when omitted); links must include the appropriate custom header for HATEOAS; requires more logic to examine header values and, in large-scale environments, many client versions can cause significant duplicated data in server-side caches — and caching proxies that key only on URI are a problem. Media type versioning: `Accept: application/vnd.contoso.v1+json`, with the server confirming via Content-Type, returning 406 (or a default) if no known media type is given; straightforward and well-suited for HATEOAS since links can include the MIME type of related data; like header versioning, it needs more logic to inspect the Accept header and can duplicate cached data. Recommendation for this scenario: with older caching proxies in play (which may serve stale or wrong-version responses for header-varied requests, and may not cache query strings) and heavy HATEOAS use, the trade-off is between URI versioning (best for the old proxies, worst for HATEOAS link maintenance) and media type versioning (best for HATEOAS, weaker for proxy caching). Given the explicit caching constraint, URI versioning is the defensible pick: `/v2/...` URIs are unambiguous to every cache, existing v1 URIs continue to operate normally returning the original schema, and the HATEOAS cost is mechanical (links carry the version in their URIs). The dateCreated follow-up: adding content to existing resources might not be breaking because clients that aren't expecting the field simply ignore unrecognized fields and continue functioning; breaking changes are drastic schema modifications like field removals or renames, or changed relationships — such as the address restructuring.",
+        "common_mistakes": [
+          "Treating any schema change as breaking — additive fields that clients can ignore usually aren't; removals, renames, and restructures are",
+          "Choosing header or media type versioning without accounting for caches/proxies that key only on the URI, causing duplicated cache data or wrong-version responses",
+          "Forgetting a default version when the query parameter or header is omitted, instantly breaking all existing clients",
+          "Ignoring HATEOAS: whatever mechanism is chosen, every link must consistently carry the version (URI segment, query string, header, or MIME type)"
+        ],
+        "bloom_level": "analyze",
+        "difficulty": 2
+      }
+    ]
+  },
+  {
+    "topic_path": [
+      "Scalability and Distributed Systems",
+      "Performance, Scalability, and CAP"
+    ],
+    "exercises": [
+      {
+        "title": "CP or AP: Classify Two Data Stores Under Partition",
+        "problem_statement": "Your company runs two systems on a distributed data store. System 1 is a payment ledger: the business requires atomic reads and writes, and returning stale balances is unacceptable even if some requests must fail with an error. System 2 is a social activity feed: it must keep responding to every request even during network failures, and showing a slightly outdated feed is acceptable. A network partition splits the cluster in two. For each system, classify the appropriate design as CP or AP under the CAP theorem, explain why partition tolerance is not optional, and name the consistency model (strong, eventual, or weak) that best matches each system.",
+        "hints": [
+          "Recall the three CAP guarantees: Consistency (every read receives the most recent write or an error), Availability (every request receives a response, possibly not the latest version), and Partition Tolerance (the system continues to operate despite network partitioning).",
+          "Networks aren't reliable, so partition tolerance must be supported. The real trade-off is therefore between consistency and availability when a partition occurs.",
+          "Ask for each system: when the partition happens, would the business rather wait or error (possibly timing out on the partitioned node), or return the most readily available version of the data on any node?"
+        ],
+        "expected_solution": "Partition tolerance is mandatory in both cases because networks aren't reliable -- you cannot choose CA; the software trade-off is between consistency and availability during a partition.\n\nSystem 1 (payment ledger) should be CP: the business needs atomic reads and writes, so during a partition the system waits for the partitioned node to respond, which may result in a timeout error. Returning an error is acceptable; returning a stale balance is not. This matches strong consistency: after a write, reads will see it, with data replicated synchronously (the model used by file systems and RDBMSes, suited to systems that need transactions).\n\nSystem 2 (social feed) should be AP: responses return the most readily available version of the data on any node, which might not be the latest, and writes propagate when the partition resolves. This matches eventual consistency: after a write, reads will eventually see it (typically within milliseconds) because data is replicated asynchronously -- a good fit for highly available systems (the approach used by DNS and email).",
+        "common_mistakes": [
+          "Treating CAP as a free choice of any two and proposing a 'CA' system, ignoring that network partitions will happen and partition tolerance must be supported",
+          "Confusing availability in the CAP sense (every request gets a response, possibly stale) with high uptime",
+          "Mapping the payment ledger to eventual consistency because it is 'fast enough', when the requirement of atomic reads and writes demands strong consistency",
+          "Assuming an AP system permanently loses the writes made during a partition, when in fact writes take some time to propagate after the partition is resolved"
+        ],
+        "bloom_level": "evaluate",
+        "difficulty": 3
+      }
+    ]
+  },
+  {
+    "topic_path": [
+      "Scalability and Distributed Systems",
+      "Availability Patterns"
+    ],
+    "exercises": [
+      {
+        "title": "Compute Composite Availability for a Two-Tier Service",
+        "problem_statement": "A service consists of an application tier (Foo) that calls a database (Bar); a request must pass through both, so they are in sequence. Each component has 99.9% availability on its own. (a) Compute the overall availability of the service and state roughly how much downtime per year 99.9% alone corresponds to. (b) The team duplicates the database into two redundant instances so that the database layer works if either instance is up (in parallel). Compute the availability of the database layer and the new end-to-end availability of Foo followed by the redundant Bar layer. (c) Explain why adding a component in sequence decreases overall availability while adding one in parallel increases it.",
+        "hints": [
+          "For components in sequence the formula is Availability(Total) = Availability(Foo) * Availability(Bar); for components in parallel it is Availability(Total) = 1 - (1 - Availability(Foo)) * (1 - Availability(Bar)).",
+          "Work with decimals: 99.9% = 0.999, so the unavailability of one component is 0.001. In parallel, both copies must be down at the same time for the layer to be down.",
+          "(a) 0.999 * 0.999; (b) parallel layer: 1 - (0.001 * 0.001) = 0.999999, then multiply by 0.999 for the serial app tier; for downtime, three nines is on the order of 8h 45min per year."
+        ],
+        "expected_solution": "(a) In sequence: 0.999 * 0.999 = 0.998001, i.e. about 99.8% availability -- worse than either component alone. A single component at 99.9% corresponds to roughly 8h 45min 57s of downtime per year (about 43m 50s per month, 10m 5s per week, 1m 26s per day). For comparison, 99.99% (four nines) allows only about 52min 35.7s per year.\n\n(b) The redundant database layer in parallel: 1 - (1 - 0.999) * (1 - 0.999) = 1 - 0.000001 = 0.999999, i.e. 99.9999%. End-to-end: 0.999 * 0.999999 = 0.998999..., about 99.9% -- the serial app tier is now the dominant source of unavailability.\n\n(c) In sequence, a request fails if either component is down, so unavailabilities compound and total availability decreases below the weakest component. In parallel, the layer fails only if all redundant copies are down simultaneously, so the unavailabilities multiply (0.001 * 0.001) and total availability increases. This is why availability is quantified in 'number of 9s' and why redundancy (fail-over and replication) is the standard way to add nines.",
+        "common_mistakes": [
+          "Averaging the availabilities of serial components instead of multiplying them",
+          "Using the series formula for the parallel case (or vice versa), e.g. computing 0.999 * 0.999 for the redundant pair",
+          "Forgetting to multiply the parallel layer's availability by the remaining serial component, reporting 99.9999% as the end-to-end figure",
+          "Mixing up the downtime budgets for three nines (about 8h 45min/year) and four nines (about 52min/year)"
+        ],
+        "bloom_level": "analyze",
+        "difficulty": 3
+      },
+      {
+        "title": "Choose a Fail-Over Pattern for a Public API",
+        "problem_statement": "A team must add high availability to a public-facing API currently served by one machine. Option A is active-passive fail-over: a standby server receives heartbeats from the active server and takes over the active server's IP address if the heartbeat is interrupted. Option B is active-active fail-over: both servers manage traffic, spreading load between them. The product owner asks: which option recovers faster, which one helps with load, what data-loss risk both options share, and what extra requirement active-active imposes on a public-facing deployment? Recommend an option for an API whose traffic is growing quickly and justify it.",
+        "hints": [
+          "In active-passive, the length of downtime is determined by whether the passive server is already running in 'hot' standby or must boot from 'cold' standby; only the active server handles traffic.",
+          "In active-active, both servers manage traffic. Think about what the outside world (DNS) or internal callers need to know for traffic to reach both servers.",
+          "The shared risk: what happens to newly written data if the active system fails before that data has been replicated to the other server?"
+        ],
+        "expected_solution": "Recovery speed: active-passive downtime depends on standby mode -- a 'hot' standby that is already running takes over quickly (it assumes the active server's IP when heartbeats stop), while a 'cold' standby must start up first, lengthening downtime. Active-active has no takeover step since both servers are already serving.\n\nLoad: only active-active spreads load across both servers; in active-passive, only the active server handles traffic.\n\nShared risk: both patterns add hardware and complexity, and both can lose data if the active system fails before newly written data is replicated to the passive/peer.\n\nExtra requirement for active-active: if the servers are public-facing, DNS must know the public IPs of both servers; if internal-facing, application logic must know about both servers.\n\nRecommendation: for a fast-growing public API, active-active is the better fit because it both removes the takeover delay and spreads the growing load across servers; the team must update DNS with both public IPs and accept the added complexity. (Active-passive with a hot standby would be a reasonable cheaper alternative if load were not a concern.)",
+        "common_mistakes": [
+          "Claiming active-passive loses no data because the passive copy is 'always in sync', overlooking the replication window when the active fails",
+          "Forgetting that a cold standby must start up, and quoting near-zero downtime for any active-passive setup",
+          "Choosing active-active without accounting for the DNS (or application logic) requirement to know both servers",
+          "Treating fail-over as free, ignoring that it adds hardware and additional complexity"
+        ],
+        "bloom_level": "evaluate",
+        "difficulty": 3
+      }
+    ]
+  },
+  {
+    "topic_path": [
+      "Scalability and Distributed Systems",
+      "Database Scaling"
+    ],
+    "exercises": [
+      {
+        "title": "Design a Sharding Scheme for a Users Database",
+        "problem_statement": "A social application's users database no longer fits on one machine. Design a sharding scheme: (a) propose a sharding function and explain why you rejected sharding by the user's last-name initial; (b) describe the 'power user' hot-spot problem and how your scheme mitigates or at least monitors it; (c) explain what technique reduces the amount of data transferred when shards must be rebalanced; (d) list two costs this scheme imposes on the application (queries/joins) and one thing you must add so that losing a shard does not mean losing data; (e) name two performance benefits sharding brings compared to the single big database.",
+        "hints": [
+          "Common ways to shard a users table are by last-name initial or geographic location -- but think about whether either spreads load evenly, and what a hash-based function gives you.",
+          "Data distribution can become lopsided: a set of power users on one shard can increase its load relative to others. Rebalancing adds complexity -- a sharding function based on consistent hashing can reduce the amount of transferred data.",
+          "Remember the application-side costs: updated application logic and complex SQL, harder joins across shards, more hardware -- and that you'll want replication on each shard to avoid data loss."
+        ],
+        "expected_solution": "(a) Use a hash-based sharding function over the user ID (consistent hashing). Sharding by last-name initial creates unbalanced distribution because some letters are far more common, concentrating users (and load) on certain shards.\n\n(b) Hot spots: even with even key distribution, a set of power users on one shard can produce increased load on that shard compared to others, making data distribution lopsided. Mitigation: monitor per-shard load and rebalance when skew appears; hashing user IDs at least decouples shard assignment from user attributes that cluster.\n\n(c) Consistent hashing reduces the amount of data transferred during rebalancing, which otherwise adds significant complexity.\n\n(d) Costs: application logic must be updated to work with shards, which can result in complex SQL queries, and joining data from multiple shards is more complex; sharding also adds more hardware and complexity overall. To avoid data loss when a shard goes down, add some form of replication per shard (other shards remain operational, but the failed shard's data needs replicas).\n\n(e) Benefits: less read and write traffic per database, less replication, and more cache hits; reduced index size, which generally improves performance with faster queries; and no single central master serializing writes, allowing parallel writes with increased throughput.",
+        "common_mistakes": [
+          "Choosing an attribute-based shard key (last-name initial, geography) without considering unbalanced distribution and hot shards",
+          "Planning rebalancing as a full reshuffle instead of using consistent hashing to limit transferred data",
+          "Assuming cross-shard joins work as before, ignoring the added application-logic and SQL complexity",
+          "Relying on 'other shards still work' as durability and skipping per-shard replication"
+        ],
+        "bloom_level": "create",
+        "difficulty": 3
+      }
+    ]
+  },
+  {
+    "topic_path": [
+      "Scalability and Distributed Systems",
+      "Caching Essentials"
+    ],
+    "exercises": [
+      {
+        "title": "Pick a Cache Update Pattern per Workload",
+        "problem_statement": "Choose a cache update pattern (cache-aside, write-through, write-behind, refresh-ahead) for each workload and justify the choice with its trade-offs: (W1) read-heavy user-profile lookups where only requested data should occupy cache and brief staleness is acceptable; (W2) account settings where reads immediately after writes must never be stale and users tolerate slower writes; (W3) a burst-heavy event ingestion path where write latency matters most and rare data loss is tolerable; (W4) a dashboard whose hot keys are predictably re-read just after they expire. For W1, also describe the three-trip cost on a cache miss and what mitigates stale data.",
+        "hints": [
+          "Match each workload to the pattern's core behavior: lazy loading on demand; synchronous write to cache and store; asynchronous write to the store; automatic refresh of recently accessed entries before expiration.",
+          "Think about the failure/cost profile of each: which pattern risks data loss if the cache dies, which makes writes slow but reads fresh, which delays only the first reader, which backfires if predictions are wrong.",
+          "W1 = cache-aside (miss: check cache, load from DB, add to cache, return -- three trips; TTL or pairing with write-through mitigates staleness); W2 = write-through; W3 = write-behind; W4 = refresh-ahead."
+        ],
+        "expected_solution": "W1 - Cache-aside (lazy loading): the application looks for the entry in cache, on a miss loads it from the database, adds it to cache, and returns it. Only requested data is cached, avoiding filling the cache with unrequested data -- matching the requirement. Costs: each cache miss results in three trips (noticeable delay), data can become stale if updated in the database (mitigated by setting a TTL that forces an update, or by combining with write-through), and a failed node is replaced by an empty one, increasing latency until it warms.\n\nW2 - Write-through: the application uses the cache as the main data store; the cache synchronously writes each entry to the data store. Writes are slow overall, but users are generally more tolerant of latency when updating data than reading it, and subsequent reads of just-written data are fast with no staleness -- exactly the 'never stale after write' requirement. Downsides: new/replacement nodes miss entries until they are written again (mitigate by pairing with cache-aside), and most written data might never be read (mitigate with TTL).\n\nW3 - Write-behind: add/update the entry in cache and asynchronously write it to the data store, improving write performance for the bursty ingestion path. Trade-offs: possible data loss if the cache goes down before its contents hit the data store (acceptable here), and it is more complex to implement than cache-aside or write-through.\n\nW4 - Refresh-ahead: configure the cache to automatically refresh recently accessed entries prior to expiration. Since the dashboard's hot keys are predictably re-read, this reduces latency versus read-through; the caveat is that inaccurate prediction of which items will be needed yields worse performance than no refresh-ahead at all.",
+        "common_mistakes": [
+          "Choosing write-behind where durability matters, ignoring the data-loss window before cached writes reach the store",
+          "Using write-through for write-heavy bursty traffic, making every write pay the synchronous store write",
+          "Forgetting that cache-aside data goes stale after database updates unless a TTL (or write-through pairing) is used",
+          "Applying refresh-ahead to unpredictable access patterns, where wrong predictions reduce performance"
+        ],
+        "bloom_level": "evaluate",
+        "difficulty": 3
+      }
+    ]
+  },
+  {
+    "topic_path": [
+      "Microservices",
+      "Microservices Essentials"
+    ],
+    "exercises": [
+      {
+        "title": "Spot the Antipatterns in a 'Microservices' Migration",
+        "problem_statement": "A team migrated a monolith to twelve services and reports: all services read and write the same shared database schema; every service imports a shared 'common-domain' library of entity classes that must be released in lockstep; clients call each service directly over the internet; each service's configuration values are baked into its container image; and services integrate by emitting generic 'EntityChanged' events containing raw database rows. Releases still require deploying most services together. Identify at least five antipatterns in this design, explain the harm each causes, and propose the corresponding fix.",
+        "hints": [
+          "Start from the definition: microservices are small, independently deployable, loosely coupled services, each responsible for persisting its own data, communicating through well-defined APIs that hide internal implementation.",
+          "Check each reported practice against the documented antipatterns: shared data schemas, sharing common libraries between services, exposing services directly to consumers, keeping configuration inside services, generic events, and using database entities as events.",
+          "The 'deploy most services together' symptom is the giveaway: which properties (independent deployability, loose coupling) have been lost, and what does each fix restore?"
+        ],
+        "expected_solution": "1. Shared database schema: causes of coupling include shared database schemas; data storage should be private to the service that owns it, with each service choosing the best storage for its data. Schema changes currently ripple across services. Fix: database-per-service data ownership.\n\n2. Shared common-domain library: sharing common libraries or dependencies between microservices creates tight coupling, making changes risky and widespread, and violates self-containment. Fix: avoid sharing code or data schemas; teams own services end to end and communicate via APIs that model the domain, not internal implementation.\n\n3. Clients calling services directly: exposing microservices directly to consumers results in tight coupling, scalability problems, and security risks. Fix: an API gateway as a clean, manageable, secure entry point that handles cross-cutting concerns (authentication, logging, load balancing) -- while keeping domain knowledge out of the gateway to avoid it becoming a coupling point.\n\n4. Config baked into images: keeping configuration values inside microservices tightly couples them to specific environments and makes deployments harder. Fix: externalize configuration for flexibility and environment portability.\n\n5. Generic events with database rows: using generic events forces consumers to interpret and filter messages, adding complexity; using database entities as events exposes internal service details and fails to convey business intent, leading to tightly coupled, unclear integrations. Fix: specific, atomic, self-contained domain events that convey business intent (and don't depend on past or future events).\n\nThe combined symptom -- services that must deploy together -- is the distributed monolith: the system has microservices' complexity (more moving parts, network latency, data-integrity challenges) without the benefits of independent deployment and fault isolation. Underlying remedy: model services on the business domain with DDD-defined bounded contexts, ensure loose coupling and high functional cohesion (functions that change together should be packaged and deployed together), and use messaging frameworks for asynchronous communication.",
+        "common_mistakes": [
+          "Judging the design acceptable because services run in separate containers, missing that independent deployability and data ownership are what define the style",
+          "Proposing to fix coupling by adding more shared libraries or a shared 'core' service, which deepens the lockstep problem",
+          "Banning all data duplication outright -- avoiding duplication at all costs is itself an antipattern; local copies via materialized views improve autonomy",
+          "Putting business rules into the API gateway, making the gateway a dependency that couples services"
+        ],
+        "bloom_level": "analyze",
+        "difficulty": 3
+      },
+      {
+        "title": "Sync or Async: Wire Up the Delivery Workflow",
+        "problem_statement": "You are designing communication for a delivery-scheduling system with these interactions: (I1) clients submit delivery requests that arrive in unpredictable bursts; (I2) a Scheduler orchestrates a user request by calling Account, Package, Drone, and Delivery services and cannot proceed without each one's answer; (I3) when a downstream service fails nontransiently mid-workflow, already-completed steps (e.g. a scheduled drone) must be undone; (I4) delivery status changes must reach a history service today and possibly an analytics service later, without slowing the main workflow. For each interaction choose synchronous API calls or asynchronous messaging and justify the choice; for I3, explain why a distributed ACID transaction is not the answer and what pattern to use instead, including who coordinates it and what property makes retried steps safe.",
+        "hints": [
+          "Synchronous = the caller waits for a response (HTTP/gRPC); asynchronous = the sender doesn't wait. Async advantages include reduced coupling, multiple subscribers via pub/sub, failure isolation, responsiveness, and load leveling -- which of these does each interaction need?",
+          "In the drone-delivery design: ingestion used Event Hubs messages for load leveling; the Scheduler called backend services with synchronous REST because it needed a response from each; failures went to a Supervisor via an async message; status changes were published as events with the history service as the first subscriber.",
+          "For I3: nontransient failure leaves the transaction partially failed; the remedy is compensating transactions coordinated by a dedicated service (Scheduler Agent Supervisor variation), with operations designed to be idempotent (or checkpointed) so duplicates and resumes are safe."
+        ],
+        "expected_solution": "I1 - Asynchronous messaging: bursty ingestion needs load leveling -- a queue acts as a buffer so receivers process at their own rate (in the reference design, the Ingestion service sends asynchronous messages to the Scheduler precisely to implement load leveling).\n\nI2 - Synchronous internal APIs (REST/gRPC): the Scheduler needs a response from each downstream service to carry out the request, and a failure in any downstream service fails the whole operation. The known cost is latency added by calling the backend services in sequence -- with a chain of synchronous dependencies, waiting can add unacceptable latency, so keep the chain short.\n\nI3 - Compensating transactions, not distributed ACID: after a nontransient failure (one unlikely to resolve itself, e.g. invalid input or a crash -- as opposed to a transient fault like a network timeout that retries can resolve), the workflow is in a partially failed state and completed steps must be undone (the scheduled drone must be canceled). The Scheduler puts failed operations onto a dedicated queue (asynchronous message), and a separate Supervisor service reads it and calls cancellation APIs on the services that must compensate -- a variation of the Scheduler Agent Supervisor pattern. Remember compensating measures can themselves fail. To survive Scheduler crashes, either checkpoint each workflow step to a durable store (at a performance cost) or design all operations to be idempotent -- callable multiple times without additional side effects, with downstream services detecting and ignoring duplicate calls.\n\nI4 - Asynchronous pub/sub events: the Delivery service publishes delivery status events (e.g. DeliveryCreated, DeliveryCompleted); any service can subscribe. The history service is the current subscriber, and because the publisher doesn't wait for responses, adding more subscribers (e.g. real-time analytics) doesn't affect the main workflow path. This gives reduced coupling, multiple subscribers, and failure isolation (messages are picked up when a consumer recovers).\n\nAlso acknowledge async costs: coupling to the messaging infrastructure, queue latency under load, monetary cost at high throughput, and complexity -- duplicate messages must be handled by de-duplicating or idempotency.",
+        "common_mistakes": [
+          "Using synchronous calls for bursty ingestion, losing the load-leveling buffer and overwhelming downstream services",
+          "Trying to span the multi-service workflow with a distributed ACID transaction instead of compensating transactions",
+          "Confusing asynchronous I/O (non-blocking thread, an implementation detail) with an asynchronous protocol (sender doesn't wait for a response)",
+          "Forgetting duplicate-message handling: without idempotency or de-duplication, retried or redelivered messages corrupt state"
+        ],
+        "bloom_level": "evaluate",
+        "difficulty": 3
+      },
+      {
+        "title": "Pick a Data Store per Service -- and Defend the Rule That Forbids Sharing",
+        "problem_statement": "Three services in a delivery platform need storage: (S1) a Delivery service that tracks in-progress deliveries -- users constantly poll the latest status of a specific delivery, reads and writes must be fast, data is short-lived, and no complex queries are run; (S2) a Delivery History service that ingests completed-delivery events for two uses: large-scale analytics over heterogeneous data, and individual lookups by delivery ID after completion; (S3) a Package service storing non-relational package records needing long-term storage, high write throughput, and simple lookups by package ID without joins. Recommend a storage type for each (and explain why S2 needs two stores). Then a teammate proposes letting S2 read S1's tables directly 'to save an API call' -- explain precisely why this is forbidden and what is and isn't allowed about sharing database infrastructure.",
+        "hints": [
+          "Match store to read/write profile: S1 emphasizes throughput over long-term storage (an in-memory cache/key-value store like Redis fits); S3's data is non-relational with simple ID queries (document database).",
+          "S2 has two scenarios with different requirements: schema-on-read analytics over large datasets (a data-lake / HDFS-compatible store, partitioned by date) versus ID-based lookups (which date-partitioned folders make inefficient -- hence a second, document store for a recent subset, with older records archived by a batch process).",
+          "The rule: two services shouldn't share a data store because shared schemas couple services -- but services can safely share the same physical database server; the problem is sharing the same schema or reading/writing the same set of tables."
+        ],
+        "expected_solution": "S1 - An in-memory, high-throughput key-value store (e.g. Redis): the service requires throughput (read and write) over long-term storage, does no complex queries or analysis, and only fetches the latest status for a specific delivery; the data is short-lived, and after a delivery finishes the history service becomes the system of record.\n\nS2 - Two stores, because the two scenarios have different storage requirements. For analytics: a data-lake store (HDFS-compatible) optimized for data analysis over large datasets with a schema-on-read approach to accommodate various sources, storing time-series data in folders partitioned by date. But that layout makes individual ID-based lookups inefficient -- without the timestamp, an ID lookup requires scanning the entire collection. So also store a subset of recent history in a document database for quick ID lookups, and run an occasional batch process to archive older deliveries (reducing cost while keeping data available for historical reporting from the lake).\n\nS3 - A document-oriented database: the package data isn't relational, and the requirements are long-term storage, high write throughput (achievable with sharded collections), and simple queries by package ID without complex joins or referential integrity constraints. Team familiarity with the technology stack is a legitimate selection factor.\n\nWhy S2 must not read S1's tables: each service manages its own private data store and other services can't access it directly. Sharing the underlying data schema creates unintentional coupling -- any schema change must then be coordinated across every service relying on that database, defeating independent deployment, and a shared store prevents each team from optimizing storage for its service's data models and read/write patterns. This polyglot persistence (different store types per service) is the intended outcome. What IS allowed: services can safely share the same physical database server -- problems occur only when they share the same schema or read and write the same set of tables. The correct integration is event-driven: S1 publishes delivery status events with a published schema (JSON Schema, Protobuf, or Avro) and S2 subscribes, possibly building a materialized view suited to its queries, accepting eventual consistency with S1 remaining the source of truth for in-flight deliveries.",
+        "common_mistakes": [
+          "Forcing one database technology on all services for operational simplicity, ignoring each service's distinct read/write profile",
+          "Using a single store for delivery history, leaving either analytics or ID lookups badly served (ID lookups over date-partitioned data require full scans)",
+          "Interpreting 'no shared data store' as 'no shared database server', when the actual rule targets shared schemas and tables",
+          "Letting one service query another's tables directly, coupling both to a schema that can no longer change independently"
+        ],
+        "bloom_level": "evaluate",
+        "difficulty": 3
+      }
+    ]
+  },
+  {
+    "topic_path": [
+      "Cloud-Native Operations",
+      "The Twelve Factors at a Glance"
+    ],
+    "exercises": [
+      {
+        "title": "Twelve-Factor Code Review: Config, Backing Services, and Releases",
+        "problem_statement": "Review this deployment description against the first five twelve-factor principles: 'Our app keeps the database URL and S3 credentials as constants in the code. Config is grouped into named environments (development, test, production, plus joes-staging). We shell out to the system's ImageMagick for thumbnails. To migrate from local MySQL to a managed database we plan a code change. When production misbehaves, an engineer SSHes in and patches the running code; our releases have no version identifiers, we just overwrite the previous one.' Identify each violation, explain the principle it breaks, and give the compliant practice -- including the litmus test for config and why releases must be immutable with unique IDs.",
+        "hints": [
+          "Config is everything likely to vary between deploys (resource handles, credentials, per-deploy values). The litmus test: could the codebase be made open source at any moment without compromising any credentials? Twelve-factor stores config in environment variables, granular and orthogonal, never grouped into named 'environments'.",
+          "Backing services are attached resources: local MySQL and a third-party-managed database should be swappable by changing only the resource handle in config, with no code changes. System tools like ImageMagick must not be relied on implicitly -- vendor them into the app.",
+          "Build converts the repo into a build; release combines build + config and is ready for execution; run launches processes against a selected release. The separation is strict: code cannot be changed at runtime because there's no way to propagate it back to the build stage."
+        ],
+        "expected_solution": "1. Credentials as constants in code: violates strict separation of config from code -- config varies substantially across deploys, code does not. Litmus test: the codebase could be made open source at any moment without compromising credentials; this one fails. Fix: store config in environment variables -- easy to change between deploys without code changes, hard to accidentally check in, language- and OS-agnostic.\n\n2. Named environment groups ('joes-staging'): batching config into environments doesn't scale -- as deploys multiply, you get a combinatorial explosion of names and brittle deploy management. Fix: env vars as granular controls, each fully orthogonal, independently managed per deploy.\n\n3. Shelling out to system ImageMagick: twelve-factor apps don't rely on the implicit existence of any system tools -- there's no guarantee the tool exists or is version-compatible everywhere the app may run. Fix: vendor the tool into the app, and declare all dependencies completely via a dependency declaration manifest with dependency isolation at runtime.\n\n4. Code change to swap databases: violates backing services as attached resources. The code must make no distinction between local and third-party services -- both are attached resources accessed via a URL or locator/credentials in config. Swapping local MySQL for a managed database should require changing only the resource handle in config; resources can be attached and detached at will (e.g. replacing a misbehaving database with one restored from backup, no code changes).\n\n5. Patching running code, overwriting releases: violates the strict separation of build, release, and run -- changes at runtime can't propagate back to the build stage. Releases must be an append-only ledger: every release gets a unique ID (timestamp or incrementing number) and cannot be mutated once created; any change creates a new release. This enables rollback to a previous release and keeps the run stage simple -- runtime execution can happen automatically (server reboot, crashed process restarted), so problems that prevent the app from running would otherwise break it in the middle of the night, while build-stage errors at least surface in front of the deploying developer.",
+        "common_mistakes": [
+          "Treating internal application config (like framework wiring/route files) as twelve-factor 'config' -- only values that vary between deploys belong in the environment",
+          "Replacing constants with uncommitted config files and stopping there -- files can be checked in by mistake, get scattered across formats and locations, and stay framework-specific",
+          "Allowing 'small' hotfixes on production servers, breaking build/release/run separation and making state unreproducible",
+          "Reusing or mutating a release after creation instead of cutting a new uniquely identified release"
+        ],
+        "bloom_level": "analyze",
+        "difficulty": 3
+      }
+    ]
+  },
+  {
+    "topic_path": [
+      "Cloud-Native Operations",
+      "Deploy, Retry, Observe"
+    ],
+    "exercises": [
+      {
+        "title": "Match Deployment Strategies to Three Services",
+        "problem_statement": "Assign rolling update, blue-green deployment, or canary release to each case and justify the choice with its risks and costs: (C1) a payment service where any bad release must be reverted instantly by a traffic switch, and the team can tolerate temporarily doubled resource usage; (C2) a recommendation service whose changes are risky in subtle ways the team can only detect by observing real production traffic on a small subset of users first; (C3) a stateless internal API on a resource-constrained cluster, released frequently with backward-compatible changes. For C3, explain the version-mixing hazard during the update and the practice that makes it safe; for C2, explain why this strategy is the most complex to operate and what infrastructure makes fine-grained traffic shifting possible.",
+        "hints": [
+          "Blue-green: deploy the new version alongside the previous one, validate, switch all traffic at once, and switch back if there's a problem -- but you run twice as many pods during the update.",
+          "Canary: roll out to a small subset of clients, monitor real behavior, then widen -- it requires routing requests dynamically to different versions, which coarse replica-count tricks only approximate (10 replicas = 10% increments); a service mesh or traffic-split rules give finer control.",
+          "Rolling: new instances start receiving requests immediately as previous ones are removed -- the default in Kubernetes deployments -- but during the update a mix of old and new versions receives traffic."
+        ],
+        "expected_solution": "C1 - Blue-green: deploy the new version alongside the previous version, validate it, then switch all traffic at once; if problems appear after monitoring, switch traffic back to the previous version, and delete the old one only when confident. This gives the instant traffic-switch revert the payment team requires. Cost: during the update you run twice as many pods (current and next), so if pods use substantial CPU/memory you may need to scale out the cluster temporarily -- acceptable per the scenario. In Kubernetes this doesn't need a separate cluster: create a new deployment with different labels and flip the service's selector to the new pods.\n\nC2 - Canary release: deploy the updated version to a small subset of clients and monitor the behavior of the new service before rolling it out to all clients -- a gradual, controlled rollout that monitors real data and catches problems before they affect all customers, exactly what subtle traffic-dependent risk demands. It is the most complex strategy to manage because you must route requests dynamically to different versions of the service. Plain Kubernetes is coarse-grained -- with a service spanning two replica sets and 10 total replicas you can only shift traffic in 10% increments -- so use service-mesh routing rules (or platform traffic-split features, e.g. 10% to v2 / 90% to v1, shifting weights as confidence grows) for sophisticated control.\n\nC3 - Rolling update: deploy new instances that start receiving requests immediately as previous instances are removed -- the default behavior when you update a deployment's pod spec, with no doubled resource footprint, fitting the constrained cluster and frequent releases; update history allows rollback. Hazard: during the update a mix of previous and new versions runs and any request can be routed to either version. The practice that makes it safe: for breaking API changes, support both versions side by side until all clients of the previous version are updated (API versioning) -- here the team already ships backward-compatible changes, which is why rolling fits.",
+        "common_mistakes": [
+          "Choosing blue-green on a resource-constrained cluster, forgetting it doubles running pods during the update",
+          "Treating a canary as 'just fewer replicas', when replica-count splitting only shifts traffic in coarse increments and real canarying needs dynamic routing",
+          "Ignoring that rolling updates serve mixed versions simultaneously, breaking clients when the API change isn't backward compatible",
+          "Deleting the previous (blue) version immediately after the switch, eliminating the instant-rollback path"
+        ],
+        "bloom_level": "evaluate",
+        "difficulty": 3
+      },
+      {
+        "title": "Design Retry Policies for an Interactive Call and a Batch Workflow",
+        "problem_statement": "Design transient-fault retry policies for two operations calling cloud services over HTTP: (O1) a user-facing request inside an interactive page load; (O2) a step in a long-running nightly batch workflow that is costly to cancel and restart. For each policy specify: which HTTP status codes you retry and which you never retry (with reasoning); the interval strategy and retry count, justified by the operation's context; and how timeouts interact with the retry schedule. Also state: (a) what you do when a response carries a Retry-After header; (b) when you should prefer a service SDK's built-in retry mechanism over your own; (c) why cloud environments make transient faults 'normal' in the first place (give two reasons).",
+        "hints": [
+          "Retry candidates for HTTP services: status 429 (Too Many Requests) and 5xx server errors; most 4xx client errors (400, 401, 403, 404) indicate problems a retry won't resolve. Don't retry operations that can't succeed.",
+          "Use exponential back-off with jitter for background operations, and immediate or regular short-interval retries (few attempts) for interactive operations so users aren't kept waiting; total time (timeouts + delays + attempts) must fit the end-to-end latency requirement or SLO.",
+          "Cloud reasons: shared resources are subject to throttling that refuses connections at load thresholds; large numbers of commodity hardware units with dynamic load distribution and automatic recycling/replacement of failed units; more network components in the path; varying internet conditions."
+        ],
+        "expected_solution": "Retryable codes (both policies): 429 (Too Many Requests) and 5xx server errors are typical retry candidates. Never retry most 4xx errors (400, 401, 403, 404) -- they indicate problems a retry won't resolve, like requests that can't succeed (e.g. updating an item that doesn't exist). Treat 503 carefully: it may indicate the service failed and won't respond to further attempts.\n\nO1 (interactive): the interval should be short and you should attempt only a few retries -- avoid making users wait, since held-open connections can reduce availability for other users. Use at most one immediate retry (transient faults like a packet collision are often brief), then a short regular interval, then fail. Set a timeout on every outbound call before adding retry logic; the timeout plus delays plus attempts must stay within the page's latency budget.\n\nO2 (batch/long-running): where canceling and restarting is costly, you can wait longer between attempts and retry more times. Use exponential back-off (e.g. 2s, 4s, 8s up to a cap) with jitter -- a small random delay on each interval -- to prevent multiple clients from syncing their retries and creating load spikes. The total of connection-failure time (set by the client timeout), inter-retry delays, and max retries determines the overall operation time, which must stay within any SLO; account for the operation timeout when choosing intervals so a new attempt doesn't launch immediately when the timeout resembles the retry interval. Timeouts that are too long accumulate threads and connections during outages; too short, and operations that would succeed fail prematurely.\n\n(a) Retry-After: follow it -- wait at least the specified duration before the next attempt; this server-provided signal reflects the service's recovery timeline and takes precedence over your client-side back-off calculation.\n\n(b) Prefer the built-in SDK retry mechanism when one exists: its policy is typically tailored to the nature and requirements of the target service; deviate only for specific, well-understood requirements.\n\n(c) Transient faults are normal in the cloud because: shared resources are protected by throttling, refusing connections when load reaches thresholds; the platform runs on large numbers of commodity hardware units, delivering performance by dynamically distributing load and reliability by automatically recycling or replacing failed units; more network infrastructure (routers, load balancers) sits between application and services; and network conditions vary, especially across the internet.\n\nAlso avoid overly aggressive strategies (too-short intervals, too-frequent retries): they can prevent the target service from recovering, creating a cycle of more requests and further degradation. Use a dead-letter queue so request information isn't lost after all retry attempts are exhausted.",
+        "common_mistakes": [
+          "Retrying 4xx client errors like 400 or 404, which no number of retries will fix",
+          "Using the same aggressive retry profile for interactive and background operations, making users wait and holding connections",
+          "Omitting jitter so synchronized clients hammer the recovering service in waves",
+          "Adding retries without per-call timeouts, letting threads and connections accumulate during outages"
+        ],
+        "bloom_level": "create",
+        "difficulty": 3
+      },
+      {
+        "title": "Design Health and Availability Monitoring for Order Placement",
+        "problem_statement": "An e-commerce platform's order-placement feature depends on an order repository and a payment subsystem. Design its health and availability monitoring: (a) specify the traffic-light health model and the alerting latency target for an unhealthy component; (b) list four raw data sources you would wire up to detect 'is it up?' failures, including one that works even when no real users are active; (c) explain how the availability of the order-placement feature is derived from its dependencies and why per-subsystem visibility matters; (d) using the standard formula, compute the availability percentage for a 30-day month (43,200 minutes) in which the repository was down 90 minutes and the payment subsystem separately down 40 minutes (no overlap), and state what definition you must pin down before reporting this number.",
+        "hints": [
+          "Health monitoring should raise an alert within seconds if any part is unhealthy, using red (unhealthy/stopped), yellow (partially healthy/reduced functionality), green (healthy); a comprehensive system shows the status of each subsystem and component.",
+          "Raw-data sources include: tracing user request execution (which succeed/fail, duration), synthetic-user monitoring (simulated user actions following predefined steps), logging exceptions/faults/warnings, monitoring endpoints (health endpoints pinged on a schedule), third-party service health, and ambient performance info (CPU, I/O, network).",
+          "%Availability = ((Total Time - Total Downtime) / Total Time) * 100. If the feature depends on both subsystems and the outages don't overlap, the feature's downtime is their sum. The definition of 'downtime' itself depends on the service (e.g. a minute counts as unavailable if all continuous HTTP requests during that minute error or get no response)."
+        ],
+        "expected_solution": "(a) Use traffic-light health signals: red = unhealthy (the system stopped), yellow = partially healthy (running with reduced functionality), green = healthy. The system should raise an alert within seconds if any part is unhealthy, and the health-monitoring view should show the status of each subsystem and component so you can determine which parts function normally and which have problems.\n\n(b) Data sources: (1) trace the execution of user requests to determine which succeed or fail and how long each takes; (2) synthetic-user monitoring -- simulate user actions through a predefined series of steps and capture each step's results, which detects failures even with no real traffic; (3) log exceptions, faults, and warnings from trace statements in application code and from event logs of referenced services; (4) expose and monitor health endpoints -- one per functional area -- which the monitoring system pings on a defined schedule, collecting success/fail; plus ambient performance information (background CPU, I/O, network activity) and the health of third-party services. Record all timeouts, network connectivity failures, and connection retry attempts, time-stamping everything.\n\n(c) The availability of the order-placement feature depends on the availability of the repository storing order details and the payment subsystem handling transactions. The monitoring system must capture availability data for these low-level factors and aggregate them into the overall picture, while keeping current and historical per-subsystem views -- so you can correlate failures with specific activities, see which services fail during peak hours, and identify the reasons for unavailability (service not running, lost connectivity, timeouts, error code responses).\n\n(d) Non-overlapping outages on serial dependencies sum: total downtime = 90 + 40 = 130 minutes. %Availability = ((43,200 - 130) / 43,200) * 100 = (43,070 / 43,200) * 100 = 99.70%. Before reporting, pin down the definition of downtime for this service -- definitions vary; for example, one build service counts a minute as downtime only if all continuous HTTP requests during that minute return an error code or no response. This formula and definition are what you would use for SLA monitoring.",
+        "common_mistakes": [
+          "Relying only on real-user traffic for detection, so overnight failures go unnoticed -- synthetic users cover quiet periods",
+          "Building a single binary up/down signal with no per-subsystem breakdown, making diagnosis slow",
+          "Multiplying component availabilities measured after the fact instead of summing the feature's actual non-overlapping downtime in the formula",
+          "Reporting an availability percentage without first defining what counts as 'downtime' for the service"
+        ],
+        "bloom_level": "create",
+        "difficulty": 3
+      }
+    ]
+  }
+]

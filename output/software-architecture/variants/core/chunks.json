@@ -1,0 +1,26 @@
+[
+  {
+    "content": "Software has two values: features working today, and the ability to change tomorrow. The second is greater — an unchangeable system dies with its first big requirement shift — so architecture's job is keeping change cheap by deferring decisions about details.\n\nThe core discipline is dependency management. SOLID in one breath: give each module one reason to change, extend rather than modify, keep subtypes substitutable, don't force clients to depend on what they don't use, and depend on abstractions instead of volatile concretions. Dependency inversion is the keystone — it lets you point a source-code dependency *against* the flow of control.\n\nThat keystone scales up to the Clean Architecture: business rules at the centre, frameworks/UI/database at the rim, and the Dependency Rule — all dependencies point inward. The database is a detail. The web is a detail. Frameworks are tools you use, not marry. Draw a boundary wherever you want the freedom to change one side without the other, and make every plugin point at the policy it serves.",
+    "token_count": 219,
+    "topic_path": [
+      "Software Architecture in a Nutshell"
+    ],
+    "chunk_index": 0,
+    "page_number": 1,
+    "metadata": {
+      "has_code": false
+    }
+  },
+  {
+    "content": "To scale a web system: put a CDN in front of static content, a load balancer in front of stateless web servers, cache reads at every level (cache-aside by default, explicit expiration), scale the database with read replicas then sharding, and push slow or bursty work onto message queues consumed by idempotent workers. Availability multiplies in series and improves in parallel — know your nines.\n\nDistribution always costs: CAP says a partitioned system chooses consistency or availability, and most of the web chooses availability plus eventual consistency. Split into microservices only when independent deployment and scaling justify that cost; each service must own one business capability *and its own data*, communicate through APIs (preferably async messages, sagas over distributed transactions) — otherwise you've built a distributed monolith.\n\nRun it with twelve-factor discipline: config in the environment, stateless disposable processes, logs as event streams. Deploy gradually (rolling, blue-green, canary), retry transient faults with backoff, circuit-break repeat offenders, and trace every request with a correlation ID.",
+    "token_count": 213,
+    "topic_path": [
+      "Scaling Web Systems in a Nutshell"
+    ],
+    "chunk_index": 0,
+    "page_number": 1,
+    "metadata": {
+      "has_code": false
+    }
+  }
+]

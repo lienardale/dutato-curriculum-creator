@@ -1,0 +1,91 @@
+{
+  "name": "Software Architecture (Core)",
+  "domain": "software-architecture-core",
+  "domain_family": "software-architecture",
+  "variant": "core",
+  "description": "Cheat-sheet curriculum covering absolute fundamentals only",
+  "sources": [
+    {
+      "type": "markdown",
+      "path": "input/clean-architecture",
+      "origin": "https://github.com/serodriguez68/clean-architecture",
+      "title": "Clean Architecture — book summary (Robert C. Martin, summarized by S. Rodriguez)",
+      "include": "*.md",
+      "exclude": [
+        "readme",
+        "00-preface"
+      ]
+    },
+    {
+      "type": "markdown",
+      "path": "input/system-design-primer/README.md",
+      "origin": "https://github.com/donnemartin/system-design-primer",
+      "title": "The System Design Primer (Donne Martin)"
+    },
+    {
+      "type": "markdown",
+      "path": "input/12factor/content/en",
+      "origin": "https://github.com/heroku/12factor",
+      "title": "The Twelve-Factor App (Adam Wiggins / Heroku)",
+      "include": "*.md",
+      "exclude": [
+        "who",
+        "background"
+      ],
+      "image_root": "input/12factor/public"
+    },
+    {
+      "type": "markdown",
+      "path": "input/dotnet-docs/docs/architecture/modern-web-apps-azure",
+      "origin": "https://github.com/dotnet/docs/tree/main/docs/architecture/modern-web-apps-azure",
+      "title": "Architect Modern Web Applications with ASP.NET Core (Microsoft)",
+      "include": "*.md",
+      "exclude": [
+        "index",
+        "azure-hosting-recommendations-for-asp-net-web-apps",
+        "development-process-for-azure"
+      ]
+    },
+    {
+      "type": "markdown",
+      "path": "input/architecture-center/docs/guide/architecture-styles",
+      "origin": "https://github.com/MicrosoftDocs/architecture-center/tree/main/docs/guide/architecture-styles",
+      "title": "Architecture Styles — Azure Architecture Center (Microsoft)",
+      "include": "*.md"
+    },
+    {
+      "type": "markdown",
+      "path": "input/architecture-center/docs/microservices",
+      "origin": "https://github.com/MicrosoftDocs/architecture-center/tree/main/docs/microservices",
+      "title": "Microservices Design Guide — Azure Architecture Center (Microsoft)",
+      "include": "**/*.md",
+      "exclude": [
+        "ci-cd-kubernetes-content",
+        "index"
+      ]
+    },
+    {
+      "type": "markdown",
+      "path": "input/architecture-center/docs/best-practices",
+      "origin": "https://github.com/MicrosoftDocs/architecture-center/tree/main/docs/best-practices",
+      "title": "Web API and Scalability Best Practices — Azure Architecture Center (Microsoft)",
+      "include": "*.md",
+      "exclude": [
+        "host-name-preservation",
+        "index-best-practices"
+      ]
+    }
+  ],
+  "created_at": "2026-06-10T14:10:00+00:00",
+  "created_by": "condense.py",
+  "condensed_from": "output/software-architecture",
+  "condensation_stats": {
+    "original_topics": 125,
+    "condensed_topics": 2,
+    "original_chunks": 152,
+    "condensed_chunks": 2,
+    "original_tokens": 166301,
+    "condensed_tokens": 432,
+    "compression_ratio": 385.0
+  }
+}

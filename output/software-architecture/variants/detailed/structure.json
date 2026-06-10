@@ -1,0 +1,622 @@
+[
+  {
+    "title": "Foundations of Software Architecture",
+    "depth": 0,
+    "sort_order": 0,
+    "description": "What architecture is, the two values of software, and what good architecture enables.",
+    "suggested_level": 1,
+    "children": [
+      {
+        "title": "Design, Architecture, and the Two Values",
+        "depth": 1,
+        "sort_order": 0,
+        "description": "Design vs architecture and the behaviour/structure value tension.",
+        "source_sections": [
+          "Design, Architecture, and the Two Values"
+        ],
+        "children": [],
+        "learning_objectives": [
+          {
+            "text": "Explain why the distinction between design and architecture is artificial — both form a continuous fabric of decisions.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Compare the two values of software (behaviour and structure) and justify why structure is the greater value over time.",
+            "bloom_level": "evaluate"
+          },
+          {
+            "text": "Identify the symptoms of a system whose architecture has been neglected in favour of feature delivery.",
+            "bloom_level": "remember"
+          }
+        ]
+      },
+      {
+        "title": "What Good Architecture Enables",
+        "depth": 1,
+        "sort_order": 1,
+        "description": "Facilitating development, deployment, operation, and maintenance while keeping options open.",
+        "source_sections": [
+          "What Good Architecture Enables"
+        ],
+        "children": [],
+        "learning_objectives": [
+          {
+            "text": "List the four activities good architecture must facilitate: development, deployment, operation, and maintenance.",
+            "bloom_level": "remember"
+          },
+          {
+            "text": "Explain why 'keeping options open' — deferring decisions about details — is the core strategy of good architecture.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Describe how team size changes the architectural pressure on a codebase.",
+            "bloom_level": "understand"
+          }
+        ]
+      }
+    ],
+    "learning_objectives": [
+      {
+        "text": "By the end of this topic, you will be able to explain what software architecture is and why structure is as valuable as behaviour.",
+        "bloom_level": "understand"
+      }
+    ]
+  },
+  {
+    "title": "Design Principles",
+    "depth": 0,
+    "sort_order": 1,
+    "description": "SOLID and the component principles, condensed.",
+    "suggested_level": 1,
+    "children": [
+      {
+        "title": "The SOLID Principles",
+        "depth": 1,
+        "sort_order": 0,
+        "description": "All five SOLID principles with their violation symptoms and remedies.",
+        "source_sections": [
+          "The SOLID Principles at a Glance",
+          "The Single Responsibility Principle",
+          "The Open-Closed Principle",
+          "Liskov Substitution and Interface Segregation",
+          "The Dependency Inversion Principle"
+        ],
+        "children": [],
+        "learning_objectives": [
+          {
+            "text": "State all five SOLID principles and the design problem each addresses.",
+            "bloom_level": "remember"
+          },
+          {
+            "text": "Diagnose which SOLID principle a described design violates and propose the standard remedy.",
+            "bloom_level": "analyze"
+          }
+        ]
+      },
+      {
+        "title": "Component Principles",
+        "depth": 1,
+        "sort_order": 1,
+        "description": "Component cohesion (REP, CCP, CRP) and coupling (ADP, SDP, SAP) in brief.",
+        "source_sections": [
+          "Component Cohesion",
+          "Component Coupling and Stability"
+        ],
+        "children": [],
+        "learning_objectives": [
+          {
+            "text": "Explain the tension between the three component-cohesion principles.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Detect and break a component dependency cycle.",
+            "bloom_level": "apply"
+          }
+        ]
+      }
+    ],
+    "learning_objectives": [
+      {
+        "text": "By the end of this topic, you will be able to apply SOLID and component principles when organizing classes, modules, and components.",
+        "bloom_level": "apply"
+      }
+    ]
+  },
+  {
+    "title": "Clean Architecture",
+    "depth": 0,
+    "sort_order": 2,
+    "description": "The Dependency Rule, boundaries, and keeping details (database, web, frameworks) at arm's length.",
+    "suggested_level": 2,
+    "children": [
+      {
+        "title": "Drawing Boundary Lines",
+        "depth": 1,
+        "sort_order": 0,
+        "description": "Business rules vs details, and the plugin architecture idea.",
+        "source_sections": [
+          "Drawing Boundary Lines"
+        ],
+        "children": [],
+        "learning_objectives": [
+          {
+            "text": "Explain why the database and the GUI are plugins to the business rules, not the other way around.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Apply the plugin-architecture idea to position a new subsystem on the right side of a boundary.",
+            "bloom_level": "apply"
+          }
+        ]
+      },
+      {
+        "title": "The Dependency Rule and the Four Layers",
+        "depth": 1,
+        "sort_order": 1,
+        "description": "Entities, use cases, interface adapters, frameworks & drivers — dependencies point inward.",
+        "source_sections": [
+          "The Dependency Rule and the Four Layers"
+        ],
+        "children": [],
+        "learning_objectives": [
+          {
+            "text": "Name the four layers of the Clean Architecture and what belongs in each.",
+            "bloom_level": "remember"
+          },
+          {
+            "text": "Apply the Dependency Rule to decide whether a proposed dependency between two classes is legal.",
+            "bloom_level": "apply"
+          },
+          {
+            "text": "Explain why the layer count is not fixed at four as long as the Dependency Rule holds.",
+            "bloom_level": "understand"
+          }
+        ]
+      },
+      {
+        "title": "Details: Database, Web, and Frameworks",
+        "depth": 1,
+        "sort_order": 2,
+        "description": "Why the database, web, and frameworks are deferrable details.",
+        "source_sections": [
+          "Details: Database, Web, and Frameworks"
+        ],
+        "children": [],
+        "learning_objectives": [
+          {
+            "text": "Argue why the database schema and the web delivery mechanism are details, not the architecture.",
+            "bloom_level": "evaluate"
+          },
+          {
+            "text": "Describe the asymmetric-marriage risk of frameworks and strategies to use them while limiting coupling.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Identify the framework marriages that are practically unavoidable and how to contain them.",
+            "bloom_level": "analyze"
+          }
+        ]
+      }
+    ],
+    "learning_objectives": [
+      {
+        "text": "By the end of this topic, you will be able to design a system around the Dependency Rule with business rules independent of frameworks, UI, and databases.",
+        "bloom_level": "create"
+      }
+    ]
+  },
+  {
+    "title": "Architecture Styles in Practice",
+    "depth": 0,
+    "sort_order": 3,
+    "description": "Monoliths and layers, plus the step beyond: queues and events.",
+    "suggested_level": 1,
+    "children": [
+      {
+        "title": "Monoliths and Layered Applications",
+        "depth": 1,
+        "sort_order": 0,
+        "description": "All-in-one apps, layering, and traditional N-layer designs.",
+        "source_sections": [
+          "Monoliths and Layered Applications"
+        ],
+        "children": [],
+        "learning_objectives": [
+          {
+            "text": "Define a monolithic application and describe when single-project, all-in-one apps are appropriate.",
+            "bloom_level": "remember"
+          },
+          {
+            "text": "Explain the benefits and costs of logical layering (UI, business logic, data access) inside a single deployment unit.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Analyze the dependency problem of traditional N-layer designs where business logic depends on data access.",
+            "bloom_level": "analyze"
+          }
+        ]
+      },
+      {
+        "title": "Beyond the Monolith: Queues and Events",
+        "depth": 1,
+        "sort_order": 1,
+        "description": "Web-Queue-Worker and event-driven architecture in brief.",
+        "source_sections": [
+          "Web-Queue-Worker Style",
+          "Event-Driven Architecture Style"
+        ],
+        "children": [],
+        "learning_objectives": [
+          {
+            "text": "Describe the Web-Queue-Worker style and when it beats both monolith and microservices.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Differentiate pub/sub from event streaming and identify event-driven fits.",
+            "bloom_level": "analyze"
+          }
+        ]
+      }
+    ],
+    "learning_objectives": [
+      {
+        "text": "By the end of this topic, you will be able to select and justify an architecture style for a typical web workload.",
+        "bloom_level": "evaluate"
+      }
+    ]
+  },
+  {
+    "title": "Web Application Architecture",
+    "depth": 0,
+    "sort_order": 4,
+    "description": "Front-end choice and the core server-side patterns of a modern web app.",
+    "suggested_level": 2,
+    "children": [
+      {
+        "title": "Traditional Web Apps vs SPAs",
+        "depth": 1,
+        "sort_order": 0,
+        "description": "Choosing server-rendered, SPA, or hybrid front ends.",
+        "source_sections": [
+          "Traditional Web Apps vs SPAs"
+        ],
+        "children": [],
+        "learning_objectives": [
+          {
+            "text": "State the conditions favouring traditional web apps (simple client requirements, no-JS support, SEO) vs SPAs (rich UX, exposed API).",
+            "bloom_level": "remember"
+          },
+          {
+            "text": "Use the decision table to recommend traditional, SPA, or Blazor for a described product.",
+            "bloom_level": "apply"
+          },
+          {
+            "text": "Explain the staffing and tooling costs a SPA adds to a project.",
+            "bloom_level": "understand"
+          }
+        ]
+      },
+      {
+        "title": "Server-Side Patterns Essentials",
+        "depth": 1,
+        "sort_order": 1,
+        "description": "MVC/Razor Pages, dependency injection, structure, security, and data access in brief.",
+        "source_sections": [
+          "MVC and Razor Pages",
+          "Dependency Injection and Application Structure",
+          "Web Application Security",
+          "Entity Framework Core Patterns",
+          "Choosing a Data Store"
+        ],
+        "children": [],
+        "learning_objectives": [
+          {
+            "text": "Outline how a server-side web app maps requests to responses through routing, model binding, and filters.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Apply dependency injection and feature organization to keep a web app testable.",
+            "bloom_level": "apply"
+          },
+          {
+            "text": "Choose between a full ORM, a micro-ORM, and a NoSQL store for a workload.",
+            "bloom_level": "evaluate"
+          }
+        ]
+      }
+    ],
+    "learning_objectives": [
+      {
+        "text": "By the end of this topic, you will be able to architect a maintainable, testable web application from the front end through data access.",
+        "bloom_level": "create"
+      }
+    ]
+  },
+  {
+    "title": "API Design and Integration",
+    "depth": 0,
+    "sort_order": 5,
+    "description": "REST design essentials and versioning an evolving API.",
+    "suggested_level": 2,
+    "children": [
+      {
+        "title": "RESTful API Design Essentials",
+        "depth": 1,
+        "sort_order": 0,
+        "description": "Resources, URIs, method semantics, pagination, HATEOAS, and OpenAPI in brief.",
+        "source_sections": [
+          "Resources and URIs",
+          "HTTP Methods and Semantics",
+          "Advanced API Capabilities"
+        ],
+        "children": [],
+        "learning_objectives": [
+          {
+            "text": "Design resource URIs and choose correct HTTP methods and status codes.",
+            "bloom_level": "apply"
+          },
+          {
+            "text": "Explain pagination, partial responses, HATEOAS, and OpenAPI's role in an API contract.",
+            "bloom_level": "understand"
+          }
+        ]
+      },
+      {
+        "title": "API Versioning",
+        "depth": 1,
+        "sort_order": 1,
+        "description": "URI, query-string, header, and media-type versioning trade-offs.",
+        "source_sections": [
+          "API Versioning"
+        ],
+        "children": [],
+        "learning_objectives": [
+          {
+            "text": "Compare the four explicit versioning mechanisms and their effects on caching and client code.",
+            "bloom_level": "analyze"
+          },
+          {
+            "text": "Choose a versioning strategy for a public API and justify it against breaking-change policy.",
+            "bloom_level": "evaluate"
+          }
+        ]
+      }
+    ],
+    "learning_objectives": [
+      {
+        "text": "By the end of this topic, you will be able to design and implement a well-behaved, versioned, documented web API.",
+        "bloom_level": "create"
+      }
+    ]
+  },
+  {
+    "title": "Scalability and Distributed Systems",
+    "depth": 0,
+    "sort_order": 6,
+    "description": "CAP and consistency, availability math, database scaling, caching, and queues.",
+    "suggested_level": 3,
+    "children": [
+      {
+        "title": "Performance, Scalability, and CAP",
+        "depth": 1,
+        "sort_order": 0,
+        "description": "Performance vs scalability, latency vs throughput, CAP, and consistency patterns.",
+        "source_sections": [
+          "Performance, Scalability, and CAP"
+        ],
+        "children": [],
+        "learning_objectives": [
+          {
+            "text": "Distinguish a performance problem from a scalability problem and latency from throughput.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Apply the CAP theorem to classify a data store as CP or AP for a given failure scenario.",
+            "bloom_level": "apply"
+          },
+          {
+            "text": "Match weak, eventual, and strong consistency models to appropriate use cases.",
+            "bloom_level": "analyze"
+          }
+        ]
+      },
+      {
+        "title": "Availability Patterns",
+        "depth": 1,
+        "sort_order": 1,
+        "description": "Fail-over modes and availability arithmetic.",
+        "source_sections": [
+          "Availability Patterns"
+        ],
+        "children": [],
+        "learning_objectives": [
+          {
+            "text": "Compare active-passive and active-active fail-over including their data-loss risks.",
+            "bloom_level": "analyze"
+          },
+          {
+            "text": "Calculate composite availability for components in sequence and in parallel.",
+            "bloom_level": "apply"
+          },
+          {
+            "text": "Translate 99.9% and 99.99% availability into acceptable downtime per year.",
+            "bloom_level": "apply"
+          }
+        ]
+      },
+      {
+        "title": "Database Scaling",
+        "depth": 1,
+        "sort_order": 2,
+        "description": "Replication, federation, sharding, denormalization, and SQL tuning.",
+        "source_sections": [
+          "Replication and Federation",
+          "Sharding, Denormalization, and SQL Tuning"
+        ],
+        "children": [],
+        "learning_objectives": [
+          {
+            "text": "Select and combine replication, sharding, and partitioning strategies for a growing dataset.",
+            "bloom_level": "evaluate"
+          }
+        ]
+      },
+      {
+        "title": "Caching Essentials",
+        "depth": 1,
+        "sort_order": 3,
+        "description": "Cache layers and update patterns.",
+        "source_sections": [
+          "Cache Layers",
+          "Cache Update Patterns"
+        ],
+        "children": []
+      },
+      {
+        "title": "Message and Task Queues",
+        "depth": 1,
+        "sort_order": 4,
+        "description": "Queues, task queues, and back pressure.",
+        "source_sections": [
+          "Message and Task Queues"
+        ],
+        "children": [],
+        "learning_objectives": [
+          {
+            "text": "Explain how message queues decouple producers from consumers and smooth bursty load.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Apply back pressure when queue depth signals that the system is saturated.",
+            "bloom_level": "apply"
+          }
+        ]
+      }
+    ],
+    "learning_objectives": [
+      {
+        "text": "By the end of this topic, you will be able to scale a web system by combining edge infrastructure, database scaling, caching, and asynchronous work.",
+        "bloom_level": "create"
+      }
+    ]
+  },
+  {
+    "title": "Microservices",
+    "depth": 0,
+    "sort_order": 7,
+    "description": "The essentials of microservice design — and a critical counterweight.",
+    "suggested_level": 3,
+    "children": [
+      {
+        "title": "Microservices Essentials",
+        "depth": 1,
+        "sort_order": 0,
+        "description": "What microservices are, when they pay off, and how services should communicate and own data.",
+        "source_sections": [
+          "Microservices Architecture Style",
+          "Interservice Communication",
+          "Data Management"
+        ],
+        "children": [],
+        "learning_objectives": [
+          {
+            "text": "Describe the defining properties of microservices and their cost.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Choose communication patterns and data ownership rules for a small service system.",
+            "bloom_level": "evaluate"
+          }
+        ]
+      },
+      {
+        "title": "A Critical View of Services",
+        "depth": 1,
+        "sort_order": 1,
+        "description": "Services alone are not an architecture: the decoupling and independence hypes examined.",
+        "source_sections": [
+          "A Critical View of Services"
+        ],
+        "children": [],
+        "learning_objectives": [
+          {
+            "text": "Explain why splitting into services does not by itself create architectural boundaries.",
+            "bloom_level": "understand"
+          },
+          {
+            "text": "Critique the claims of total decoupling and independent development used to justify microservices.",
+            "bloom_level": "evaluate"
+          },
+          {
+            "text": "Analyze the cross-cutting-change weakness of services decomposed purely by function, and the vertical-layers remedy.",
+            "bloom_level": "analyze"
+          }
+        ]
+      }
+    ],
+    "learning_objectives": [
+      {
+        "text": "By the end of this topic, you will be able to decompose a domain into microservices and design their communication, APIs, and data ownership.",
+        "bloom_level": "create"
+      }
+    ]
+  },
+  {
+    "title": "Cloud-Native Operations",
+    "depth": 0,
+    "sort_order": 8,
+    "description": "Twelve-factor discipline, safe deployments, retries, and observability in brief.",
+    "suggested_level": 3,
+    "children": [
+      {
+        "title": "The Twelve Factors at a Glance",
+        "depth": 1,
+        "sort_order": 0,
+        "description": "All twelve factors condensed to their operational core.",
+        "source_sections": [
+          "Codebase Through Build-Release-Run",
+          "Processes Through Admin Processes"
+        ],
+        "children": [],
+        "learning_objectives": [
+          {
+            "text": "List the twelve factors and the failure each prevents.",
+            "bloom_level": "remember"
+          },
+          {
+            "text": "Audit an app for the most commonly violated factors: config, statelessness, logs, and parity.",
+            "bloom_level": "analyze"
+          }
+        ]
+      },
+      {
+        "title": "Deploy, Retry, Observe",
+        "depth": 1,
+        "sort_order": 1,
+        "description": "Deployment strategies, transient-fault retries, and monitoring essentials.",
+        "source_sections": [
+          "Deployment Strategies",
+          "Transient Fault Handling",
+          "Monitoring Scenarios and Health"
+        ],
+        "children": [],
+        "learning_objectives": [
+          {
+            "text": "Compare rolling, blue-green, and canary deployments.",
+            "bloom_level": "analyze"
+          },
+          {
+            "text": "Design a retry policy with backoff and a circuit-breaking fallback.",
+            "bloom_level": "create"
+          }
+        ]
+      }
+    ],
+    "learning_objectives": [
+      {
+        "text": "By the end of this topic, you will be able to take a web system from commit to production with safe deployments, fault tolerance, and full observability.",
+        "bloom_level": "create"
+      }
+    ]
+  }
+]
