@@ -41,6 +41,32 @@ def _sanitize(text: str | None) -> str | None:
     return text.replace("\x00", "").replace("\u0000", "")
 
 
+def _validate_or_exit(input_dir: Path, stage: str, skip: bool) -> None:
+    """Run the pre-flight validator; abort on errors (warnings never block)."""
+    if skip:
+        console.print("[yellow]Pre-upload validation skipped (--skip-validation)[/]")
+        return
+    from validate import run_validation
+
+    findings = run_validation(input_dir, stage)
+    errors = [f for f in findings if f.severity == "error"]
+    warnings = [f for f in findings if f.severity == "warning"]
+    if warnings:
+        console.print(
+            f"  [yellow]{len(warnings)} validation warning(s)[/] — see "
+            f"`python validate.py {input_dir}` for details"
+        )
+    if errors:
+        console.print(f"[red]Validation failed with {len(errors)} error(s):[/]")
+        for f in errors:
+            console.print(f"  [red]{f.check_id}[/] {f.location}: {f.message}")
+        console.print(
+            "Fix the errors above (or re-run with --skip-validation to "
+            "override at your own risk)."
+        )
+        sys.exit(1)
+
+
 def get_client(target: str = "default", db_url: str | None = None, db_key: str | None = None):
     """Create a Supabase client for the specified target."""
     load_dotenv()
@@ -373,6 +399,20 @@ def insert_books(
     return source_to_book
 
 
+BLOOM_LEVELS = {"remember", "understand", "apply", "analyze", "evaluate", "create"}
+
+
+def _clamp_bloom(value: str | None, default: str) -> str:
+    """Clamp bloom_level to the valid enum, warning on invalid values."""
+    if value in BLOOM_LEVELS:
+        return value
+    if value is not None:
+        console.print(
+            f"  [yellow]Warning:[/] invalid bloom_level {value!r} — using {default!r}"
+        )
+    return default
+
+
 def _walk_topics(topics: list[dict], parent_path: list[str] | None = None):
     """Yield (topic_dict, topic_path) for every node in the tree."""
     if parent_path is None:
@@ -407,7 +447,7 @@ def insert_learning_objectives(
                 "id": str(uuid.uuid4()),
                 "topic_id": topic_id,
                 "objective_text": _sanitize(obj["text"]),
-                "bloom_level": obj.get("bloom_level", "understand"),
+                "bloom_level": _clamp_bloom(obj.get("bloom_level"), "understand"),
                 "sort_order": i,
             })
 
@@ -543,7 +583,7 @@ def insert_exercises(
                     "hints": ex.get("hints", []),
                     "expected_solution": ex.get("expected_solution", ""),
                     "common_mistakes": ex.get("common_mistakes", []),
-                    "bloom_level": ex.get("bloom_level", "apply"),
+                    "bloom_level": _clamp_bloom(ex.get("bloom_level"), "apply"),
                     "difficulty": ex.get("difficulty", 1),
                 },
             }
@@ -807,8 +847,11 @@ def upload_curriculum(
     db_key: str | None = None,
     update_mode: bool = False,
     replace_chunks: bool = False,
+    skip_validation: bool = False,
 ):
     """Upload a curriculum from an output directory."""
+    _validate_or_exit(input_dir, "upload", skip_validation)
+
     # Load manifest
     manifest_path = input_dir / "manifest.json"
     if not manifest_path.exists():
@@ -1056,12 +1099,15 @@ def enrich_curriculum(
     target: str = "default",
     db_url: str | None = None,
     db_key: str | None = None,
+    skip_validation: bool = False,
 ):
     """Enrich an existing curriculum with objectives, prerequisites, and exercises.
 
     This mode does NOT create domains, topics, or content chunks. It only adds
     enrichment data to an already-uploaded curriculum.
     """
+    _validate_or_exit(input_dir, "enrich", skip_validation)
+
     # Load manifest
     manifest_path = input_dir / "manifest.json"
     if not manifest_path.exists():
@@ -1182,6 +1228,8 @@ def main():
     parser.add_argument("--enrich", action="store_true",
                         help="Enrich an existing curriculum with objectives, prerequisites, "
                              "and exercises (idempotent: clears old enrichment data first)")
+    parser.add_argument("--skip-validation", action="store_true",
+                        help="Skip the pre-flight validate.py checks (errors normally block)")
     args = parser.parse_args()
 
     if args.enrich:
@@ -1190,6 +1238,7 @@ def main():
             target=args.target,
             db_url=args.db_url,
             db_key=args.db_key,
+            skip_validation=args.skip_validation,
         )
         return
 
@@ -1211,6 +1260,7 @@ def main():
         db_key=args.db_key,
         update_mode=args.update,
         replace_chunks=args.replace_chunks,
+        skip_validation=args.skip_validation,
     )
 
 

@@ -55,6 +55,31 @@ Present to the user:
 - Practical skills: [X]% covered
 ```
 
+## Recording Resolutions
+
+Gaps are normal — but acceptance must be auditable, not silent. After
+presenting the gap analysis to the user, record the outcome for **every
+critical gap** as a `resolution` field on the gap entry in
+`exploration.json`:
+
+```json
+{
+  "concept": "Amortized Analysis",
+  "severity": "critical",
+  "suggestion": "Add a source on algorithm analysis",
+  "resolution": "user_accepted"
+}
+```
+
+Valid resolutions:
+- `"user_accepted"` — the user saw the gap and chose to proceed without it
+- `"source_added: <name>"` — a new source was added to fill it
+- `"descoped"` — the user narrowed the curriculum so the gap is out of scope
+
+The validator warns (`exploration.unresolved_critical_gap`) on critical
+gaps without a resolution. Recommended and nice-to-have gaps don't require
+one, though recording decisions there too helps resuming sessions.
+
 ## Important
 
 - Never fabricate content to fill gaps. If a concept isn't in the sources, flag it — don't invent it.

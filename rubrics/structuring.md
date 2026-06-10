@@ -85,29 +85,25 @@ python normalize_titles.py output/<name>/ --remap remap.json
 
 After normalization, `source_sections` strings must:
 - **Not** contain `Chapter N`, `Part I`, `Section N`, or `N: / N. / N.N` prefixes.
-- **Not** include book preamble / end-matter (see deny list in `normalize_titles.py :: BOOK_META_RE`).
+- **Not** include book preamble / end-matter (see deny lists in `normalize_titles.py :: EXACT_META` and `PHRASE_META_RE`).
 - Match an actual section title in an extracted JSON (otherwise the chunker pulls nothing).
 
-A **stale-ref audit** after structure authoring:
+After authoring `structure.json`, **always run the validator**:
 
-```python
-import json, pathlib
-titles = set()
-for p in pathlib.Path('output/<name>/extracted').glob('*.json'):
-    titles.update((s.get('title') or '').strip() for s in json.loads(p.read_text()).get('sections',[]))
-with open('output/<name>/structure.json') as f:
-    structure = json.load(f)
-def check(items, path=''):
-    for it in items:
-        p = path + '/' + it['title']
-        for s in it.get('source_sections', []):
-            if s not in titles and s.lower() not in {t.lower() for t in titles}:
-                print(f'STALE: {p} references {s!r}')
-        check(it.get('children', []), p)
-check(structure)
+```bash
+python validate.py output/<name>/ --stage structure
 ```
 
-Any `STALE:` line means that topic will get zero content from that entry — either fix the title to match a real extracted section or drop it.
+It catches (among others):
+- `structure.stale_ref` (error): a `source_sections` entry that matches no
+  extracted section — that topic gets zero content from it
+- `structure.orphan_section` (warning): an extracted section referenced by
+  no topic — its content is silently dropped at chunking
+- `structure.empty_leaf` (error): a leaf with no usable mapping at all
+- `structure.prereq_cycle` / `structure.prereq_unknown_topic` (errors)
+- breadth, children-count, level-distribution, and duplicate-title warnings
+
+Fix all errors before presenting the structure to the user.
 
 ## Balance Checks
 
@@ -134,6 +130,10 @@ Each topic gains a `learning_objectives` array:
 - Leaf topics: 2-5 objectives (required)
 - Parent topics: 1-3 broader objectives (optional)
 - Use Bloom's action verbs matching the topic's level
+- **Answerability**: every objective must be satisfiable from the content of
+  the topic's `source_sections` — the review stage verifies each objective
+  against the topic's chunks, and unanswerable objectives must be rewritten
+  or the mapping fixed (see the protocol in `rubrics/review_checklist.md`)
 
 ## Prerequisite Links
 

@@ -23,6 +23,7 @@ STAGES = [
     ("structure", "structure.json", "Topic hierarchy built"),
     ("chunk", "chunks.json", "Content chunked"),
     ("exercises", "exercises.json", "Practice exercises generated"),
+    ("validate", "validation_report.json", "Validation report (optional)"),
     ("review", "review.json", "Quality reviewed"),
     ("upload", "upload_result.json", "Uploaded to Supabase"),
     ("condense", "condensation_plan.json", "Condensed variants planned (optional)"),
@@ -74,6 +75,12 @@ def check_status(output_dir: Path) -> dict:
                         detail["keys"] = list(data.keys())
                     elif isinstance(data, list):
                         detail["count"] = len(data)
+                    if stage_name == "review" and isinstance(data, dict):
+                        detail["approved"] = data.get("approved")
+                    if stage_name == "validate" and isinstance(data, dict):
+                        summary = data.get("summary", {})
+                        detail["errors"] = summary.get("errors")
+                        detail["warnings"] = summary.get("warnings")
                 except (json.JSONDecodeError, OSError):
                     detail["error"] = "Could not read JSON"
 
@@ -88,7 +95,7 @@ def check_status(output_dir: Path) -> dict:
             status["current_stage"] = stage_name
         elif status["next_stage"] is None:
             # Optional stages don't block progression
-            optional_stages = {"analyze_images", "exercises", "condense"}
+            optional_stages = {"analyze_images", "exercises", "validate", "condense"}
             if stage_name not in optional_stages:
                 status["next_stage"] = stage_name
 
@@ -131,6 +138,10 @@ def print_status(output_dir: Path):
                 line += ")"
             elif "count" in stage:
                 line += f" ({stage['count']} items)"
+            if stage_name == "review" and "approved" in stage:
+                line += " — approved" if stage["approved"] else " — NOT approved"
+            if stage_name == "validate" and stage.get("errors") is not None:
+                line += f" ({stage['errors']} errors, {stage['warnings']} warnings)"
 
         # Mark current/next
         if stage_name == status["next_stage"]:

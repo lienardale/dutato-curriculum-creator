@@ -291,7 +291,17 @@ If a source section contains distinct conceptual segments, add `split_after_head
 
 Only use this when the default heading-based splitting would combine concepts that should be separate chunks.
 
-**Present the structure to the user** for review. Iterate if needed — overwrite `structure.json` with updates.
+### Validate
+
+After writing `structure.json`, run the validator and fix all errors **before** presenting to the user:
+
+```bash
+python validate.py output/<name>/ --stage structure
+```
+
+Errors (stale `source_sections` refs, empty leaves, prerequisite cycles, invalid Bloom levels) mean topics will silently lose content or data will be dropped at upload. Warnings (breadth, coverage orphans, level distribution) should be fixed or consciously accepted.
+
+**Present the structure to the user** for review. Iterate if needed — overwrite `structure.json` with updates and re-validate.
 
 **Resume rule**: If `structure.json` exists, show it to the user and ask if changes are needed.
 
@@ -307,7 +317,15 @@ python chunk_bridge.py \
   -o output/<name>/chunks.json
 ```
 
-Verify: read `chunks.json` and check token counts are in the 500-1500 range. The chunker respects markdown heading boundaries and keeps fenced code blocks intact. If you added `split_after_headings` to leaf topics in structure.json, verify those splits occurred.
+The chunker writes a coverage report next to the output (`chunk_report.json`) listing unmatched `source_sections`, leaves that produced zero chunks, extracted sections referenced by no topic, and chunks outside the 500-1500 token range.
+
+Verify after chunking:
+
+```bash
+python validate.py output/<name>/ --stage chunks
+```
+
+Then read `chunk_report.json` and resolve every entry — unmatched references and empty leaves mean content silently vanished; fix the titles in `structure.json` and re-run chunking. The chunker respects markdown heading boundaries and keeps fenced code blocks intact. If you added `split_after_headings` to leaf topics in structure.json, verify those splits occurred.
 
 **Resume rule**: If `chunks.json` exists and `structure.json` hasn't changed, skip. If the structure was modified, re-run chunking.
 
@@ -355,6 +373,12 @@ Generate practice problems for each leaf topic (or a subset of the most importan
 
 Exercises are uploaded as `content_chunks` with `metadata.type = "exercise"` and exercise details in `metadata.exercise`. They appear alongside regular content with a `chunk_index` offset of 1000.
 
+Validate after writing:
+
+```bash
+python validate.py output/<name>/ --stage exercises
+```
+
 **Resume rule**: If `exercises.json` exists, read it. Check which topics already have exercises. Only generate exercises for topics that are missing them.
 
 ---
@@ -362,6 +386,14 @@ Exercises are uploaded as `content_chunks` with `metadata.type = "exercise"` and
 ## Stage 7: REVIEW (checkpoint: `review.json`)
 
 Follow `rubrics/review_checklist.md` to verify quality. **Save the review results.**
+
+First run the validator and write the machine-readable report:
+
+```bash
+python validate.py output/<name>/ --json
+```
+
+Fix all errors. Acknowledge each remaining warning in `quality_concerns` with a reason. Then do the judgment review (readability spot-checks, objective answerability, solution correctness — see the rubric). Embed the validator's `summary` block from `validation_report.json` under the `"validation"` key.
 
 Write `output/<name>/review.json`:
 ```json
@@ -377,7 +409,14 @@ Write `output/<name>/review.json`:
   "objectives_coverage": "24/25 topics have objectives",
   "prerequisites_count": 12,
   "exercises_coverage": "18/25 leaf topics have exercises",
-  "quality_concerns": ["Topic 'Advanced Patterns' has only 1 chunk"],
+  "validation": {
+    "checked_at": "2026-03-31T14:00:00+00:00",
+    "stage": "all",
+    "errors": 0,
+    "warnings": 1,
+    "by_check": {"structure.breadth": 1}
+  },
+  "quality_concerns": ["structure.breadth: 16 depth-0 topics — domain genuinely has 16 major areas"],
   "approved": false,
   "reviewed_at": "2026-03-31T14:00:00Z"
 }
@@ -414,6 +453,8 @@ python upload.py \
 ```
 
 **Ask the user** for owner details (user-id, org-id) — never guess.
+
+`upload.py` runs the validator automatically as a pre-flight check and **blocks on errors** (warnings never block). The `--skip-validation` flag exists as an escape hatch — use it only when the user explicitly asks to override.
 
 ### Curriculum Levels
 
@@ -528,10 +569,13 @@ Key rules:
 - Each chunk should be 200-2000 tokens
 - Maintain pedagogical ordering within each tier
 
-### Present the plan to the user for review, then run:
+### Validate the plan, present it to the user, then assemble:
 ```bash
+python validate.py output/<name>/ --stage condensation
 python condense.py --input output/<name>/ --plan output/<name>/condensation_plan.json
 ```
+
+`condense.py` **errors out** if a `merge`/`synthesize` entry is missing its `content` field (it lists all offenders, then exits). Write the missing content into the plan and re-run. The legacy concatenation fallback is available via `--allow-concat`, but only use it when the user explicitly accepts unsynthesized output.
 
 This produces `output/<name>/variants/{tier}/` directories with standard files (manifest.json, structure.json, chunks.json).
 
@@ -598,5 +642,6 @@ If you are ENDING your session before the pipeline is complete:
 
 - **Extraction fails**: Report the error, skip that source, continue with others
 - **No sections extracted**: The source may be image-heavy or binary. Tell the user
-- **Chunking produces 0 chunks**: Structure titles likely don't match extracted sections — check the mapping
+- **Chunking produces 0 chunks**: Structure titles likely don't match extracted sections — read `chunk_report.json` and check the mapping
+- **Validation fails**: Read the findings (`python validate.py output/<name>/`), fix the artifacts it points at, re-run. Never silence errors with `--skip-validation` unless the user explicitly asks
 - **Upload fails**: Check Supabase credentials in `.env`. Report the error

@@ -18,6 +18,7 @@ When adding a new pipeline stage, follow this pattern:
 - `AGENT.md` — Full instructions for the operating agent (pipeline stages, resume rules, sub-agent templates)
 - `rubrics/` — Quality rubrics the agent follows during each stage
 - `status.py` — Pipeline progress checker (agent runs this first on session start)
+- `validate.py` — Machine-checks checkpoint files (schemas, stale `source_sections` refs, section coverage, chunk token ranges, prerequisite cycles, Bloom enums, condensation plan integrity). Run after each authored stage; `upload.py` runs it automatically and blocks on errors.
 - `upload.py` — Uploads curriculum output to Supabase (including images to Storage)
 - `chunk_bridge.py` — Converts structure + extracted content into semantic chunks
 - `normalize_titles.py` — **Required post-extraction pass.** Strips book-structure prefixes (`Chapter N:`, `N.`, `Part I`, …) from section titles and drops book-meta sections (Cover, Foreword, Index, Acknowledgements, end-of-chapter Questions/Summary, …) from extracted JSONs, so the chunker and the authored `source_sections` stay clean of TOC leakage.
@@ -33,6 +34,9 @@ When adding a new pipeline stage, follow this pattern:
 uv sync                        # Install dependencies
 source .venv/bin/activate      # Activate venv
 python status.py output/<name>/                         # Check pipeline progress
+python validate.py output/<name>/                        # Machine-check all checkpoint files
+python validate.py output/<name>/ --stage structure      # Check one stage (manifest|extracted|structure|chunks|...)
+python validate.py output/<name>/ --json                 # Also write validation_report.json
 python normalize_titles.py output/<name>/                # Post-extract: strip chapter prefixes + drop book-meta
 python normalize_titles.py output/<name>/ --remap remap.json  # With explicit Chapter N -> semantic title map
 python chunk_bridge.py --structure output/<name>/structure.json --extracted output/<name>/extracted/ -o output/<name>/chunks.json
