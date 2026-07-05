@@ -32,7 +32,7 @@
     },
     {
       "title": "Dependency inversion",
-      "content": "The direction of dependency within the application should be in the direction of abstraction, not implementation details. Most applications are written such that compile-time dependency flows in the direction of runtime execution, producing a direct dependency graph. That is, if class A calls a method of class B and class B calls a method of class C, then at compile time class A will depend on class B, and class B will depend on class C, as shown in Figure 4-1.\n\n[IMAGE: md_modern-web-apps-azure_img000]\n\n**Figure 4-1.** Direct dependency graph.\n\nApplying the dependency inversion principle allows A to call methods on an abstraction that B implements, making it possible for A to call B at run time, but for B to depend on an interface controlled by A at compile time (thus, *inverting* the typical compile-time dependency). At run time, the flow of program execution remains unchanged, but the introduction of interfaces means that different implementations of these interfaces can easily be plugged in.\n\n[IMAGE: md_modern-web-apps-azure_img001]\n\n**Figure 4-2.** Inverted dependency graph.\n\n**Dependency inversion** is a key part of building loosely coupled applications, since implementation details can be written to depend on and implement higher-level abstractions, rather than the other way around. The resulting applications are more testable, modular, and maintainable as a result. The practice of *dependency injection* is made possible by following the dependency inversion principle.",
+      "content": "The direction of dependency within the application should be in the direction of abstraction, not implementation details. Most applications are written such that compile-time dependency flows in the direction of runtime execution, producing a direct dependency graph. That is, if class A calls a method of class B and class B calls a method of class C, then at compile time class A will depend on class B, and class B will depend on class C, as shown in Figure 4-1.\n\n[IMAGE: md_modern-web-apps-azure_d3eecac937]\n\n**Figure 4-1.** Direct dependency graph.\n\nApplying the dependency inversion principle allows A to call methods on an abstraction that B implements, making it possible for A to call B at run time, but for B to depend on an interface controlled by A at compile time (thus, *inverting* the typical compile-time dependency). At run time, the flow of program execution remains unchanged, but the introduction of interfaces means that different implementations of these interfaces can easily be plugged in.\n\n[IMAGE: md_modern-web-apps-azure_307c44779a]\n\n**Figure 4-2.** Inverted dependency graph.\n\n**Dependency inversion** is a key part of building loosely coupled applications, since implementation details can be written to depend on and implement higher-level abstractions, rather than the other way around. The resulting applications are more testable, modular, and maintainable as a result. The practice of *dependency injection* is made possible by following the dependency inversion principle.",
       "depth": 2,
       "metadata": {
         "file_path": "architectural-principles.md",
@@ -40,14 +40,14 @@
       },
       "images": [
         {
-          "id": "md_modern-web-apps-azure_img000",
-          "local_path": "images/md_modern-web-apps-azure_img000.png",
+          "id": "md_modern-web-apps-azure_d3eecac937",
+          "local_path": "images/md_modern-web-apps-azure_d3eecac937.png",
           "alt_text": "'Direct Dependency Graph' slide comparing compile time and run time: Class A references Class B which references Class C, and control flow follows the same A-to-B-to-C direction at runtime.",
           "context": "markdown_ref:./media/image4-1.png"
         },
         {
-          "id": "md_modern-web-apps-azure_img001",
-          "local_path": "images/md_modern-web-apps-azure_img001.png",
+          "id": "md_modern-web-apps-azure_307c44779a",
+          "local_path": "images/md_modern-web-apps-azure_307c44779a.png",
           "alt_text": "'Inverted Dependency Graph' slide illustrating the dependency inversion principle: at compile time Class A references Interface B and Classes B and C reference the interfaces they implement, while at run time control still flows from Class A through B to C via those interfaces.",
           "context": "markdown_ref:./media/image4-2.png"
         }
@@ -108,7 +108,7 @@
     },
     {
       "title": "Choose Between Traditional Web Apps and Single Page Apps (SPAs): Blazor",
-      "content": "ASP.NET Core includes a model for building rich, interactive, and composable user interfaces called Blazor. Blazor server-side allows developers to build UI with C# and Razor on the server and for the UI to be interactively connected to the browser in real-time using a persistent SignalR connection. Blazor WebAssembly introduces another option for Blazor apps, allowing them to run in the browser using WebAssembly. Because it's real .NET code running on WebAssembly, you can reuse code and libraries from server-side parts of your application.\n\nBlazor provides a new, third option to consider when evaluating whether to build a purely server-rendered web application or a SPA. You can build rich, SPA-like client-side behaviors using Blazor, without the need for significant JavaScript development. Blazor applications can call APIs to request data or perform server-side operations. They can interoperate with JavaScript where necessary to take advantage of JavaScript libraries and frameworks.\n\nConsider building your web application with Blazor when:\n\n- Your application must expose a rich user interface\n\n- Your team is more comfortable with .NET development than JavaScript or TypeScript development\n\nIf you have an existing web forms application you're considering migrating to .NET Core or the latest .NET, you may wish to review the free e-book, [Blazor for Web Forms Developers](../blazor-for-web-forms-developers/index.md) to see whether it makes sense to consider migrating it to Blazor.\n\nFor more information about Blazor, see [Get started with Blazor](https://blazor.net/docs/get-started.html).",
+      "content": "ASP.NET Core includes a model for building rich, interactive, and composable user interfaces called Blazor. Blazor server-side allows developers to build UI with C# and Razor on the server and for the UI to be interactively connected to the browser in real-time using a persistent SignalR connection. Blazor WebAssembly introduces another option for Blazor apps, allowing them to run in the browser using WebAssembly. Because it's real .NET code running on WebAssembly, you can reuse code and libraries from server-side parts of your application.\n\nBlazor provides a new, third option to consider when evaluating whether to build a purely server-rendered web application or a SPA. You can build rich, SPA-like client-side behaviors using Blazor, without the need for significant JavaScript development. Blazor applications can call APIs to request data or perform server-side operations. They can interoperate with JavaScript where necessary to take advantage of JavaScript libraries and frameworks.\n\nConsider building your web application with Blazor when:\n\n- Your application must expose a rich user interface\n\n- Your team is more comfortable with .NET development than JavaScript or TypeScript development\n\nIf you have an existing web forms application you're considering migrating to .NET Core or the latest .NET, you may wish to review the free e-book, Blazor for Web Forms Developers to see whether it makes sense to consider migrating it to Blazor.\n\nFor more information about Blazor, see [Get started with Blazor](https://blazor.net/docs/get-started.html).",
       "depth": 1,
       "metadata": {
         "file_path": "choose-between-traditional-web-and-single-page-apps.md",
@@ -153,7 +153,7 @@
     },
     {
       "title": "Other considerations",
-      "content": "Traditional Web Apps tend to be simpler and have better Search Engine Optimization (SEO) criteria than SPA apps. Search engine bots can easily consume content from traditional apps, while support for indexing SPAs may be lacking or limited. If your app benefits from public discovery by search engines, this is often an important consideration.\n\nIn addition, unless you've built a management tool for your SPA's content, it may require developers to make changes. Traditional Web Apps are often easier for non-developers to make changes to, since much of the content is simply HTML and may not require a build process to preview or even deploy. If non-developers in your organization are likely to need to maintain the content of the app, a traditional web app may be a better choice.\n\nSPAs shine when the app has complex interactive forms or other user interaction features. For complex apps that require authentication to use, and thus aren't accessible by public search engine spiders, SPAs are a great option in many cases.\n\n>[!div class=\"step-by-step\"]\n>[Previous](modern-web-applications-characteristics.md)\n>[Next](architectural-principles.md)",
+      "content": "Traditional Web Apps tend to be simpler and have better Search Engine Optimization (SEO) criteria than SPA apps. Search engine bots can easily consume content from traditional apps, while support for indexing SPAs may be lacking or limited. If your app benefits from public discovery by search engines, this is often an important consideration.\n\nIn addition, unless you've built a management tool for your SPA's content, it may require developers to make changes. Traditional Web Apps are often easier for non-developers to make changes to, since much of the content is simply HTML and may not require a build process to preview or even deploy. If non-developers in your organization are likely to need to maintain the content of the app, a traditional web app may be a better choice.\n\nSPAs shine when the app has complex interactive forms or other user interaction features. For complex apps that require authentication to use, and thus aren't accessible by public search engine spiders, SPAs are a great option in many cases.\n\n>[!div class=\"step-by-step\"]\n>Previous\n>Next",
       "depth": 1,
       "metadata": {
         "file_path": "choose-between-traditional-web-and-single-page-apps.md",
@@ -179,7 +179,7 @@
     },
     {
       "title": "CSS",
-      "content": "CSS (Cascading Style Sheets) is used to control the look and layout of HTML elements. CSS styles can be applied directly to an HTML element, defined separately on the same page, or defined in a separate file and referenced by the page. Styles cascade based on how they are used to select a given HTML element. For instance, a style might apply to an entire document, but would be overridden by a style that applied to a particular element. Likewise, an element-specific style would be overridden by a style that applied to a CSS class that was applied to the element, which in turn would be overridden by a style targeting a specific instance of that element (via its ID). Figure 6-1\n\n[IMAGE: md_modern-web-apps-azure_img002]\n\n**Figure 6-1.** CSS Specificity rules, in order.\n\nIt's best to keep styles in their own separate stylesheet files, and to use selection-based cascading to implement consistent and reusable styles within the application. Placing style rules within HTML should be avoided, and applying styles to specific individual elements (rather than whole classes of elements, or elements that have had a particular CSS class applied to them) should be the exception, not the rule.",
+      "content": "CSS (Cascading Style Sheets) is used to control the look and layout of HTML elements. CSS styles can be applied directly to an HTML element, defined separately on the same page, or defined in a separate file and referenced by the page. Styles cascade based on how they are used to select a given HTML element. For instance, a style might apply to an entire document, but would be overridden by a style that applied to a particular element. Likewise, an element-specific style would be overridden by a style that applied to a CSS class that was applied to the element, which in turn would be overridden by a style targeting a specific instance of that element (via its ID). Figure 6-1\n\n[IMAGE: md_modern-web-apps-azure_c2fd5a1eca]\n\n**Figure 6-1.** CSS Specificity rules, in order.\n\nIt's best to keep styles in their own separate stylesheet files, and to use selection-based cascading to implement consistent and reusable styles within the application. Placing style rules within HTML should be avoided, and applying styles to specific individual elements (rather than whole classes of elements, or elements that have had a particular CSS class applied to them) should be the exception, not the rule.",
       "depth": 1,
       "metadata": {
         "file_path": "common-client-side-web-technologies.md",
@@ -187,8 +187,8 @@
       },
       "images": [
         {
-          "id": "md_modern-web-apps-azure_img002",
-          "local_path": "images/md_modern-web-apps-azure_img002.png",
+          "id": "md_modern-web-apps-azure_c2fd5a1eca",
+          "local_path": "images/md_modern-web-apps-azure_c2fd5a1eca.png",
           "alt_text": "'CSS Specificity' slide with a chevron ladder ranking selector specificity from least to most specific: element selectors, class selectors (multiple classes per element), element ID selectors, and inline style attributes added directly to HTML elements.",
           "context": "markdown_ref:./media/image6-1.png"
         }
@@ -268,7 +268,7 @@
     },
     {
       "title": "Choosing a SPA Framework",
-      "content": "When considering which option will work best to support your SPA, keep in mind the following considerations:\n\n- Is your team familiar with the framework and its dependencies (including TypeScript in some cases)?\n\n- How opinionated is the framework, and do you agree with its default way of doing things?\n\n- Does it (or a companion library) include all of the features your app requires?\n\n- Is it well documented?\n\n- How active is its community? Are new projects being built with it?\n\n- How active is its core team? Are issues being resolved and new versions shipped regularly?\n\nFrameworks continue to evolve with breakneck speed. Use the considerations listed above to help mitigate the risk of choosing a framework you'll later regret being dependent upon. If you're particularly risk-averse, consider a framework that offers commercial support and/or is being developed by a large enterprise.\n\n> ### References – Client Web Technologies\n>\n> - **HTML and CSS**  \n> <https://www.w3.org/standards/webdesign/htmlcss>\n> - **Sass vs. LESS**  \n> <https://www.keycdn.com/blog/sass-vs-less/>\n> - **Styling ASP.NET Core Apps with LESS, Sass, and Font Awesome**  \n> [https://learn.microsoft.com/aspnet/core/client-side/less-sass-fa](/aspnet/core/client-side/less-sass-fa)\n> - **Client-Side Development in ASP.NET Core**  \n> [https://learn.microsoft.com/aspnet/core/client-side/](/aspnet/core/client-side/)\n> - **jQuery**  \n> <https://jquery.com/>\n> - **Angular**  \n> <https://angular.io/>\n> - **React**  \n> <https://reactjs.org/>\n> - **Vue**  \n> <https://vuejs.org/>\n> - **Angular vs React vs Vue: Which Framework to Choose in 2020**\n> <https://www.codeinwp.com/blog/angular-vs-vue-vs-react/>\n> - **The Top JavaScript Frameworks for Front-End Development in 2020**  \n> <https://www.freecodecamp.org/news/complete-guide-for-front-end-developers-javascript-frameworks-2019/>\n\n>[!div class=\"step-by-step\"]\n>[Previous](common-web-application-architectures.md)\n>[Next](develop-asp-net-core-mvc-apps.md)",
+      "content": "When considering which option will work best to support your SPA, keep in mind the following considerations:\n\n- Is your team familiar with the framework and its dependencies (including TypeScript in some cases)?\n\n- How opinionated is the framework, and do you agree with its default way of doing things?\n\n- Does it (or a companion library) include all of the features your app requires?\n\n- Is it well documented?\n\n- How active is its community? Are new projects being built with it?\n\n- How active is its core team? Are issues being resolved and new versions shipped regularly?\n\nFrameworks continue to evolve with breakneck speed. Use the considerations listed above to help mitigate the risk of choosing a framework you'll later regret being dependent upon. If you're particularly risk-averse, consider a framework that offers commercial support and/or is being developed by a large enterprise.\n\n> ### References – Client Web Technologies\n>\n> - **HTML and CSS**  \n> <https://www.w3.org/standards/webdesign/htmlcss>\n> - **Sass vs. LESS**  \n> <https://www.keycdn.com/blog/sass-vs-less/>\n> - **Styling ASP.NET Core Apps with LESS, Sass, and Font Awesome**  \n> [https://learn.microsoft.com/aspnet/core/client-side/less-sass-fa](/aspnet/core/client-side/less-sass-fa)\n> - **Client-Side Development in ASP.NET Core**  \n> [https://learn.microsoft.com/aspnet/core/client-side/](/aspnet/core/client-side/)\n> - **jQuery**  \n> <https://jquery.com/>\n> - **Angular**  \n> <https://angular.io/>\n> - **React**  \n> <https://reactjs.org/>\n> - **Vue**  \n> <https://vuejs.org/>\n> - **Angular vs React vs Vue: Which Framework to Choose in 2020**\n> <https://www.codeinwp.com/blog/angular-vs-vue-vs-react/>\n> - **The Top JavaScript Frameworks for Front-End Development in 2020**  \n> <https://www.freecodecamp.org/news/complete-guide-for-front-end-developers-javascript-frameworks-2019/>\n\n>[!div class=\"step-by-step\"]\n>Previous\n>Next",
       "depth": 2,
       "metadata": {
         "file_path": "common-client-side-web-technologies.md",
@@ -294,7 +294,7 @@
     },
     {
       "title": "All-in-one applications",
-      "content": "The smallest possible number of projects for an application architecture is one. In this architecture, the entire logic of the application is contained in a single project, compiled to a single assembly, and deployed as a single unit.\n\nA new ASP.NET Core project, whether created in Visual Studio or from the command line, starts out as a simple \"all-in-one\" monolith. It contains all of the behavior of the application, including presentation, business, and data access logic. Figure 5-1 shows the file structure of a single-project app.\n\n[IMAGE: md_modern-web-apps-azure_img003]\n\n**Figure 5-1.** A single project ASP.NET Core app.\n\nIn a single project scenario, separation of concerns is achieved through the use of folders. The default template includes separate folders for MVC pattern responsibilities of Models, Views, and Controllers, as well as additional folders for Data and Services. In this arrangement, presentation details should be limited as much as possible to the Views folder, and data access implementation details should be limited to classes kept in the Data folder. Business logic should reside in services and classes within the Models folder.\n\nAlthough simple, the single-project monolithic solution has some disadvantages. As the project's size and complexity grows, the number of files and folders will continue to grow as well. User interface (UI) concerns (models, views, controllers) reside in multiple folders, which aren't grouped together alphabetically. This issue only gets worse when additional UI-level constructs, such as Filters or ModelBinders, are added in their own folders. Business logic is scattered between the Models and Services folders, and there's no clear indication of which classes in which folders should depend on which others. This lack of organization at the project level frequently leads to [spaghetti code](https://deviq.com/spaghetti-code/).\n\nTo address these issues, applications often evolve into multi-project solutions, where each project is considered to reside in a particular _layer_ of the application.",
+      "content": "The smallest possible number of projects for an application architecture is one. In this architecture, the entire logic of the application is contained in a single project, compiled to a single assembly, and deployed as a single unit.\n\nA new ASP.NET Core project, whether created in Visual Studio or from the command line, starts out as a simple \"all-in-one\" monolith. It contains all of the behavior of the application, including presentation, business, and data access logic. Figure 5-1 shows the file structure of a single-project app.\n\n[IMAGE: md_modern-web-apps-azure_6d7265d893]\n\n**Figure 5-1.** A single project ASP.NET Core app.\n\nIn a single project scenario, separation of concerns is achieved through the use of folders. The default template includes separate folders for MVC pattern responsibilities of Models, Views, and Controllers, as well as additional folders for Data and Services. In this arrangement, presentation details should be limited as much as possible to the Views folder, and data access implementation details should be limited to classes kept in the Data folder. Business logic should reside in services and classes within the Models folder.\n\nAlthough simple, the single-project monolithic solution has some disadvantages. As the project's size and complexity grows, the number of files and folders will continue to grow as well. User interface (UI) concerns (models, views, controllers) reside in multiple folders, which aren't grouped together alphabetically. This issue only gets worse when additional UI-level constructs, such as Filters or ModelBinders, are added in their own folders. Business logic is scattered between the Models and Services folders, and there's no clear indication of which classes in which folders should depend on which others. This lack of organization at the project level frequently leads to [spaghetti code](https://deviq.com/spaghetti-code/).\n\nTo address these issues, applications often evolve into multi-project solutions, where each project is considered to reside in a particular _layer_ of the application.",
       "depth": 1,
       "metadata": {
         "file_path": "common-web-application-architectures.md",
@@ -302,8 +302,8 @@
       },
       "images": [
         {
-          "id": "md_modern-web-apps-azure_img003",
-          "local_path": "images/md_modern-web-apps-azure_img003.png",
+          "id": "md_modern-web-apps-azure_6d7265d893",
+          "local_path": "images/md_modern-web-apps-azure_6d7265d893.png",
           "alt_text": "Annotated Visual Studio Solution Explorer screenshot of a 'MonolithSample' ASP.NET project mapping folders to responsibilities: Data (EF migrations and DbContext) as data access logic, Models as UI models, Services as application services, Views as presentation logic, and Program.cs/Startup.cs/config files as the application entry point and configuration.",
           "context": "markdown_ref:./media/image5-1.png"
         }
@@ -320,7 +320,7 @@
     },
     {
       "title": "Traditional \"N-Layer\" architecture applications",
-      "content": "The most common organization of application logic into layers is shown in Figure 5-2.\n\n[IMAGE: md_modern-web-apps-azure_img004]\n\n**Figure 5-2.** Typical application layers.\n\nThese layers are frequently abbreviated as UI, BLL (Business Logic Layer), and DAL (Data Access Layer). Using this architecture, users make requests through the UI layer, which interacts only with the BLL. The BLL, in turn, can call the DAL for data access requests. The UI layer shouldn't make any requests to the DAL directly, nor should it interact with persistence directly through other means. Likewise, the BLL should only interact with persistence by going through the DAL. In this way, each layer has its own well-known responsibility.\n\nOne disadvantage of this traditional layering approach is that compile-time dependencies run from the top to the bottom. That is, the UI layer depends on the BLL, which depends on the DAL. This means that the BLL, which usually holds the most important logic in the application, is dependent on data access implementation details (and often on the existence of a database). Testing business logic in such an architecture is often difficult, requiring a test database. The dependency inversion principle can be used to address this issue, as you'll see in the next section.\n\nFigure 5-3 shows an example solution, breaking the application into three projects by responsibility (or layer).\n\n[IMAGE: md_modern-web-apps-azure_img005]\n\n**Figure 5-3.** A simple monolithic application with three projects.\n\nAlthough this application uses several projects for organizational purposes, it's still deployed as a single unit and its clients will interact with it as a single web app. This allows for very simple deployment process. Figure 5-4 shows how such an app might be hosted using Azure.\n\n[IMAGE: md_modern-web-apps-azure_img006]\n\n**Figure 5-4.** Simple deployment of Azure Web App\n\nAs application needs grow, more complex and robust deployment solutions may be required. Figure 5-5 shows an example of a more complex deployment plan that supports additional capabilities.\n\n[IMAGE: md_modern-web-apps-azure_img007]\n\n**Figure 5-5.** Deploying a web app to an Azure App Service\n\nInternally, this project's organization into multiple projects based on responsibility improves the maintainability of the application.\n\nThis unit can be scaled up or out to take advantage of cloud-based on-demand scalability. Scaling up means adding additional CPU, memory, disk space, or other resources to the server(s) hosting your app. Scaling out means adding additional instances of such servers, whether these are physical servers, virtual machines, or containers. When your app is hosted across multiple instances, a load balancer is used to assign requests to individual app instances.\n\nThe simplest approach to scaling a web application in Azure is to configure scaling manually in the application's App Service Plan. Figure 5-6 shows the appropriate Azure dashboard screen to configure how many instances are serving an app.\n\n[IMAGE: md_modern-web-apps-azure_img008]\n\n**Figure 5-6.** App Service Plan scaling in Azure.",
+      "content": "The most common organization of application logic into layers is shown in Figure 5-2.\n\n[IMAGE: md_modern-web-apps-azure_ba12f44db4]\n\n**Figure 5-2.** Typical application layers.\n\nThese layers are frequently abbreviated as UI, BLL (Business Logic Layer), and DAL (Data Access Layer). Using this architecture, users make requests through the UI layer, which interacts only with the BLL. The BLL, in turn, can call the DAL for data access requests. The UI layer shouldn't make any requests to the DAL directly, nor should it interact with persistence directly through other means. Likewise, the BLL should only interact with persistence by going through the DAL. In this way, each layer has its own well-known responsibility.\n\nOne disadvantage of this traditional layering approach is that compile-time dependencies run from the top to the bottom. That is, the UI layer depends on the BLL, which depends on the DAL. This means that the BLL, which usually holds the most important logic in the application, is dependent on data access implementation details (and often on the existence of a database). Testing business logic in such an architecture is often difficult, requiring a test database. The dependency inversion principle can be used to address this issue, as you'll see in the next section.\n\nFigure 5-3 shows an example solution, breaking the application into three projects by responsibility (or layer).\n\n[IMAGE: md_modern-web-apps-azure_18eb17065a]\n\n**Figure 5-3.** A simple monolithic application with three projects.\n\nAlthough this application uses several projects for organizational purposes, it's still deployed as a single unit and its clients will interact with it as a single web app. This allows for very simple deployment process. Figure 5-4 shows how such an app might be hosted using Azure.\n\n[IMAGE: md_modern-web-apps-azure_c08be77e17]\n\n**Figure 5-4.** Simple deployment of Azure Web App\n\nAs application needs grow, more complex and robust deployment solutions may be required. Figure 5-5 shows an example of a more complex deployment plan that supports additional capabilities.\n\n[IMAGE: md_modern-web-apps-azure_be21d93bc5]\n\n**Figure 5-5.** Deploying a web app to an Azure App Service\n\nInternally, this project's organization into multiple projects based on responsibility improves the maintainability of the application.\n\nThis unit can be scaled up or out to take advantage of cloud-based on-demand scalability. Scaling up means adding additional CPU, memory, disk space, or other resources to the server(s) hosting your app. Scaling out means adding additional instances of such servers, whether these are physical servers, virtual machines, or containers. When your app is hosted across multiple instances, a load balancer is used to assign requests to individual app instances.\n\nThe simplest approach to scaling a web application in Azure is to configure scaling manually in the application's App Service Plan. Figure 5-6 shows the appropriate Azure dashboard screen to configure how many instances are serving an app.\n\n[IMAGE: md_modern-web-apps-azure_7b35b2c24a]\n\n**Figure 5-6.** App Service Plan scaling in Azure.",
       "depth": 1,
       "metadata": {
         "file_path": "common-web-application-architectures.md",
@@ -328,32 +328,32 @@
       },
       "images": [
         {
-          "id": "md_modern-web-apps-azure_img004",
-          "local_path": "images/md_modern-web-apps-azure_img004.png",
+          "id": "md_modern-web-apps-azure_ba12f44db4",
+          "local_path": "images/md_modern-web-apps-azure_ba12f44db4.png",
           "alt_text": "'Application Layers' slide showing the classic three-layer stack of a web application as colored bars: User Interface on top, Business Logic in the middle, and Data Access at the bottom.",
           "context": "markdown_ref:./media/image5-2.png"
         },
         {
-          "id": "md_modern-web-apps-azure_img005",
-          "local_path": "images/md_modern-web-apps-azure_img005.png",
+          "id": "md_modern-web-apps-azure_18eb17065a",
+          "local_path": "images/md_modern-web-apps-azure_18eb17065a.png",
           "alt_text": "Annotated Visual Studio Solution Explorer screenshot of the eShopOnWeb solution, labeling the ApplicationCore project as the business/application model, Infrastructure as data access logic (EF migrations, DbContext), the Web project as presentation logic, and a tests folder for automated tests.",
           "context": "markdown_ref:./media/image5-3.png"
         },
         {
-          "id": "md_modern-web-apps-azure_img006",
-          "local_path": "images/md_modern-web-apps-azure_img006.png",
+          "id": "md_modern-web-apps-azure_c08be77e17",
+          "local_path": "images/md_modern-web-apps-azure_c08be77e17.png",
           "alt_text": "'Create and Deploy' flow diagram showing two steps: creating a project and web app in Visual Studio, then deploying the web project to a web app in Azure App Service.",
           "context": "markdown_ref:./media/image5-4.png"
         },
         {
-          "id": "md_modern-web-apps-azure_img007",
-          "local_path": "images/md_modern-web-apps-azure_img007.png",
+          "id": "md_modern-web-apps-azure_be21d93bc5",
+          "local_path": "images/md_modern-web-apps-azure_be21d93bc5.png",
           "alt_text": "Azure architecture diagram of an App Service deployment inside a resource group: an App Service Plan with multiple instances, deployment slots (staging, production, last-known good), Azure Active Directory authentication via access tokens, Azure SQL Database with a logical server, a Storage account holding app and web server logs in blob containers, and deployment from source control.",
           "context": "markdown_ref:./media/image5-5.png"
         },
         {
-          "id": "md_modern-web-apps-azure_img008",
-          "local_path": "images/md_modern-web-apps-azure_img008.png",
+          "id": "md_modern-web-apps-azure_7b35b2c24a",
+          "local_path": "images/md_modern-web-apps-azure_7b35b2c24a.png",
           "alt_text": "Azure portal screenshot of an App Service plan's blade with the Scale setting highlighted, showing autoscale on, instance count, quotas (memory/CPU percentage), and a 'Scale by manual instance count' slider panel.",
           "context": "markdown_ref:./media/image5-6.png"
         }
@@ -361,7 +361,7 @@
     },
     {
       "title": "Clean architecture",
-      "content": "Applications that follow the Dependency Inversion Principle as well as the Domain-Driven Design (DDD) principles tend to arrive at a similar architecture. This architecture has gone by many names over the years. One of the first names was Hexagonal Architecture, followed by Ports-and-Adapters. More recently, it's been cited as the [Onion Architecture](https://jeffreypalermo.com/blog/the-onion-architecture-part-1/) or [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html). The latter name, Clean Architecture, is used as the name for this architecture in this e-book.\n\nThe eShopOnWeb reference application uses the Clean Architecture approach in organizing its code into projects. You can find a solution template you can use as a starting point for your own ASP.NET Core solutions in the [ardalis/cleanarchitecture](https://github.com/ardalis/cleanarchitecture) GitHub repository or by [installing the template from NuGet](https://www.nuget.org/packages/Ardalis.CleanArchitecture.Template/).\n\nClean architecture puts the business logic and application model at the center of the application. Instead of having business logic depend on data access or other infrastructure concerns, this dependency is inverted: infrastructure and implementation details depend on the Application Core. This functionality is achieved by defining abstractions, or interfaces, in the Application Core, which are then implemented by types defined in the Infrastructure layer. A common way of visualizing this architecture is to use a series of concentric circles, similar to an onion. Figure 5-7 shows an example of this style of architectural representation.\n\n[IMAGE: md_modern-web-apps-azure_img009]\n\n**Figure 5-7.** Clean Architecture; onion view\n\nIn this diagram, dependencies flow toward the innermost circle. The Application Core takes its name from its position at the core of this diagram. And you can see on the diagram that the Application Core has no dependencies on other application layers. The application's entities and interfaces are at the very center. Just outside, but still in the Application Core, are domain services, which typically implement interfaces defined in the inner circle. Outside of the Application Core, both the UI and the Infrastructure layers depend on the Application Core, but not on one another (necessarily).\n\nFigure 5-8 shows a more traditional horizontal layer diagram that better reflects the dependency between the UI and other layers.\n\n[IMAGE: md_modern-web-apps-azure_img010]\n\n**Figure 5-8.** Clean Architecture; horizontal layer view\n\nNote that the solid arrows represent compile-time dependencies, while the dashed arrow represents a runtime-only dependency. With the clean architecture, the UI layer works with interfaces defined in the Application Core at compile time, and ideally shouldn't know about the implementation types defined in the Infrastructure layer. At run time, however, these implementation types are required for the app to execute, so they need to be present and wired up to the Application Core interfaces via dependency injection.\n\nFigure 5-9 shows a more detailed view of an ASP.NET Core application's architecture when built following these recommendations.\n\n[IMAGE: md_modern-web-apps-azure_img011]\n\n**Figure 5-9.** ASP.NET Core architecture diagram following Clean Architecture.\n\nBecause the Application Core doesn't depend on Infrastructure, it's very easy to write automated unit tests for this layer. Figures 5-10 and 5-11 show how tests fit into this architecture.\n\n[IMAGE: md_modern-web-apps-azure_img012]\n\n**Figure 5-10.** Unit testing Application Core in isolation.\n\n[IMAGE: md_modern-web-apps-azure_img013]\n\n**Figure 5-11.** Integration testing Infrastructure implementations with external dependencies.\n\nSince the UI layer doesn't have any direct dependency on types defined in the Infrastructure project, it's likewise very easy to swap out implementations, either to facilitate testing or in response to changing application requirements. ASP.NET Core's built-in use of and support for dependency injection makes this architecture the most appropriate way to structure non-trivial monolithic applications.\n\nFor monolithic applications, the Application Core, Infrastructure, and UI projects are all run as a single application. The runtime application architecture might look something like Figure 5-12.\n\n[IMAGE: md_modern-web-apps-azure_img014]\n\n**Figure 5-12.** A sample ASP.NET Core app's runtime architecture.",
+      "content": "Applications that follow the Dependency Inversion Principle as well as the Domain-Driven Design (DDD) principles tend to arrive at a similar architecture. This architecture has gone by many names over the years. One of the first names was Hexagonal Architecture, followed by Ports-and-Adapters. More recently, it's been cited as the [Onion Architecture](https://jeffreypalermo.com/blog/the-onion-architecture-part-1/) or [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html). The latter name, Clean Architecture, is used as the name for this architecture in this e-book.\n\nThe eShopOnWeb reference application uses the Clean Architecture approach in organizing its code into projects. You can find a solution template you can use as a starting point for your own ASP.NET Core solutions in the [ardalis/cleanarchitecture](https://github.com/ardalis/cleanarchitecture) GitHub repository or by [installing the template from NuGet](https://www.nuget.org/packages/Ardalis.CleanArchitecture.Template/).\n\nClean architecture puts the business logic and application model at the center of the application. Instead of having business logic depend on data access or other infrastructure concerns, this dependency is inverted: infrastructure and implementation details depend on the Application Core. This functionality is achieved by defining abstractions, or interfaces, in the Application Core, which are then implemented by types defined in the Infrastructure layer. A common way of visualizing this architecture is to use a series of concentric circles, similar to an onion. Figure 5-7 shows an example of this style of architectural representation.\n\n[IMAGE: md_modern-web-apps-azure_4fc3e4df40]\n\n**Figure 5-7.** Clean Architecture; onion view\n\nIn this diagram, dependencies flow toward the innermost circle. The Application Core takes its name from its position at the core of this diagram. And you can see on the diagram that the Application Core has no dependencies on other application layers. The application's entities and interfaces are at the very center. Just outside, but still in the Application Core, are domain services, which typically implement interfaces defined in the inner circle. Outside of the Application Core, both the UI and the Infrastructure layers depend on the Application Core, but not on one another (necessarily).\n\nFigure 5-8 shows a more traditional horizontal layer diagram that better reflects the dependency between the UI and other layers.\n\n[IMAGE: md_modern-web-apps-azure_4fd2f38894]\n\n**Figure 5-8.** Clean Architecture; horizontal layer view\n\nNote that the solid arrows represent compile-time dependencies, while the dashed arrow represents a runtime-only dependency. With the clean architecture, the UI layer works with interfaces defined in the Application Core at compile time, and ideally shouldn't know about the implementation types defined in the Infrastructure layer. At run time, however, these implementation types are required for the app to execute, so they need to be present and wired up to the Application Core interfaces via dependency injection.\n\nFigure 5-9 shows a more detailed view of an ASP.NET Core application's architecture when built following these recommendations.\n\n[IMAGE: md_modern-web-apps-azure_36824a8dde]\n\n**Figure 5-9.** ASP.NET Core architecture diagram following Clean Architecture.\n\nBecause the Application Core doesn't depend on Infrastructure, it's very easy to write automated unit tests for this layer. Figures 5-10 and 5-11 show how tests fit into this architecture.\n\n[IMAGE: md_modern-web-apps-azure_e8e142542b]\n\n**Figure 5-10.** Unit testing Application Core in isolation.\n\n[IMAGE: md_modern-web-apps-azure_0c44fd18b4]\n\n**Figure 5-11.** Integration testing Infrastructure implementations with external dependencies.\n\nSince the UI layer doesn't have any direct dependency on types defined in the Infrastructure project, it's likewise very easy to swap out implementations, either to facilitate testing or in response to changing application requirements. ASP.NET Core's built-in use of and support for dependency injection makes this architecture the most appropriate way to structure non-trivial monolithic applications.\n\nFor monolithic applications, the Application Core, Infrastructure, and UI projects are all run as a single application. The runtime application architecture might look something like Figure 5-12.\n\n[IMAGE: md_modern-web-apps-azure_2c20694c56]\n\n**Figure 5-12.** A sample ASP.NET Core app's runtime architecture.",
       "depth": 1,
       "metadata": {
         "file_path": "common-web-application-architectures.md",
@@ -369,38 +369,38 @@
       },
       "images": [
         {
-          "id": "md_modern-web-apps-azure_img009",
-          "local_path": "images/md_modern-web-apps-azure_img009.png",
+          "id": "md_modern-web-apps-azure_4fc3e4df40",
+          "local_path": "images/md_modern-web-apps-azure_4fc3e4df40.png",
           "alt_text": "Onion-view diagram of Clean Architecture layers: the Application Core at the center (entities and interfaces inside domain services), surrounded by User Interface (controllers, view models) and Infrastructure (repositories, implementation services), with external dependencies like SQL, cloud services, and email outside the onion.",
           "context": "markdown_ref:./media/image5-7.png"
         },
         {
-          "id": "md_modern-web-apps-azure_img010",
-          "local_path": "images/md_modern-web-apps-azure_img010.png",
+          "id": "md_modern-web-apps-azure_4fd2f38894",
+          "local_path": "images/md_modern-web-apps-azure_4fd2f38894.png",
           "alt_text": "Clean Architecture layer diagram showing compile-time dependencies: User Interface, Infrastructure, and Tests all point inward to the Application Core, with only an optional compile-time dependency from User Interface to Infrastructure.",
           "context": "markdown_ref:./media/image5-8.png"
         },
         {
-          "id": "md_modern-web-apps-azure_img011",
-          "local_path": "images/md_modern-web-apps-azure_img011.png",
+          "id": "md_modern-web-apps-azure_36824a8dde",
+          "local_path": "images/md_modern-web-apps-azure_36824a8dde.png",
           "alt_text": "ASP.NET Core architecture diagram mapping Clean Architecture to concrete projects: a Web App layer (controllers, view models, views, filters, Identity), an Application Core project (interfaces, POCO entities, domain events, services, specifications), and an Infrastructure project (EF Core DbContext, Redis cache service, Azure Service Bus accessor, SMS/email clients) connecting to data sources and third-party services.",
           "context": "markdown_ref:./media/image5-9.png"
         },
         {
-          "id": "md_modern-web-apps-azure_img012",
-          "local_path": "images/md_modern-web-apps-azure_img012.png",
+          "id": "md_modern-web-apps-azure_e8e142542b",
+          "local_path": "images/md_modern-web-apps-azure_e8e142542b.png",
           "alt_text": "Clean Architecture onion diagram with the Application Core highlighted and a green 'Unit Tests' box attached to it, illustrating that unit tests target the core's entities and interfaces without touching UI or infrastructure.",
           "context": "markdown_ref:./media/image5-10.png"
         },
         {
-          "id": "md_modern-web-apps-azure_img013",
-          "local_path": "images/md_modern-web-apps-azure_img013.png",
+          "id": "md_modern-web-apps-azure_0c44fd18b4",
+          "local_path": "images/md_modern-web-apps-azure_0c44fd18b4.png",
           "alt_text": "Clean Architecture onion diagram with the Infrastructure layer and external dependencies (SQL, cloud, email) highlighted alongside a green 'Integration Tests' box, showing that integration tests cover infrastructure code and its connections to external systems.",
           "context": "markdown_ref:./media/image5-11.png"
         },
         {
-          "id": "md_modern-web-apps-azure_img014",
-          "local_path": "images/md_modern-web-apps-azure_img014.png",
+          "id": "md_modern-web-apps-azure_2c20694c56",
+          "local_path": "images/md_modern-web-apps-azure_2c20694c56.png",
           "alt_text": "ASP.NET Core architecture diagram of a web app hosted by Kestrel/WebListener behind an IIS reverse proxy, showing internal components (model validation filter, response caching, in-memory cache, EF Core DbContext, Redis cache service, Azure Service Bus accessor, SMS/email services) connected to data sources, Azure Service Bus, identity providers, and third-party APIs like GitHub, SendGrid, and Twilio.",
           "context": "markdown_ref:./media/image5-12.png"
         }
@@ -471,7 +471,7 @@
     },
     {
       "title": "Monolithic applications and containers",
-      "content": "You can build a single and monolithic-deployment based Web Application or Service and deploy it as a container. Within the application, it might not be monolithic but organized into several libraries, components, or layers. Externally, it's a single container with a single process, single web application, or single service.\n\nTo manage this model, you deploy a single container to represent the application. To scale, just add additional copies with a load balancer in front. The simplicity comes from managing a single deployment in a single container or VM.\n\n[IMAGE: md_modern-web-apps-azure_img015]\n\nYou can include multiple components/libraries or internal layers within each container, as illustrated in Figure 5-13. But, following the container principle of _\"a container does one thing, and does it in one process_\", the monolithic pattern might be a conflict.\n\nThe downside of this approach comes if/when the application grows, requiring it to scale. If the entire application scales, it's not really a problem. However, in most cases, a few parts of the application are the choke points requiring scaling, while other components are used less.\n\nUsing the typical eCommerce example, what you likely need to scale is the product information component. Many more customers browse products than purchase them. More customers use their basket than use the payment pipeline. Fewer customers add comments or view their purchase history. And you likely only have a handful of employees, in a single region, that need to manage the content and marketing campaigns. By scaling the monolithic design, all the code is deployed multiple times.\n\nIn addition to the \"scale everything\" problem, changes to a single component require complete retesting of the entire application, and a complete redeployment of all the instances.\n\nThe monolithic approach is common, and many organizations are developing with this architectural approach. Many are having good enough results, while others are hitting limits. Many designed their applications in this model, because the tools and infrastructure were too difficult to build service-oriented architectures (SOA), and they didn't see the need until the app grew. If you find you're hitting the limits of the monolithic approach, breaking up the app to enable it to better leverage containers and microservices may be the next logical step.\n\n[IMAGE: md_modern-web-apps-azure_img016]\n\nDeploying monolithic applications in Microsoft Azure can be achieved using dedicated VMs for each instance. Using [Azure Virtual Machine Scale Sets](/azure/virtual-machine-scale-sets/), you can easily scale the VMs. [Azure App Services](https://azure.microsoft.com/services/app-service/) can run monolithic applications and easily scale instances without having to manage the VMs. Azure App Services can run single instances of Docker containers as well, simplifying the deployment. Using Docker, you can deploy a single VM as a Docker host, and run multiple instances. Using the Azure balancer, as shown in the Figure 5-14, you can manage scaling.\n\nThe deployment to the various hosts can be managed with traditional deployment techniques. The Docker hosts can be managed with commands like **docker run** performed manually, or through automation such as Continuous Delivery (CD) pipelines.",
+      "content": "You can build a single and monolithic-deployment based Web Application or Service and deploy it as a container. Within the application, it might not be monolithic but organized into several libraries, components, or layers. Externally, it's a single container with a single process, single web application, or single service.\n\nTo manage this model, you deploy a single container to represent the application. To scale, just add additional copies with a load balancer in front. The simplicity comes from managing a single deployment in a single container or VM.\n\n[IMAGE: md_modern-web-apps-azure_ac483b4c57]\n\nYou can include multiple components/libraries or internal layers within each container, as illustrated in Figure 5-13. But, following the container principle of _\"a container does one thing, and does it in one process_\", the monolithic pattern might be a conflict.\n\nThe downside of this approach comes if/when the application grows, requiring it to scale. If the entire application scales, it's not really a problem. However, in most cases, a few parts of the application are the choke points requiring scaling, while other components are used less.\n\nUsing the typical eCommerce example, what you likely need to scale is the product information component. Many more customers browse products than purchase them. More customers use their basket than use the payment pipeline. Fewer customers add comments or view their purchase history. And you likely only have a handful of employees, in a single region, that need to manage the content and marketing campaigns. By scaling the monolithic design, all the code is deployed multiple times.\n\nIn addition to the \"scale everything\" problem, changes to a single component require complete retesting of the entire application, and a complete redeployment of all the instances.\n\nThe monolithic approach is common, and many organizations are developing with this architectural approach. Many are having good enough results, while others are hitting limits. Many designed their applications in this model, because the tools and infrastructure were too difficult to build service-oriented architectures (SOA), and they didn't see the need until the app grew. If you find you're hitting the limits of the monolithic approach, breaking up the app to enable it to better leverage containers and microservices may be the next logical step.\n\n[IMAGE: md_modern-web-apps-azure_60c1908294]\n\nDeploying monolithic applications in Microsoft Azure can be achieved using dedicated VMs for each instance. Using [Azure Virtual Machine Scale Sets](/azure/virtual-machine-scale-sets/), you can easily scale the VMs. [Azure App Services](https://azure.microsoft.com/services/app-service/) can run monolithic applications and easily scale instances without having to manage the VMs. Azure App Services can run single instances of Docker containers as well, simplifying the deployment. Using Docker, you can deploy a single VM as a Docker host, and run multiple instances. Using the Azure balancer, as shown in the Figure 5-14, you can manage scaling.\n\nThe deployment to the various hosts can be managed with traditional deployment techniques. The Docker hosts can be managed with commands like **docker run** performed manually, or through automation such as Continuous Delivery (CD) pipelines.",
       "depth": 1,
       "metadata": {
         "file_path": "common-web-application-architectures.md",
@@ -479,14 +479,14 @@
       },
       "images": [
         {
-          "id": "md_modern-web-apps-azure_img015",
-          "local_path": "images/md_modern-web-apps-azure_img015.png",
+          "id": "md_modern-web-apps-azure_ac483b4c57",
+          "local_path": "images/md_modern-web-apps-azure_ac483b4c57.png",
           "alt_text": "Diagram of a monolithic containerized application: one app packaged as one container, scaled out by cloning the same container onto multiple hosts (servers/VMs), with callouts noting drawbacks such as needing to deploy the full application and coarse-grained density.",
           "context": "markdown_ref:./media/image5-13.png"
         },
         {
-          "id": "md_modern-web-apps-azure_img016",
-          "local_path": "images/md_modern-web-apps-azure_img016.png",
+          "id": "md_modern-web-apps-azure_60c1908294",
+          "local_path": "images/md_modern-web-apps-azure_60c1908294.png",
           "alt_text": "Diagram of Docker infrastructure for monolithic applications on Microsoft Azure: a browser or client app sends traffic through a load balancer to identical app containers running on three Docker hosts (Linux or Windows VMs).",
           "context": "markdown_ref:./media/image5-14.png"
         }
@@ -530,7 +530,7 @@
     },
     {
       "title": "References – Common web architectures",
-      "content": "- **The Clean Architecture**  \n  <https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html>\n- **The Onion Architecture**  \n  <https://jeffreypalermo.com/blog/the-onion-architecture-part-1/>\n- **The Repository Pattern**  \n  <https://deviq.com/repository-pattern/>\n- **Clean Architecture Solution Template**  \n  <https://github.com/ardalis/cleanarchitecture>\n- **Architecting Microservices e-book**  \n  <https://aka.ms/MicroservicesEbook>\n- **DDD (Domain-Driven Design)**  \n  [https://learn.microsoft.com/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/](../microservices/microservice-ddd-cqrs-patterns/index.md)\n\n>[!div class=\"step-by-step\"]\n>[Previous](architectural-principles.md)\n>[Next](common-client-side-web-technologies.md)",
+      "content": "- **The Clean Architecture**  \n  <https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html>\n- **The Onion Architecture**  \n  <https://jeffreypalermo.com/blog/the-onion-architecture-part-1/>\n- **The Repository Pattern**  \n  <https://deviq.com/repository-pattern/>\n- **Clean Architecture Solution Template**  \n  <https://github.com/ardalis/cleanarchitecture>\n- **Architecting Microservices e-book**  \n  <https://aka.ms/MicroservicesEbook>\n- **DDD (Domain-Driven Design)**  \n  https://learn.microsoft.com/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/\n\n>[!div class=\"step-by-step\"]\n>Previous\n>Next",
       "depth": 2,
       "metadata": {
         "file_path": "common-web-application-architectures.md",
@@ -637,7 +637,7 @@
     },
     {
       "title": "Feature organization",
-      "content": "By default, ASP.NET Core applications organize their folder structure to include Controllers and Views, and frequently ViewModels. Client-side code to support these server-side structures is typically stored separately in the wwwroot folder. However, large applications may encounter problems with this organization, since working on any given feature often requires jumping between these folders. This gets more and more difficult as the number of files and subfolders in each folder grows, resulting in a great deal of scrolling through Solution Explorer. One solution to this problem is to organize application code by _feature_ instead of by file type. This organizational style is typically referred to as feature folders or [feature slices](/archive/msdn-magazine/2016/september/asp-net-core-feature-slices-for-asp-net-core-mvc) (see also: [Vertical Slices](https://deviq.com/vertical-slices/)).\n\nASP.NET Core MVC supports Areas for this purpose. Using areas, you can create separate sets of Controllers and Views folders (as well as any associated models) in each Area folder. Figure 7-1 shows an example folder structure, using Areas.\n\n[IMAGE: md_modern-web-apps-azure_img017]\n\n**Figure 7-1**. Sample Area Organization\n\nWhen using Areas, you must use attributes to decorate your controllers with the name of the area to which they belong:\n\n```csharp\n[Area(\"Catalog\")]\npublic class HomeController\n{}\n```\n\nYou also need to add area support to your routes:\n\n```csharp\napp.UseEndpoints(endpoints =>\n{\n    endpoints.MapControllerRoute(name: \"areaRoute\", pattern: \"{area:exists}/{controller=Home}/{action=Index}/{id?}\");\n    endpoints.MapControllerRoute(name: \"default\", pattern: \"{controller=Home}/{action=Index}/{id?}\");\n});\n```\n\nIn addition to the built-in support for Areas, you can also use your own folder structure, and conventions in place of attributes and custom routes. This would allow you to have feature folders that didn't include separate folders for Views, Controllers, etc., keeping the hierarchy flatter and making it easier to see all related files in a single place for each feature. For APIs, folders can be used to replace controllers, and each folder can contain all of the API Endpoints and their associated DTOs.\n\nASP.NET Core uses built-in convention types to control its behavior. You can modify or replace these conventions. For example, you can create a convention that will automatically get the feature name for a given controller based on its namespace (which typically correlates to the folder in which the controller is located):\n\n```csharp\npublic class FeatureConvention : IControllerModelConvention\n{\n    public void Apply(ControllerModel controller)\n    {\n        controller.Properties.Add(\"feature\",\n        GetFeatureName(controller.ControllerType));\n    }\n\n    private string GetFeatureName(TypeInfo controllerType)\n    {\n        string[] tokens = controllerType.FullName.Split('.');\n        if (!tokens.Any(t => t == \"Features\")) return \"\";\n        string featureName = tokens\n            .SkipWhile(t => !t.Equals(\"features\", StringComparison.CurrentCultureIgnoreCase))\n            .Skip(1)\n            .Take(1)\n            .FirstOrDefault();\n        return featureName;\n    }\n}\n```\n\nYou then specify this convention as an option when you add support for MVC to your application in `ConfigureServices` (or in _Program.cs_):\n\n```csharp\n// ConfigureServices\nservices.AddMvc(o => o.Conventions.Add(new FeatureConvention()));\n\n// Program.cs\nbuilder.Services.AddMvc(o => o.Conventions.Add(new FeatureConvention()));\n```\n\nASP.NET Core MVC also uses a convention to locate views. You can override it with a custom convention so that views will be located in your feature folders (using the feature name provided by the FeatureConvention, above). You can learn more about this approach and download a working sample from the MSDN Magazine article, [Feature Slices for ASP.NET Core MVC](/archive/msdn-magazine/2016/september/asp-net-core-feature-slices-for-asp-net-core-mvc).",
+      "content": "By default, ASP.NET Core applications organize their folder structure to include Controllers and Views, and frequently ViewModels. Client-side code to support these server-side structures is typically stored separately in the wwwroot folder. However, large applications may encounter problems with this organization, since working on any given feature often requires jumping between these folders. This gets more and more difficult as the number of files and subfolders in each folder grows, resulting in a great deal of scrolling through Solution Explorer. One solution to this problem is to organize application code by _feature_ instead of by file type. This organizational style is typically referred to as feature folders or [feature slices](/archive/msdn-magazine/2016/september/asp-net-core-feature-slices-for-asp-net-core-mvc) (see also: [Vertical Slices](https://deviq.com/vertical-slices/)).\n\nASP.NET Core MVC supports Areas for this purpose. Using areas, you can create separate sets of Controllers and Views folders (as well as any associated models) in each Area folder. Figure 7-1 shows an example folder structure, using Areas.\n\n[IMAGE: md_modern-web-apps-azure_ba063cf523]\n\n**Figure 7-1**. Sample Area Organization\n\nWhen using Areas, you must use attributes to decorate your controllers with the name of the area to which they belong:\n\n```csharp\n[Area(\"Catalog\")]\npublic class HomeController\n{}\n```\n\nYou also need to add area support to your routes:\n\n```csharp\napp.UseEndpoints(endpoints =>\n{\n    endpoints.MapControllerRoute(name: \"areaRoute\", pattern: \"{area:exists}/{controller=Home}/{action=Index}/{id?}\");\n    endpoints.MapControllerRoute(name: \"default\", pattern: \"{controller=Home}/{action=Index}/{id?}\");\n});\n```\n\nIn addition to the built-in support for Areas, you can also use your own folder structure, and conventions in place of attributes and custom routes. This would allow you to have feature folders that didn't include separate folders for Views, Controllers, etc., keeping the hierarchy flatter and making it easier to see all related files in a single place for each feature. For APIs, folders can be used to replace controllers, and each folder can contain all of the API Endpoints and their associated DTOs.\n\nASP.NET Core uses built-in convention types to control its behavior. You can modify or replace these conventions. For example, you can create a convention that will automatically get the feature name for a given controller based on its namespace (which typically correlates to the folder in which the controller is located):\n\n```csharp\npublic class FeatureConvention : IControllerModelConvention\n{\n    public void Apply(ControllerModel controller)\n    {\n        controller.Properties.Add(\"feature\",\n        GetFeatureName(controller.ControllerType));\n    }\n\n    private string GetFeatureName(TypeInfo controllerType)\n    {\n        string[] tokens = controllerType.FullName.Split('.');\n        if (!tokens.Any(t => t == \"Features\")) return \"\";\n        string featureName = tokens\n            .SkipWhile(t => !t.Equals(\"features\", StringComparison.CurrentCultureIgnoreCase))\n            .Skip(1)\n            .Take(1)\n            .FirstOrDefault();\n        return featureName;\n    }\n}\n```\n\nYou then specify this convention as an option when you add support for MVC to your application in `ConfigureServices` (or in _Program.cs_):\n\n```csharp\n// ConfigureServices\nservices.AddMvc(o => o.Conventions.Add(new FeatureConvention()));\n\n// Program.cs\nbuilder.Services.AddMvc(o => o.Conventions.Add(new FeatureConvention()));\n```\n\nASP.NET Core MVC also uses a convention to locate views. You can override it with a custom convention so that views will be located in your feature folders (using the feature name provided by the FeatureConvention, above). You can learn more about this approach and download a working sample from the MSDN Magazine article, [Feature Slices for ASP.NET Core MVC](/archive/msdn-magazine/2016/september/asp-net-core-feature-slices-for-asp-net-core-mvc).",
       "depth": 2,
       "metadata": {
         "file_path": "develop-asp-net-core-mvc-apps.md",
@@ -645,8 +645,8 @@
       },
       "images": [
         {
-          "id": "md_modern-web-apps-azure_img017",
-          "local_path": "images/md_modern-web-apps-azure_img017.png",
+          "id": "md_modern-web-apps-azure_ba063cf523",
+          "local_path": "images/md_modern-web-apps-azure_ba063cf523.png",
           "alt_text": "Visual Studio Solution Explorer screenshot of a feature-organized ASP.NET Core project structure, with an Areas folder containing Basket, Blog, Catalog (Controllers, ViewModels, Views), Games, and Identity, alongside top-level folders like Configuration, Extensions, Features, HealthChecks, Interfaces, Pages, and Services.",
           "context": "markdown_ref:./media/image7-1.png"
         }
@@ -663,7 +663,7 @@
     },
     {
       "title": "Cross-cutting concerns",
-      "content": "As applications grow, it becomes increasingly important to factor out cross-cutting concerns to eliminate duplication and maintain consistency. Some examples of cross-cutting concerns in ASP.NET Core applications are authentication, model validation rules, output caching, and error handling, though there are many others. ASP.NET Core MVC [filters](/aspnet/core/mvc/controllers/filters) allow you to run code before or after certain steps in the request processing pipeline. For instance, a filter can run before and after model binding, before and after an action, or before and after an action's result. You can also use an authorization filter to control access to the rest of the pipeline. Figures 7-2 shows how request execution flows through filters, if configured.\n\n[IMAGE: md_modern-web-apps-azure_img018]\n\n**Figure 7-2**. Request execution through filters and request pipeline.\n\nFilters are usually implemented as attributes, so you can apply them to controllers or actions (or even globally). When added in this fashion, filters specified at the action level override or build upon filters specified at the controller level, which themselves override global filters. For example, the `[Route]` attribute can be used to build up routes between controllers and actions. Likewise, authorization can be configured at the controller level, and then overridden by individual actions, as the following sample demonstrates:\n\n```csharp\n[Authorize]\npublic class AccountController : Controller\n{\n    [AllowAnonymous] // overrides the Authorize attribute\n    public async Task<IActionResult> Login() {}\n    public async Task<IActionResult> ForgotPassword() {}\n}\n```\n\nThe first method, Login, uses the `[AllowAnonymous]` filter (attribute) to override the Authorize filter set at the controller level. The `ForgotPassword` action (and any other action in the class that doesn't have an AllowAnonymous attribute) will require an authenticated request.\n\nFilters can be used to eliminate duplication in the form of common error handling policies for APIs. For example, a typical API policy is to return a NotFound response to requests referencing keys that do not exist, and a `BadRequest` response if model validation fails. The following example demonstrates these two policies in action:\n\n```csharp\n[HttpPut(\"{id}\")]\npublic async Task<IActionResult> Put(int id, [FromBody]Author author)\n{\n    if ((await _authorRepository.ListAsync()).All(a => a.Id != id))\n    {\n        return NotFound(id);\n    }\n    if (!ModelState.IsValid)\n    {\n        return BadRequest(ModelState);\n    }\n    author.Id = id;\n    await _authorRepository.UpdateAsync(author);\n    return Ok();\n}\n```\n\nDon't allow your action methods to become cluttered with conditional code like this. Instead, pull the policies into filters that can be applied on an as-needed basis. In this example, the model validation check, which should occur anytime a command is sent to the API, can be replaced by the following attribute:\n\n```csharp\npublic class ValidateModelAttribute : ActionFilterAttribute\n{\n    public override void OnActionExecuting(ActionExecutingContext context)\n    {\n        if (!context.ModelState.IsValid)\n        {\n            context.Result = new BadRequestObjectResult(context.ModelState);\n        }\n    }\n}\n```\n\nYou can add the `ValidateModelAttribute` to your project as a NuGet dependency by including the [Ardalis.ValidateModel](https://www.nuget.org/packages/Ardalis.ValidateModel) package. For APIs, you can use the `ApiController` attribute to enforce this behavior without the need for a separate `ValidateModel` filter.\n\nLikewise, a filter can be used to check if a record exists and return a 404 before the action is executed, eliminating the need to perform these checks in the action. Once you've pulled out common conventions and organized your solution to separate infrastructure code and business logic from your UI, your MVC action methods should be extremely thin:\n\n```csharp\n[HttpPut(\"{id}\")]\n[ValidateAuthorExists]\npublic async Task<IActionResult> Put(int id, [FromBody]Author author)\n{\n    await _authorRepository.UpdateAsync(author);\n    return Ok();\n}\n```\n\nYou can read more about implementing filters and download a working sample from the MSDN Magazine article, [Real-World ASP.NET Core MVC Filters](/archive/msdn-magazine/2016/august/asp-net-core-real-world-asp-net-core-mvc-filters).\n\nIf you find that you have a number of common responses from APIs based on common scenarios like validation errors (Bad Request), resource not found, and server errors, you might consider using a *result* abstraction. The result abstraction would be returned by services consumed by API endpoints, and the controller action or endpoint would use a filter to translate these into `IActionResults`.\n\n> ### References – Structuring applications\n>\n> - **Areas**\\\n>   [https://learn.microsoft.com/aspnet/core/mvc/controllers/areas](/aspnet/core/mvc/controllers/areas)\n> - **MSDN Magazine – Feature Slices for ASP.NET Core MVC**\\\n>   [https://learn.microsoft.com/archive/msdn-magazine/2016/september/asp-net-core-feature-slices-for-asp-net-core-mvc](/archive/msdn-magazine/2016/september/asp-net-core-feature-slices-for-asp-net-core-mvc)\n> - **Filters**\\\n>   [https://learn.microsoft.com/aspnet/core/mvc/controllers/filters](/aspnet/core/mvc/controllers/filters)\n> - **MSDN Magazine – Real World ASP.NET Core MVC Filters**\\\n>   [https://learn.microsoft.com/archive/msdn-magazine/2016/august/asp-net-core-real-world-asp-net-core-mvc-filters](/archive/msdn-magazine/2016/august/asp-net-core-real-world-asp-net-core-mvc-filters)\n> - **Result in eShopOnWeb**\\\n>   [https://github.com/dotnet-architecture/eShopOnWeb/wiki/Patterns#result](https://github.com/dotnet-architecture/eShopOnWeb/wiki/Patterns#result)",
+      "content": "As applications grow, it becomes increasingly important to factor out cross-cutting concerns to eliminate duplication and maintain consistency. Some examples of cross-cutting concerns in ASP.NET Core applications are authentication, model validation rules, output caching, and error handling, though there are many others. ASP.NET Core MVC [filters](/aspnet/core/mvc/controllers/filters) allow you to run code before or after certain steps in the request processing pipeline. For instance, a filter can run before and after model binding, before and after an action, or before and after an action's result. You can also use an authorization filter to control access to the rest of the pipeline. Figures 7-2 shows how request execution flows through filters, if configured.\n\n[IMAGE: md_modern-web-apps-azure_c2361963a1]\n\n**Figure 7-2**. Request execution through filters and request pipeline.\n\nFilters are usually implemented as attributes, so you can apply them to controllers or actions (or even globally). When added in this fashion, filters specified at the action level override or build upon filters specified at the controller level, which themselves override global filters. For example, the `[Route]` attribute can be used to build up routes between controllers and actions. Likewise, authorization can be configured at the controller level, and then overridden by individual actions, as the following sample demonstrates:\n\n```csharp\n[Authorize]\npublic class AccountController : Controller\n{\n    [AllowAnonymous] // overrides the Authorize attribute\n    public async Task<IActionResult> Login() {}\n    public async Task<IActionResult> ForgotPassword() {}\n}\n```\n\nThe first method, Login, uses the `[AllowAnonymous]` filter (attribute) to override the Authorize filter set at the controller level. The `ForgotPassword` action (and any other action in the class that doesn't have an AllowAnonymous attribute) will require an authenticated request.\n\nFilters can be used to eliminate duplication in the form of common error handling policies for APIs. For example, a typical API policy is to return a NotFound response to requests referencing keys that do not exist, and a `BadRequest` response if model validation fails. The following example demonstrates these two policies in action:\n\n```csharp\n[HttpPut(\"{id}\")]\npublic async Task<IActionResult> Put(int id, [FromBody]Author author)\n{\n    if ((await _authorRepository.ListAsync()).All(a => a.Id != id))\n    {\n        return NotFound(id);\n    }\n    if (!ModelState.IsValid)\n    {\n        return BadRequest(ModelState);\n    }\n    author.Id = id;\n    await _authorRepository.UpdateAsync(author);\n    return Ok();\n}\n```\n\nDon't allow your action methods to become cluttered with conditional code like this. Instead, pull the policies into filters that can be applied on an as-needed basis. In this example, the model validation check, which should occur anytime a command is sent to the API, can be replaced by the following attribute:\n\n```csharp\npublic class ValidateModelAttribute : ActionFilterAttribute\n{\n    public override void OnActionExecuting(ActionExecutingContext context)\n    {\n        if (!context.ModelState.IsValid)\n        {\n            context.Result = new BadRequestObjectResult(context.ModelState);\n        }\n    }\n}\n```\n\nYou can add the `ValidateModelAttribute` to your project as a NuGet dependency by including the [Ardalis.ValidateModel](https://www.nuget.org/packages/Ardalis.ValidateModel) package. For APIs, you can use the `ApiController` attribute to enforce this behavior without the need for a separate `ValidateModel` filter.\n\nLikewise, a filter can be used to check if a record exists and return a 404 before the action is executed, eliminating the need to perform these checks in the action. Once you've pulled out common conventions and organized your solution to separate infrastructure code and business logic from your UI, your MVC action methods should be extremely thin:\n\n```csharp\n[HttpPut(\"{id}\")]\n[ValidateAuthorExists]\npublic async Task<IActionResult> Put(int id, [FromBody]Author author)\n{\n    await _authorRepository.UpdateAsync(author);\n    return Ok();\n}\n```\n\nYou can read more about implementing filters and download a working sample from the MSDN Magazine article, [Real-World ASP.NET Core MVC Filters](/archive/msdn-magazine/2016/august/asp-net-core-real-world-asp-net-core-mvc-filters).\n\nIf you find that you have a number of common responses from APIs based on common scenarios like validation errors (Bad Request), resource not found, and server errors, you might consider using a *result* abstraction. The result abstraction would be returned by services consumed by API endpoints, and the controller action or endpoint would use a filter to translate these into `IActionResults`.\n\n> ### References – Structuring applications\n>\n> - **Areas**\\\n>   [https://learn.microsoft.com/aspnet/core/mvc/controllers/areas](/aspnet/core/mvc/controllers/areas)\n> - **MSDN Magazine – Feature Slices for ASP.NET Core MVC**\\\n>   [https://learn.microsoft.com/archive/msdn-magazine/2016/september/asp-net-core-feature-slices-for-asp-net-core-mvc](/archive/msdn-magazine/2016/september/asp-net-core-feature-slices-for-asp-net-core-mvc)\n> - **Filters**\\\n>   [https://learn.microsoft.com/aspnet/core/mvc/controllers/filters](/aspnet/core/mvc/controllers/filters)\n> - **MSDN Magazine – Real World ASP.NET Core MVC Filters**\\\n>   [https://learn.microsoft.com/archive/msdn-magazine/2016/august/asp-net-core-real-world-asp-net-core-mvc-filters](/archive/msdn-magazine/2016/august/asp-net-core-real-world-asp-net-core-mvc-filters)\n> - **Result in eShopOnWeb**\\\n>   [https://github.com/dotnet-architecture/eShopOnWeb/wiki/Patterns#result](https://github.com/dotnet-architecture/eShopOnWeb/wiki/Patterns#result)",
       "depth": 2,
       "metadata": {
         "file_path": "develop-asp-net-core-mvc-apps.md",
@@ -671,8 +671,8 @@
       },
       "images": [
         {
-          "id": "md_modern-web-apps-azure_img018",
-          "local_path": "images/md_modern-web-apps-azure_img018.png",
+          "id": "md_modern-web-apps-azure_c2361963a1",
+          "local_path": "images/md_modern-web-apps-azure_c2361963a1.png",
           "alt_text": "Flow chart of the ASP.NET Core MVC filter pipeline: a request passes from middleware through authorization, resource, and exception filters, then model binding, action filters around action execution, and finally result filters around result execution.",
           "context": "markdown_ref:./media/image7-2.png"
         }
@@ -689,7 +689,7 @@
     },
     {
       "title": "Identity",
-      "content": "ASP.NET Core Identity is a membership system you can use to support login functionality for your application. It has support for local user accounts as well as external login provider support from providers like Microsoft Account, Twitter, Facebook, Google, and more. In addition to ASP.NET Core Identity, your application can use windows authentication, or a third-party identity provider like [Identity Server](https://github.com/IdentityServer/IdentityServer4).\n\nASP.NET Core Identity is included in new project templates if the Individual User Accounts option is selected. This template includes support for registration, login, external logins, forgotten passwords, and additional functionality.\n\n[IMAGE: md_modern-web-apps-azure_img019]\n\n**Figure 7-3**. Select Individual User Accounts to have Identity preconfigured.\n\nIdentity support is configured in _Program.cs_ or `Startup`, and includes configuring services as well as middleware.",
+      "content": "ASP.NET Core Identity is a membership system you can use to support login functionality for your application. It has support for local user accounts as well as external login provider support from providers like Microsoft Account, Twitter, Facebook, Google, and more. In addition to ASP.NET Core Identity, your application can use windows authentication, or a third-party identity provider like [Identity Server](https://github.com/IdentityServer/IdentityServer4).\n\nASP.NET Core Identity is included in new project templates if the Individual User Accounts option is selected. This template includes support for registration, login, external logins, forgotten passwords, and additional functionality.\n\n[IMAGE: md_modern-web-apps-azure_512330c2e9]\n\n**Figure 7-3**. Select Individual User Accounts to have Identity preconfigured.\n\nIdentity support is configured in _Program.cs_ or `Startup`, and includes configuring services as well as middleware.",
       "depth": 2,
       "metadata": {
         "file_path": "develop-asp-net-core-mvc-apps.md",
@@ -697,8 +697,8 @@
       },
       "images": [
         {
-          "id": "md_modern-web-apps-azure_img019",
-          "local_path": "images/md_modern-web-apps-azure_img019.png",
+          "id": "md_modern-web-apps-azure_512330c2e9",
+          "local_path": "images/md_modern-web-apps-azure_512330c2e9.png",
           "alt_text": "Visual Studio 'Additional information' dialog for a new ASP.NET Core Web App, showing the .NET 7.0 framework selection and the Authentication type dropdown expanded with options None, Individual Accounts, Microsoft identity platform, and Windows.",
           "context": "markdown_ref:./media/image7-3.png"
         }
@@ -733,7 +733,7 @@
     },
     {
       "title": "Authentication in Blazor apps",
-      "content": "Blazor Server applications can leverage the same authentication features as any other ASP.NET Core application. Blazor WebAssembly applications cannot use the built-in Identity and Authentication providers, however, since they run in the browser. Blazor WebAssembly applications can store user authentication status locally and can access claims to determine what actions users should be able to perform. However, all authentication and authorization checks should be performed on the server regardless of any logic implemented inside the Blazor WebAssembly app, since users can easily bypass the app and interact with the APIs directly.\n\n> ### References – Authentication\n>\n> - **Authentication Actions and Defaults**\\\n>   <https://stackoverflow.com/a/52493428>\n> - **Authentication and Authorization for SPAs**\\\n>   [https://learn.microsoft.com/aspnet/core/security/authentication/identity-api-authorization](/aspnet/core/security/authentication/identity-api-authorization)\n> - **ASP.NET Core Blazor Authentication and Authorization**\\\n>   [https://learn.microsoft.com/aspnet/core/blazor/security/](/aspnet/core/blazor/security/)\n> - **Security: Authentication and Authorization in ASP.NET Web Forms and Blazor**\\\n>   [https://learn.microsoft.com/dotnet/architecture/blazor-for-web-forms-developers/security-authentication-authorization](../blazor-for-web-forms-developers/security-authentication-authorization.md)",
+      "content": "Blazor Server applications can leverage the same authentication features as any other ASP.NET Core application. Blazor WebAssembly applications cannot use the built-in Identity and Authentication providers, however, since they run in the browser. Blazor WebAssembly applications can store user authentication status locally and can access claims to determine what actions users should be able to perform. However, all authentication and authorization checks should be performed on the server regardless of any logic implemented inside the Blazor WebAssembly app, since users can easily bypass the app and interact with the APIs directly.\n\n> ### References – Authentication\n>\n> - **Authentication Actions and Defaults**\\\n>   <https://stackoverflow.com/a/52493428>\n> - **Authentication and Authorization for SPAs**\\\n>   [https://learn.microsoft.com/aspnet/core/security/authentication/identity-api-authorization](/aspnet/core/security/authentication/identity-api-authorization)\n> - **ASP.NET Core Blazor Authentication and Authorization**\\\n>   [https://learn.microsoft.com/aspnet/core/blazor/security/](/aspnet/core/blazor/security/)\n> - **Security: Authentication and Authorization in ASP.NET Web Forms and Blazor**\\\n>   https://learn.microsoft.com/dotnet/architecture/blazor-for-web-forms-developers/security-authentication-authorization",
       "depth": 3,
       "metadata": {
         "file_path": "develop-asp-net-core-mvc-apps.md",
@@ -760,7 +760,7 @@
     },
     {
       "title": "Securing web APIs",
-      "content": "Most web APIs should implement a token-based authentication system. Token authentication is stateless and designed to be scalable. In a token-based authentication system, the client must first authenticate with the authentication provider. If successful, the client is issued a token, which is simply a cryptographically meaningful string of characters. The most common format for tokens is JSON Web Token, or JWT (often pronounced \"jot\"). When the client then needs to issue a request to an API, it adds this token as a header on the request. The server then validates the token found in the request header before completing the request. Figure 7-4 demonstrates this process.\n\n[IMAGE: md_modern-web-apps-azure_img020]\n\n**Figure 7-4.** Token-based authentication for Web APIs.\n\nYou can create your own authentication service, integrate with Azure AD and OAuth, or implement a service using an open-source tool like [IdentityServer](https://github.com/IdentityServer).\n\nJWT tokens can embed claims about the user, which can be read on the client or server. You can use a tool like [jwt.io](https://jwt.io/) to view the contents of a JWT token. Do not store sensitive data like passwords or keys in JTW tokens, since their contents are easily read.\n\nWhen using JWT tokens with SPA or Blazor WebAssembly applications, you must store the token somewhere on the client and then add it to every API call. This activity is typically done as a header, as the following code demonstrates:\n\n```csharp\n// AuthService.cs in BlazorAdmin project of eShopOnWeb\nprivate async Task SetAuthorizationHeader()\n{\n      var token = await GetToken();\n      _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(\"Bearer\", token);\n}\n```\n\nAfter calling the above method, requests made with the `_httpClient` will have the token embedded in the request's headers, allowing the server-side API to authenticate and authorize the request.",
+      "content": "Most web APIs should implement a token-based authentication system. Token authentication is stateless and designed to be scalable. In a token-based authentication system, the client must first authenticate with the authentication provider. If successful, the client is issued a token, which is simply a cryptographically meaningful string of characters. The most common format for tokens is JSON Web Token, or JWT (often pronounced \"jot\"). When the client then needs to issue a request to an API, it adds this token as a header on the request. The server then validates the token found in the request header before completing the request. Figure 7-4 demonstrates this process.\n\n[IMAGE: md_modern-web-apps-azure_47c2a39fa1]\n\n**Figure 7-4.** Token-based authentication for Web APIs.\n\nYou can create your own authentication service, integrate with Azure AD and OAuth, or implement a service using an open-source tool like [IdentityServer](https://github.com/IdentityServer).\n\nJWT tokens can embed claims about the user, which can be read on the client or server. You can use a tool like [jwt.io](https://jwt.io/) to view the contents of a JWT token. Do not store sensitive data like passwords or keys in JTW tokens, since their contents are easily read.\n\nWhen using JWT tokens with SPA or Blazor WebAssembly applications, you must store the token somewhere on the client and then add it to every API call. This activity is typically done as a header, as the following code demonstrates:\n\n```csharp\n// AuthService.cs in BlazorAdmin project of eShopOnWeb\nprivate async Task SetAuthorizationHeader()\n{\n      var token = await GetToken();\n      _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(\"Bearer\", token);\n}\n```\n\nAfter calling the above method, requests made with the `_httpClient` will have the token embedded in the request's headers, allowing the server-side API to authenticate and authorize the request.",
       "depth": 3,
       "metadata": {
         "file_path": "develop-asp-net-core-mvc-apps.md",
@@ -768,8 +768,8 @@
       },
       "images": [
         {
-          "id": "md_modern-web-apps-azure_img020",
-          "local_path": "images/md_modern-web-apps-azure_img020.png",
+          "id": "md_modern-web-apps-azure_47c2a39fa1",
+          "local_path": "images/md_modern-web-apps-azure_47c2a39fa1.png",
           "alt_text": "Token-based authentication sequence diagram: a user submits a password to a web client (SPA application), which exchanges it with an authentication service for a token, then presents the token to a Web API to request and receive protected resources.",
           "context": "markdown_ref:./media/image7-4.png"
         }
@@ -822,7 +822,7 @@
     },
     {
       "title": "Deployment",
-      "content": "There are a few steps involved in the process of deploying your ASP.NET Core application, regardless of where it will be hosted. The first step is to publish the application, which can be done using the `dotnet publish` CLI command. This step will compile the application and place all of the files needed to run the application into a designated folder. When you deploy from Visual Studio, this step is performed for you automatically. The publish folder contains .exe and .dll files for the application and its dependencies. A self-contained application will also include a version of the .NET runtime. ASP.NET Core applications will also include configuration files, static client assets, and MVC views.\n\nASP.NET Core applications are console applications that must be started when the server boots and restarted if the application (or server) crashes. A process manager can be used to automate this process. The most common process managers for ASP.NET Core are Nginx and Apache on Linux and IIS or Windows Service on Windows.\n\nIn addition to a process manager, ASP.NET Core applications may use a reverse proxy server. A reverse proxy server receives HTTP requests from the Internet and forwards them to Kestrel after some preliminary handling. Reverse proxy servers provide a layer of security for the application. Kestrel also doesn't support hosting multiple applications on the same port, so techniques like host headers cannot be used with it to enable hosting multiple applications on the same port and IP address.\n\n[IMAGE: md_modern-web-apps-azure_img021]\n\n**Figure 7-5**. ASP.NET hosted in Kestrel behind a reverse proxy server\n\nAnother scenario in which a reverse proxy can be helpful is to secure multiple applications using SSL/HTTPS. In this case, only the reverse proxy would need to have SSL configured. Communication between the reverse proxy server and Kestrel could take place over HTTP, as shown in Figure 7-6.\n\n[IMAGE: md_modern-web-apps-azure_img022]\n\n**Figure 7-6**. ASP.NET hosted behind an HTTPS-secured reverse proxy server\n\nAn increasingly popular approach is to host your ASP.NET Core application in a Docker container, which then can be hosted locally or deployed to Azure for cloud-based hosting. The Docker container could contain your application code, running on Kestrel, and would be deployed behind a reverse proxy server, as shown above.\n\nIf you're hosting your application on Azure, you can use Microsoft Azure Application Gateway as a dedicated virtual appliance to provide several services. In addition to acting as a reverse proxy for individual applications, Application Gateway can also offer the following features:\n\n- HTTP load balancing\n\n- SSL offload (SSL only to Internet)\n\n- End to End SSL\n\n- Multi-site routing (consolidate up to 20 sites on a single Application Gateway)\n\n- Web application firewall\n\n- Websocket support\n\n- Advanced diagnostics\n\n_Learn more about Azure deployment options in [Chapter 10](development-process-for-azure.md)._\n\n> ### References – Deployment\n>\n> - **Hosting and Deployment Overview**\\\n>   [https://learn.microsoft.com/aspnet/core/publishing/](/aspnet/core/publishing/)\n> - **When to use Kestrel with a reverse proxy**\\\n>   [https://learn.microsoft.com/aspnet/core/fundamentals/servers/kestrel#when-to-use-kestrel-with-a-reverse-proxy](/aspnet/core/fundamentals/servers/kestrel#when-to-use-kestrel-with-a-reverse-proxy)\n> - **Host ASP.NET Core apps in Docker**\\\n>   [https://learn.microsoft.com/aspnet/core/publishing/docker](/aspnet/core/publishing/docker)\n> - **Introducing Azure Application Gateway**\\\n>   [https://learn.microsoft.com/azure/application-gateway/application-gateway-introduction](/azure/application-gateway/application-gateway-introduction)\n\n>[!div class=\"step-by-step\"]\n>[Previous](common-client-side-web-technologies.md)\n>[Next](work-with-data-in-asp-net-core-apps.md)",
+      "content": "There are a few steps involved in the process of deploying your ASP.NET Core application, regardless of where it will be hosted. The first step is to publish the application, which can be done using the `dotnet publish` CLI command. This step will compile the application and place all of the files needed to run the application into a designated folder. When you deploy from Visual Studio, this step is performed for you automatically. The publish folder contains .exe and .dll files for the application and its dependencies. A self-contained application will also include a version of the .NET runtime. ASP.NET Core applications will also include configuration files, static client assets, and MVC views.\n\nASP.NET Core applications are console applications that must be started when the server boots and restarted if the application (or server) crashes. A process manager can be used to automate this process. The most common process managers for ASP.NET Core are Nginx and Apache on Linux and IIS or Windows Service on Windows.\n\nIn addition to a process manager, ASP.NET Core applications may use a reverse proxy server. A reverse proxy server receives HTTP requests from the Internet and forwards them to Kestrel after some preliminary handling. Reverse proxy servers provide a layer of security for the application. Kestrel also doesn't support hosting multiple applications on the same port, so techniques like host headers cannot be used with it to enable hosting multiple applications on the same port and IP address.\n\n[IMAGE: md_modern-web-apps-azure_92c5b81011]\n\n**Figure 7-5**. ASP.NET hosted in Kestrel behind a reverse proxy server\n\nAnother scenario in which a reverse proxy can be helpful is to secure multiple applications using SSL/HTTPS. In this case, only the reverse proxy would need to have SSL configured. Communication between the reverse proxy server and Kestrel could take place over HTTP, as shown in Figure 7-6.\n\n[IMAGE: md_modern-web-apps-azure_dc48f72b17]\n\n**Figure 7-6**. ASP.NET hosted behind an HTTPS-secured reverse proxy server\n\nAn increasingly popular approach is to host your ASP.NET Core application in a Docker container, which then can be hosted locally or deployed to Azure for cloud-based hosting. The Docker container could contain your application code, running on Kestrel, and would be deployed behind a reverse proxy server, as shown above.\n\nIf you're hosting your application on Azure, you can use Microsoft Azure Application Gateway as a dedicated virtual appliance to provide several services. In addition to acting as a reverse proxy for individual applications, Application Gateway can also offer the following features:\n\n- HTTP load balancing\n\n- SSL offload (SSL only to Internet)\n\n- End to End SSL\n\n- Multi-site routing (consolidate up to 20 sites on a single Application Gateway)\n\n- Web application firewall\n\n- Websocket support\n\n- Advanced diagnostics\n\n_Learn more about Azure deployment options in Chapter 10._\n\n> ### References – Deployment\n>\n> - **Hosting and Deployment Overview**\\\n>   [https://learn.microsoft.com/aspnet/core/publishing/](/aspnet/core/publishing/)\n> - **When to use Kestrel with a reverse proxy**\\\n>   [https://learn.microsoft.com/aspnet/core/fundamentals/servers/kestrel#when-to-use-kestrel-with-a-reverse-proxy](/aspnet/core/fundamentals/servers/kestrel#when-to-use-kestrel-with-a-reverse-proxy)\n> - **Host ASP.NET Core apps in Docker**\\\n>   [https://learn.microsoft.com/aspnet/core/publishing/docker](/aspnet/core/publishing/docker)\n> - **Introducing Azure Application Gateway**\\\n>   [https://learn.microsoft.com/azure/application-gateway/application-gateway-introduction](/azure/application-gateway/application-gateway-introduction)\n\n>[!div class=\"step-by-step\"]\n>Previous\n>Next",
       "depth": 1,
       "metadata": {
         "file_path": "develop-asp-net-core-mvc-apps.md",
@@ -830,14 +830,14 @@
       },
       "images": [
         {
-          "id": "md_modern-web-apps-azure_img021",
-          "local_path": "images/md_modern-web-apps-azure_img021.png",
+          "id": "md_modern-web-apps-azure_92c5b81011",
+          "local_path": "images/md_modern-web-apps-azure_92c5b81011.png",
           "alt_text": "Diagram of an ASP.NET Core hosting setup where the internet communicates over HTTP with a reverse proxy server (IIS, Nginx, or Apache) that forwards requests via HTTP to Kestrel, which passes an HttpContext to the application code.",
           "context": "markdown_ref:./media/image7-5.png"
         },
         {
-          "id": "md_modern-web-apps-azure_img022",
-          "local_path": "images/md_modern-web-apps-azure_img022.png",
+          "id": "md_modern-web-apps-azure_dc48f72b17",
+          "local_path": "images/md_modern-web-apps-azure_dc48f72b17.png",
           "alt_text": "Variant of the ASP.NET Core reverse proxy hosting diagram in which the internet connects to the reverse proxy (IIS, Nginx, Apache) over HTTPS, while the proxy forwards to Kestrel over plain HTTP, illustrating TLS termination at the proxy.",
           "context": "markdown_ref:./media/image7-6.png"
         }
@@ -853,7 +853,7 @@
     },
     {
       "title": "Reference application: eShopOnWeb",
-      "content": "This guidance includes a reference application, _eShopOnWeb_, that demonstrates some of the principles and recommendations. The application is a simple online store, which supports browsing through a catalog of shirts, coffee mugs, and other marketing items. The reference application is deliberately simple in order to make it easy to understand.\n\n[IMAGE: md_modern-web-apps-azure_img023]\n\n**Figure 2-1.** eShopOnWeb\n\n> ### Reference Application\n>\n> - **eShopOnWeb**  \n>   <https://github.com/dotnet/eShopOnWeb>",
+      "content": "This guidance includes a reference application, _eShopOnWeb_, that demonstrates some of the principles and recommendations. The application is a simple online store, which supports browsing through a catalog of shirts, coffee mugs, and other marketing items. The reference application is deliberately simple in order to make it easy to understand.\n\n[IMAGE: md_modern-web-apps-azure_133d4c47de]\n\n**Figure 2-1.** eShopOnWeb\n\n> ### Reference Application\n>\n> - **eShopOnWeb**  \n>   <https://github.com/dotnet/eShopOnWeb>",
       "depth": 1,
       "metadata": {
         "file_path": "modern-web-applications-characteristics.md",
@@ -861,8 +861,8 @@
       },
       "images": [
         {
-          "id": "md_modern-web-apps-azure_img023",
-          "local_path": "images/md_modern-web-apps-azure_img023.png",
+          "id": "md_modern-web-apps-azure_133d4c47de",
+          "local_path": "images/md_modern-web-apps-azure_133d4c47de.png",
           "alt_text": "Browser screenshot of the eShopOnWeb sample storefront catalog page advertising a t-shirt sale, with brand/type filter dropdowns and product cards (sweatshirt, mug, t-shirt) showing prices and Add-to-Cart buttons.",
           "context": "markdown_ref:./media/image2-1.png"
         }
@@ -879,7 +879,7 @@
     },
     {
       "title": "Cross platform",
-      "content": "ASP.NET Core is cross-platform and can run on Linux, macOS, and Windows. This capability opens up many new options for both the development and deployment of apps built with ASP.NET Core. Docker containers - both Linux and Windows - can host ASP.NET Core applications, allowing them to take advantage of the benefits of [containers and microservices](../microservices/index.md).",
+      "content": "ASP.NET Core is cross-platform and can run on Linux, macOS, and Windows. This capability opens up many new options for both the development and deployment of apps built with ASP.NET Core. Docker containers - both Linux and Windows - can host ASP.NET Core applications, allowing them to take advantage of the benefits of containers and microservices.",
       "depth": 1,
       "metadata": {
         "file_path": "modern-web-applications-characteristics.md",
@@ -933,7 +933,7 @@
     },
     {
       "title": "Characteristics of Modern Web Applications: Blazor",
-      "content": "Blazor is included with ASP.NET Core 3.0 and later. It provides a new mechanism for building rich interactive web client applications using Razor, C#, and ASP.NET Core. It offers another solution to consider when developing modern web applications. There are two versions of Blazor to consider: server-side and client-side.\n\nServer-side Blazor was released in 2019 with ASP.NET Core 3.0. As its name implies, it runs on the server, rendering changes to the client document back to the browser over the network. Server-side Blazor provides a rich client experience without requiring client-side JavaScript and without requiring separate page loads for each client page interaction. Changes in the loaded page are requested from and processed by the server and then sent back to the client using SignalR.\n\nClient-side Blazor, released in 2020, eliminates the need to render changes on the server. Instead, it leverages WebAssembly to run .NET code within the client. The client can still make API calls to the server if needed to request data, but all client-side behavior runs in the client via WebAssembly, which is already supported by all major browsers and is just a JavaScript library.\n\n> ### References – Modern Web Applications\n>\n> - **Introduction to ASP.NET Core**  \n>   [https://learn.microsoft.com/aspnet/core/](/aspnet/core/)\n> - **Testing in ASP.NET Core**  \n>   [https://learn.microsoft.com/aspnet/core/testing/](/aspnet/core/testing/)\n> - **Blazor - Get Started**  \n>   <https://blazor.net/docs/get-started.html>\n\n>[!div class=\"step-by-step\"]\n>[Previous](index.md)\n>[Next](choose-between-traditional-web-and-single-page-apps.md)",
+      "content": "Blazor is included with ASP.NET Core 3.0 and later. It provides a new mechanism for building rich interactive web client applications using Razor, C#, and ASP.NET Core. It offers another solution to consider when developing modern web applications. There are two versions of Blazor to consider: server-side and client-side.\n\nServer-side Blazor was released in 2019 with ASP.NET Core 3.0. As its name implies, it runs on the server, rendering changes to the client document back to the browser over the network. Server-side Blazor provides a rich client experience without requiring client-side JavaScript and without requiring separate page loads for each client page interaction. Changes in the loaded page are requested from and processed by the server and then sent back to the client using SignalR.\n\nClient-side Blazor, released in 2020, eliminates the need to render changes on the server. Instead, it leverages WebAssembly to run .NET code within the client. The client can still make API calls to the server if needed to request data, but all client-side behavior runs in the client via WebAssembly, which is already supported by all major browsers and is just a JavaScript library.\n\n> ### References – Modern Web Applications\n>\n> - **Introduction to ASP.NET Core**  \n>   [https://learn.microsoft.com/aspnet/core/](/aspnet/core/)\n> - **Testing in ASP.NET Core**  \n>   [https://learn.microsoft.com/aspnet/core/testing/](/aspnet/core/testing/)\n> - **Blazor - Get Started**  \n>   <https://blazor.net/docs/get-started.html>\n\n>[!div class=\"step-by-step\"]\n>Previous\n>Next",
       "depth": 1,
       "metadata": {
         "file_path": "modern-web-applications-characteristics.md",
@@ -942,7 +942,7 @@
     },
     {
       "title": "Test ASP.NET Core MVC apps",
-      "content": "> *\"If you don't like unit testing your product, most likely your customers won't like to test it, either.\"*\n > \\_- Anonymous-\n\nSoftware of any complexity can fail in unexpected ways in response to changes. Thus, testing after making changes is required for all but the most trivial (or least critical) applications. Manual testing is the slowest, least reliable, most expensive way to test software. Unfortunately, if applications aren't designed to be testable, it can be the only means of testing available. Applications written to follow the architectural principles laid out in [chapter 4](architectural-principles.md) should be largely unit testable. ASP.NET Core applications support automated integration and functional testing.",
+      "content": "> *\"If you don't like unit testing your product, most likely your customers won't like to test it, either.\"*\n > \\_- Anonymous-\n\nSoftware of any complexity can fail in unexpected ways in response to changes. Thus, testing after making changes is required for all but the most trivial (or least critical) applications. Manual testing is the slowest, least reliable, most expensive way to test software. Unfortunately, if applications aren't designed to be testable, it can be the only means of testing available. Applications written to follow the architectural principles laid out in chapter 4 should be largely unit testable. ASP.NET Core applications support automated integration and functional testing.",
       "depth": 0,
       "metadata": {
         "file_path": "test-asp-net-core-mvc-apps.md"
@@ -986,7 +986,7 @@
     },
     {
       "title": "Testing Pyramid",
-      "content": "Martin Fowler wrote about the testing pyramid, an example of which is shown in Figure 9-1.\n\n[IMAGE: md_modern-web-apps-azure_img024]\n\n**Figure 9-1**. Testing Pyramid\n\nThe different layers of the pyramid, and their relative sizes, represent different kinds of tests and how many you should write for your application. As you can see, the recommendation is to have a large base of unit tests, supported by a smaller layer of integration tests, with an even smaller layer of functional tests. Each layer should ideally only have tests in it that cannot be performed adequately at a lower layer. Keep the testing pyramid in mind when you are trying to decide which kind of test you need for a particular scenario.",
+      "content": "Martin Fowler wrote about the testing pyramid, an example of which is shown in Figure 9-1.\n\n[IMAGE: md_modern-web-apps-azure_0eb9cadf27]\n\n**Figure 9-1**. Testing Pyramid\n\nThe different layers of the pyramid, and their relative sizes, represent different kinds of tests and how many you should write for your application. As you can see, the recommendation is to have a large base of unit tests, supported by a smaller layer of integration tests, with an even smaller layer of functional tests. Each layer should ideally only have tests in it that cannot be performed adequately at a lower layer. Keep the testing pyramid in mind when you are trying to decide which kind of test you need for a particular scenario.",
       "depth": 2,
       "metadata": {
         "file_path": "test-asp-net-core-mvc-apps.md",
@@ -994,8 +994,8 @@
       },
       "images": [
         {
-          "id": "md_modern-web-apps-azure_img024",
-          "local_path": "images/md_modern-web-apps-azure_img024.png",
+          "id": "md_modern-web-apps-azure_0eb9cadf27",
+          "local_path": "images/md_modern-web-apps-azure_0eb9cadf27.png",
           "alt_text": "Test pyramid diagram with a wide base of unit tests, a middle layer of integration tests, and a small top of functional tests, conveying the recommended relative quantity of each test type.",
           "context": "markdown_ref:./media/image9-1.png"
         }
@@ -1012,7 +1012,7 @@
     },
     {
       "title": "Organizing test projects",
-      "content": "Test projects can be organized however works best for you. It's a good idea to separate tests by type (unit test, integration test) and by what they are testing (by project, by namespace). Whether this separation consists of folders within a single test project, or multiple test projects, is a design decision. One project is simplest, but for large projects with many tests, or in order to more easily run different sets of tests, you might want to have several different test projects. Many teams organize test projects based on the project they are testing, which for applications with more than a few projects can result in a large number of test projects, especially if you still break these down according to what kind of tests are in each project. A compromise approach is to have one project per kind of test, per application, with folders inside the test projects to indicate the project (and class) being tested.\n\nA common approach is to organize the application projects under a 'src' folder, and the application's test projects under a parallel 'tests' folder. You can create matching solution folders in Visual Studio, if you find this organization useful.\n\n[IMAGE: md_modern-web-apps-azure_img025]\n\n**Figure 9-2**. Test organization in your solution\n\nYou can use whichever test framework you prefer. The xUnit framework works well and is what all of the ASP.NET Core and EF Core tests are written in. You can add an xUnit test project in Visual Studio using the template shown in Figure 9-3, or from the CLI using `dotnet new xunit`.\n\n[IMAGE: md_modern-web-apps-azure_img026]\n\n**Figure 9-3**. Add an xUnit Test Project in Visual Studio",
+      "content": "Test projects can be organized however works best for you. It's a good idea to separate tests by type (unit test, integration test) and by what they are testing (by project, by namespace). Whether this separation consists of folders within a single test project, or multiple test projects, is a design decision. One project is simplest, but for large projects with many tests, or in order to more easily run different sets of tests, you might want to have several different test projects. Many teams organize test projects based on the project they are testing, which for applications with more than a few projects can result in a large number of test projects, especially if you still break these down according to what kind of tests are in each project. A compromise approach is to have one project per kind of test, per application, with folders inside the test projects to indicate the project (and class) being tested.\n\nA common approach is to organize the application projects under a 'src' folder, and the application's test projects under a parallel 'tests' folder. You can create matching solution folders in Visual Studio, if you find this organization useful.\n\n[IMAGE: md_modern-web-apps-azure_0ea303694c]\n\n**Figure 9-2**. Test organization in your solution\n\nYou can use whichever test framework you prefer. The xUnit framework works well and is what all of the ASP.NET Core and EF Core tests are written in. You can add an xUnit test project in Visual Studio using the template shown in Figure 9-3, or from the CLI using `dotnet new xunit`.\n\n[IMAGE: md_modern-web-apps-azure_c905cf9d65]\n\n**Figure 9-3**. Add an xUnit Test Project in Visual Studio",
       "depth": 1,
       "metadata": {
         "file_path": "test-asp-net-core-mvc-apps.md",
@@ -1020,14 +1020,14 @@
       },
       "images": [
         {
-          "id": "md_modern-web-apps-azure_img025",
-          "local_path": "images/md_modern-web-apps-azure_img025.png",
+          "id": "md_modern-web-apps-azure_0ea303694c",
+          "local_path": "images/md_modern-web-apps-azure_0ea303694c.png",
           "alt_text": "Visual Studio Solution Explorer screenshot of the eShopOnWeb solution with src projects (ApplicationCore, BlazorAdmin, BlazorShared, Infrastructure, PublicApi, Web) and a tests folder containing FunctionalTests, IntegrationTests, and UnitTests projects.",
           "context": "markdown_ref:./media/image9-2.png"
         },
         {
-          "id": "md_modern-web-apps-azure_img026",
-          "local_path": "images/md_modern-web-apps-azure_img026.png",
+          "id": "md_modern-web-apps-azure_c905cf9d65",
+          "local_path": "images/md_modern-web-apps-azure_c905cf9d65.png",
           "alt_text": "Visual Studio 'Add a new project' dialog filtered by 'xunit', with the C# xUnit Test Project template highlighted among other options like NUnit test projects and Blazor templates.",
           "context": "markdown_ref:./media/image9-3.png"
         }
@@ -1035,7 +1035,7 @@
     },
     {
       "title": "Test naming",
-      "content": "Name your tests in a consistent fashion, with names that indicate what each test does. One approach I've had great success with is to name test classes according to the class and method they are testing. This approach results in many small test classes, but it makes it extremely clear what each test is responsible for. With the test class name set up, to identify the class and method to be tested, the test method name can be used to specify the behavior being tested. This name should include the expected behavior and any inputs or assumptions that should yield this behavior. Some example test names:\n\n- `CatalogControllerGetImage.CallsImageServiceWithId`\n\n- `CatalogControllerGetImage.LogsWarningGivenImageMissingException`\n\n- `CatalogControllerGetImage.ReturnsFileResultWithBytesGivenSuccess`\n\n- `CatalogControllerGetImage.ReturnsNotFoundResultGivenImageMissingException`\n\nA variation of this approach ends each test class name with \"Should\" and modifies the tense slightly:\n\n- `CatalogControllerGetImage`**Should**`.`**Call**`ImageServiceWithId`\n\n- `CatalogControllerGetImage`**Should**`.`**Log**`WarningGivenImageMissingException`\n\nSome teams find the second naming approach clearer, though slightly more verbose. In any case, try to use a naming convention that provides insight into test behavior, so that when one or more tests fail, it's obvious from their names what cases have failed. Avoid naming your tests vaguely, such as ControllerTests.Test1, as these names offer no value when you see them in test results.\n\nIf you follow a naming convention like the one above that produces many small test classes, it's a good idea to further organize your tests using folders and namespaces. Figure 9-4 shows one approach to organizing tests by folder within several test projects.\n\n[IMAGE: md_modern-web-apps-azure_img027]\n\n**Figure 9-4.** Organizing test classes by folder based on class being tested.\n\nIf a particular application class has many methods being tested (and thus many test classes), it may make sense to place these classes in a folder corresponding to the application class. This organization is no different than how you might organize files into folders elsewhere. If you have more than three or four related files in a folder containing many other files, it's often helpful to move them into their own subfolder.",
+      "content": "Name your tests in a consistent fashion, with names that indicate what each test does. One approach I've had great success with is to name test classes according to the class and method they are testing. This approach results in many small test classes, but it makes it extremely clear what each test is responsible for. With the test class name set up, to identify the class and method to be tested, the test method name can be used to specify the behavior being tested. This name should include the expected behavior and any inputs or assumptions that should yield this behavior. Some example test names:\n\n- `CatalogControllerGetImage.CallsImageServiceWithId`\n\n- `CatalogControllerGetImage.LogsWarningGivenImageMissingException`\n\n- `CatalogControllerGetImage.ReturnsFileResultWithBytesGivenSuccess`\n\n- `CatalogControllerGetImage.ReturnsNotFoundResultGivenImageMissingException`\n\nA variation of this approach ends each test class name with \"Should\" and modifies the tense slightly:\n\n- `CatalogControllerGetImage`**Should**`.`**Call**`ImageServiceWithId`\n\n- `CatalogControllerGetImage`**Should**`.`**Log**`WarningGivenImageMissingException`\n\nSome teams find the second naming approach clearer, though slightly more verbose. In any case, try to use a naming convention that provides insight into test behavior, so that when one or more tests fail, it's obvious from their names what cases have failed. Avoid naming your tests vaguely, such as ControllerTests.Test1, as these names offer no value when you see them in test results.\n\nIf you follow a naming convention like the one above that produces many small test classes, it's a good idea to further organize your tests using folders and namespaces. Figure 9-4 shows one approach to organizing tests by folder within several test projects.\n\n[IMAGE: md_modern-web-apps-azure_881091692c]\n\n**Figure 9-4.** Organizing test classes by folder based on class being tested.\n\nIf a particular application class has many methods being tested (and thus many test classes), it may make sense to place these classes in a folder corresponding to the application class. This organization is no different than how you might organize files into folders elsewhere. If you have more than three or four related files in a folder containing many other files, it's often helpful to move them into their own subfolder.",
       "depth": 2,
       "metadata": {
         "file_path": "test-asp-net-core-mvc-apps.md",
@@ -1043,8 +1043,8 @@
       },
       "images": [
         {
-          "id": "md_modern-web-apps-azure_img027",
-          "local_path": "images/md_modern-web-apps-azure_img027.png",
+          "id": "md_modern-web-apps-azure_881091692c",
+          "local_path": "images/md_modern-web-apps-azure_881091692c.png",
           "alt_text": "Solution Explorer screenshot of an eShopOnWeb tests folder showing how test projects mirror the app structure: FunctionalTests with Web controllers tests, IntegrationTests with repository tests (GetById, GetByIdWithItemsAsync), and UnitTests organized by ApplicationCore entities such as BasketAddItem and BasketTotalItems.",
           "context": "markdown_ref:./media/image9-4.png"
         }
@@ -1070,7 +1070,7 @@
     },
     {
       "title": "Functional testing ASP.NET Core apps",
-      "content": "For ASP.NET Core applications, the `TestServer` class makes functional tests fairly easy to write. You configure a `TestServer` using a `WebHostBuilder` (or `HostBuilder`) directly (as you normally do for your application), or with the `WebApplicationFactory` type (available since version 2.1). Try to match your test host to your production host as closely as possible, so your tests exercise behavior similar to what the app will do in production. The `WebApplicationFactory` class is helpful for configuring the TestServer's ContentRoot, which is used by ASP.NET Core to locate static resource like Views.\n\nYou can create simple functional tests by creating a test class that implements `IClassFixture<WebApplicationFactory<TEntryPoint>>`, where `TEntryPoint` is your web application's `Startup` class. With this interface in place, your test fixture can create a client using the factory's `CreateClient` method:\n\n```csharp\npublic class BasicWebTests : IClassFixture<WebApplicationFactory<Program>>\n{\n  protected readonly HttpClient _client;\n\n  public BasicWebTests(WebApplicationFactory<Program> factory)\n  {\n    _client = factory.CreateClient();\n  }\n\n  // write tests that use _client\n}\n```\n\n> **Tip:**\n> If you're using minimal API configuration in your _Program.cs_ file, by default the class will be declared internal and won't be accessible from the test project. You can choose any other instance class in your web project instead, or add this to your _Program.cs_ file:\n>\n> ```csharp\n> // Make the implicit Program class public so test projects can access it\n> public partial class Program { }\n> ```\n\nFrequently, you'll want to perform some additional configuration of your site before each test runs, such as configuring the application to use an in-memory data store and then seeding the application with test data. To achieve this functionality, create your own subclass of `WebApplicationFactory<TEntryPoint>` and override its `ConfigureWebHost` method. The example below is from the eShopOnWeb FunctionalTests project and is used as part of the tests on the main web application.\n\n```csharp\nusing Microsoft.AspNetCore.Hosting;\nusing Microsoft.AspNetCore.Identity;\nusing Microsoft.AspNetCore.Mvc.Testing;\nusing Microsoft.EntityFrameworkCore;\nusing Microsoft.eShopWeb.Infrastructure.Data;\nusing Microsoft.eShopWeb.Infrastructure.Identity;\nusing Microsoft.eShopWeb.Web;\nusing Microsoft.Extensions.DependencyInjection;\nusing Microsoft.Extensions.Logging;\nusing System;\n\nnamespace Microsoft.eShopWeb.FunctionalTests.Web;\npublic class WebTestFixture : WebApplicationFactory<Startup>\n{\n  protected override void ConfigureWebHost(IWebHostBuilder builder)\n  {\n    builder.UseEnvironment(\"Testing\");\n\n    builder.ConfigureServices(services =>\n    {\n      services.AddEntityFrameworkInMemoryDatabase();\n\n      // Create a new service provider.\n      var provider = services\n            .AddEntityFrameworkInMemoryDatabase()\n            .BuildServiceProvider();\n\n      // Add a database context (ApplicationDbContext) using an in-memory\n      // database for testing.\n      services.AddDbContext<CatalogContext>(options =>\n      {\n        options.UseInMemoryDatabase(\"InMemoryDbForTesting\");\n        options.UseInternalServiceProvider(provider);\n      });\n\n      services.AddDbContext<AppIdentityDbContext>(options =>\n      {\n        options.UseInMemoryDatabase(\"Identity\");\n        options.UseInternalServiceProvider(provider);\n      });\n\n      // Build the service provider.\n      var sp = services.BuildServiceProvider();\n\n      // Create a scope to obtain a reference to the database\n      // context (ApplicationDbContext).\n      using (var scope = sp.CreateScope())\n      {\n        var scopedServices = scope.ServiceProvider;\n        var db = scopedServices.GetRequiredService<CatalogContext>();\n        var loggerFactory = scopedServices.GetRequiredService<ILoggerFactory>();\n\n        var logger = scopedServices\n            .GetRequiredService<ILogger<WebTestFixture>>();\n\n        // Ensure the database is created.\n        db.Database.EnsureCreated();\n\n        try\n        {\n          // Seed the database with test data.\n          CatalogContextSeed.SeedAsync(db, loggerFactory).Wait();\n\n          // seed sample user data\n          var userManager = scopedServices.GetRequiredService<UserManager<ApplicationUser>>();\n          var roleManager = scopedServices.GetRequiredService<RoleManager<IdentityRole>>();\n          AppIdentityDbContextSeed.SeedAsync(userManager, roleManager).Wait();\n        }\n        catch (Exception ex)\n        {\n          logger.LogError(ex, $\"An error occurred seeding the \" +\n                    \"database with test messages. Error: {ex.Message}\");\n        }\n      }\n    });\n  }\n}\n```\n\nTests can make use of this custom WebApplicationFactory by using it to create a client and then making requests to the application using this client instance. The application will have data seeded that can be used as part of the test's assertions. The following test verifies that the home page of the eShopOnWeb application loads correctly and includes a product listing that was added to the application as part of the seed data.\n\n```csharp\nusing Microsoft.eShopWeb.FunctionalTests.Web;\nusing System.Net.Http;\nusing System.Threading.Tasks;\nusing Xunit;\n\nnamespace Microsoft.eShopWeb.FunctionalTests.WebRazorPages;\n[Collection(\"Sequential\")]\npublic class HomePageOnGet : IClassFixture<WebTestFixture>\n{\n  public HomePageOnGet(WebTestFixture factory)\n  {\n    Client = factory.CreateClient();\n  }\n\n  public HttpClient Client { get; }\n\n  [Fact]\n  public async Task ReturnsHomePageWithProductListing()\n  {\n    // Arrange & Act\n    var response = await Client.GetAsync(\"/\");\n    response.EnsureSuccessStatusCode();\n    var stringResponse = await response.Content.ReadAsStringAsync();\n\n    // Assert\n    Assert.Contains(\".NET Bot Black Sweatshirt\", stringResponse);\n  }\n}\n```\n\nThis functional test exercises the full ASP.NET Core MVC / Razor Pages application stack, including all middleware, filters, and binders that may be in place. It verifies that a given route (\"/\") returns the expected success status code and HTML output. It does so without setting up a real web server, and avoids much of the brittleness that using a real web server for testing can experience (for example, problems with firewall settings). Functional tests that run against TestServer are usually slower than integration and unit tests, but are much faster than tests that would run over the network to a test web server. Use functional tests to ensure your application's front-end stack is working as expected. These tests are especially useful when you find duplication in your controllers or pages and you address the duplication by adding filters. Ideally, this refactoring won't change the behavior of the application, and a suite of functional tests will verify this is the case.\n\n> ### References – Test ASP.NET Core MVC apps\n>\n> - **Testing in ASP.NET Core** \\\n>   [https://learn.microsoft.com/aspnet/core/testing/](/aspnet/core/testing/)\n> - **Unit Test Naming Convention** \\\n>   <https://ardalis.com/unit-test-naming-convention>\n> - **Testing EF Core** \\\n>   [https://learn.microsoft.com/ef/core/miscellaneous/testing/](/ef/core/miscellaneous/testing/)\n> - **Integration tests in ASP.NET Core** \\\n>   [https://learn.microsoft.com/aspnet/core/test/integration-tests](/aspnet/core/test/integration-tests)\n\n>[!div class=\"step-by-step\"]\n>[Previous](work-with-data-in-asp-net-core-apps.md)\n>[Next](development-process-for-azure.md)",
+      "content": "For ASP.NET Core applications, the `TestServer` class makes functional tests fairly easy to write. You configure a `TestServer` using a `WebHostBuilder` (or `HostBuilder`) directly (as you normally do for your application), or with the `WebApplicationFactory` type (available since version 2.1). Try to match your test host to your production host as closely as possible, so your tests exercise behavior similar to what the app will do in production. The `WebApplicationFactory` class is helpful for configuring the TestServer's ContentRoot, which is used by ASP.NET Core to locate static resource like Views.\n\nYou can create simple functional tests by creating a test class that implements `IClassFixture<WebApplicationFactory<TEntryPoint>>`, where `TEntryPoint` is your web application's `Startup` class. With this interface in place, your test fixture can create a client using the factory's `CreateClient` method:\n\n```csharp\npublic class BasicWebTests : IClassFixture<WebApplicationFactory<Program>>\n{\n  protected readonly HttpClient _client;\n\n  public BasicWebTests(WebApplicationFactory<Program> factory)\n  {\n    _client = factory.CreateClient();\n  }\n\n  // write tests that use _client\n}\n```\n\n> **Tip:**\n> If you're using minimal API configuration in your _Program.cs_ file, by default the class will be declared internal and won't be accessible from the test project. You can choose any other instance class in your web project instead, or add this to your _Program.cs_ file:\n>\n> ```csharp\n> // Make the implicit Program class public so test projects can access it\n> public partial class Program { }\n> ```\n\nFrequently, you'll want to perform some additional configuration of your site before each test runs, such as configuring the application to use an in-memory data store and then seeding the application with test data. To achieve this functionality, create your own subclass of `WebApplicationFactory<TEntryPoint>` and override its `ConfigureWebHost` method. The example below is from the eShopOnWeb FunctionalTests project and is used as part of the tests on the main web application.\n\n```csharp\nusing Microsoft.AspNetCore.Hosting;\nusing Microsoft.AspNetCore.Identity;\nusing Microsoft.AspNetCore.Mvc.Testing;\nusing Microsoft.EntityFrameworkCore;\nusing Microsoft.eShopWeb.Infrastructure.Data;\nusing Microsoft.eShopWeb.Infrastructure.Identity;\nusing Microsoft.eShopWeb.Web;\nusing Microsoft.Extensions.DependencyInjection;\nusing Microsoft.Extensions.Logging;\nusing System;\n\nnamespace Microsoft.eShopWeb.FunctionalTests.Web;\npublic class WebTestFixture : WebApplicationFactory<Startup>\n{\n  protected override void ConfigureWebHost(IWebHostBuilder builder)\n  {\n    builder.UseEnvironment(\"Testing\");\n\n    builder.ConfigureServices(services =>\n    {\n      services.AddEntityFrameworkInMemoryDatabase();\n\n      // Create a new service provider.\n      var provider = services\n            .AddEntityFrameworkInMemoryDatabase()\n            .BuildServiceProvider();\n\n      // Add a database context (ApplicationDbContext) using an in-memory\n      // database for testing.\n      services.AddDbContext<CatalogContext>(options =>\n      {\n        options.UseInMemoryDatabase(\"InMemoryDbForTesting\");\n        options.UseInternalServiceProvider(provider);\n      });\n\n      services.AddDbContext<AppIdentityDbContext>(options =>\n      {\n        options.UseInMemoryDatabase(\"Identity\");\n        options.UseInternalServiceProvider(provider);\n      });\n\n      // Build the service provider.\n      var sp = services.BuildServiceProvider();\n\n      // Create a scope to obtain a reference to the database\n      // context (ApplicationDbContext).\n      using (var scope = sp.CreateScope())\n      {\n        var scopedServices = scope.ServiceProvider;\n        var db = scopedServices.GetRequiredService<CatalogContext>();\n        var loggerFactory = scopedServices.GetRequiredService<ILoggerFactory>();\n\n        var logger = scopedServices\n            .GetRequiredService<ILogger<WebTestFixture>>();\n\n        // Ensure the database is created.\n        db.Database.EnsureCreated();\n\n        try\n        {\n          // Seed the database with test data.\n          CatalogContextSeed.SeedAsync(db, loggerFactory).Wait();\n\n          // seed sample user data\n          var userManager = scopedServices.GetRequiredService<UserManager<ApplicationUser>>();\n          var roleManager = scopedServices.GetRequiredService<RoleManager<IdentityRole>>();\n          AppIdentityDbContextSeed.SeedAsync(userManager, roleManager).Wait();\n        }\n        catch (Exception ex)\n        {\n          logger.LogError(ex, $\"An error occurred seeding the \" +\n                    \"database with test messages. Error: {ex.Message}\");\n        }\n      }\n    });\n  }\n}\n```\n\nTests can make use of this custom WebApplicationFactory by using it to create a client and then making requests to the application using this client instance. The application will have data seeded that can be used as part of the test's assertions. The following test verifies that the home page of the eShopOnWeb application loads correctly and includes a product listing that was added to the application as part of the seed data.\n\n```csharp\nusing Microsoft.eShopWeb.FunctionalTests.Web;\nusing System.Net.Http;\nusing System.Threading.Tasks;\nusing Xunit;\n\nnamespace Microsoft.eShopWeb.FunctionalTests.WebRazorPages;\n[Collection(\"Sequential\")]\npublic class HomePageOnGet : IClassFixture<WebTestFixture>\n{\n  public HomePageOnGet(WebTestFixture factory)\n  {\n    Client = factory.CreateClient();\n  }\n\n  public HttpClient Client { get; }\n\n  [Fact]\n  public async Task ReturnsHomePageWithProductListing()\n  {\n    // Arrange & Act\n    var response = await Client.GetAsync(\"/\");\n    response.EnsureSuccessStatusCode();\n    var stringResponse = await response.Content.ReadAsStringAsync();\n\n    // Assert\n    Assert.Contains(\".NET Bot Black Sweatshirt\", stringResponse);\n  }\n}\n```\n\nThis functional test exercises the full ASP.NET Core MVC / Razor Pages application stack, including all middleware, filters, and binders that may be in place. It verifies that a given route (\"/\") returns the expected success status code and HTML output. It does so without setting up a real web server, and avoids much of the brittleness that using a real web server for testing can experience (for example, problems with firewall settings). Functional tests that run against TestServer are usually slower than integration and unit tests, but are much faster than tests that would run over the network to a test web server. Use functional tests to ensure your application's front-end stack is working as expected. These tests are especially useful when you find duplication in your controllers or pages and you address the duplication by adding filters. Ideally, this refactoring won't change the behavior of the application, and a suite of functional tests will verify this is the case.\n\n> ### References – Test ASP.NET Core MVC apps\n>\n> - **Testing in ASP.NET Core** \\\n>   [https://learn.microsoft.com/aspnet/core/testing/](/aspnet/core/testing/)\n> - **Unit Test Naming Convention** \\\n>   <https://ardalis.com/unit-test-naming-convention>\n> - **Testing EF Core** \\\n>   [https://learn.microsoft.com/ef/core/miscellaneous/testing/](/ef/core/miscellaneous/testing/)\n> - **Integration tests in ASP.NET Core** \\\n>   [https://learn.microsoft.com/aspnet/core/test/integration-tests](/aspnet/core/test/integration-tests)\n\n>[!div class=\"step-by-step\"]\n>Previous\n>Next",
       "depth": 1,
       "metadata": {
         "file_path": "test-asp-net-core-mvc-apps.md",
@@ -1105,7 +1105,7 @@
     },
     {
       "title": "Configuring EF Core",
-      "content": "In your ASP.NET Core application, you'll typically configure EF Core in _Program.cs_ with your application's other dependencies. EF Core uses a `DbContextOptionsBuilder`, which supports several helpful extension methods to streamline its configuration. To configure CatalogContext to use a SQL Server database with a connection string defined in Configuration, you would add the following code:\n\n```csharp\nbuilder.Services.AddDbContext<CatalogContext>(\n    options => options.UseSqlServer(\n        builder.Configuration.GetConnectionString(\"DefaultConnection\")));\n```\n\nTo use the in-memory database:\n\n```csharp\nbuilder.Services.AddDbContext<CatalogContext>(options =>\n    options.UseInMemoryDatabase());\n```\n\nOnce you have installed EF Core, created a DbContext child type, and added the type to the application's services, you are ready to use EF Core. You can request an instance of your DbContext type in any service that needs it and start working with your persisted entities using LINQ as if they were simply in a collection. EF Core does the work of translating your LINQ expressions into SQL queries to store and retrieve your data.\n\nYou can see the queries EF Core is executing by configuring a logger and ensuring its level is set to at least Information, as shown in Figure 8-1.\n\n[IMAGE: md_modern-web-apps-azure_img028]\n\n**Figure 8-1**. Logging EF Core queries to the console",
+      "content": "In your ASP.NET Core application, you'll typically configure EF Core in _Program.cs_ with your application's other dependencies. EF Core uses a `DbContextOptionsBuilder`, which supports several helpful extension methods to streamline its configuration. To configure CatalogContext to use a SQL Server database with a connection string defined in Configuration, you would add the following code:\n\n```csharp\nbuilder.Services.AddDbContext<CatalogContext>(\n    options => options.UseSqlServer(\n        builder.Configuration.GetConnectionString(\"DefaultConnection\")));\n```\n\nTo use the in-memory database:\n\n```csharp\nbuilder.Services.AddDbContext<CatalogContext>(options =>\n    options.UseInMemoryDatabase());\n```\n\nOnce you have installed EF Core, created a DbContext child type, and added the type to the application's services, you are ready to use EF Core. You can request an instance of your DbContext type in any service that needs it and start working with your persisted entities using LINQ as if they were simply in a collection. EF Core does the work of translating your LINQ expressions into SQL queries to store and retrieve your data.\n\nYou can see the queries EF Core is executing by configuring a logger and ensuring its level is set to at least Information, as shown in Figure 8-1.\n\n[IMAGE: md_modern-web-apps-azure_ff6c819ca8]\n\n**Figure 8-1**. Logging EF Core queries to the console",
       "depth": 2,
       "metadata": {
         "file_path": "work-with-data-in-asp-net-core-apps.md",
@@ -1113,8 +1113,8 @@
       },
       "images": [
         {
-          "id": "md_modern-web-apps-azure_img028",
-          "local_path": "images/md_modern-web-apps-azure_img028.png",
+          "id": "md_modern-web-apps-azure_ff6c819ca8",
+          "local_path": "images/md_modern-web-apps-azure_ff6c819ca8.png",
           "alt_text": "Console window of dotnet.exe running an ASP.NET Core app in development, with log output showing Kestrel listening on a local port and Entity Framework Core executing SELECT queries against Catalog, CatalogBrand, and CatalogType tables before rendering a Razor view.",
           "context": "markdown_ref:./media/image8-1.png"
         }
@@ -1185,7 +1185,7 @@
     },
     {
       "title": "Azure Cosmos DB",
-      "content": "Azure Cosmos DB is a fully managed NoSQL database service that offers cloud-based schema-free data storage. Azure Cosmos DB is built for fast and predictable performance, high availability, elastic scaling, and global distribution. Despite being a NoSQL database, developers can use rich and familiar SQL query capabilities on JSON data. All resources in Azure Cosmos DB are stored as JSON documents. Resources are managed as _items_, which are documents containing metadata, and _feeds_, which are collections of items. Figure 8-2 shows the relationship between different Azure Cosmos DB resources.\n\n[IMAGE: md_modern-web-apps-azure_img029]\n\n**Figure 8-2.** Azure Cosmos DB resource organization.\n\nThe Azure Cosmos DB query language is a simple yet powerful interface for querying JSON documents. The language supports a subset of ANSI SQL grammar and adds deep integration of JavaScript object, arrays, object construction, and function invocation.\n\n**References – Azure Cosmos DB**\n\n- Azure Cosmos DB Introduction\n  [https://learn.microsoft.com/azure/cosmos-db/introduction](/azure/cosmos-db/introduction)",
+      "content": "Azure Cosmos DB is a fully managed NoSQL database service that offers cloud-based schema-free data storage. Azure Cosmos DB is built for fast and predictable performance, high availability, elastic scaling, and global distribution. Despite being a NoSQL database, developers can use rich and familiar SQL query capabilities on JSON data. All resources in Azure Cosmos DB are stored as JSON documents. Resources are managed as _items_, which are documents containing metadata, and _feeds_, which are collections of items. Figure 8-2 shows the relationship between different Azure Cosmos DB resources.\n\n[IMAGE: md_modern-web-apps-azure_3abf4dc919]\n\n**Figure 8-2.** Azure Cosmos DB resource organization.\n\nThe Azure Cosmos DB query language is a simple yet powerful interface for querying JSON documents. The language supports a subset of ANSI SQL grammar and adds deep integration of JavaScript object, arrays, object construction, and function invocation.\n\n**References – Azure Cosmos DB**\n\n- Azure Cosmos DB Introduction\n  [https://learn.microsoft.com/azure/cosmos-db/introduction](/azure/cosmos-db/introduction)",
       "depth": 1,
       "metadata": {
         "file_path": "work-with-data-in-asp-net-core-apps.md",
@@ -1193,8 +1193,8 @@
       },
       "images": [
         {
-          "id": "md_modern-web-apps-azure_img029",
-          "local_path": "images/md_modern-web-apps-azure_img029.png",
+          "id": "md_modern-web-apps-azure_3abf4dc919",
+          "local_path": "images/md_modern-web-apps-azure_3abf4dc919.png",
           "alt_text": "Diagram of the Azure Cosmos DB resource hierarchy: an account contains databases (/dbs/{id}), which contain users with permissions and collections (/colls/{id}); collections hold documents with attachments plus stored procedures, triggers, and user-defined functions.",
           "context": "markdown_ref:./media/image8-2.png"
         }
@@ -1238,7 +1238,7 @@
     },
     {
       "title": "Getting data to Blazor WebAssembly apps",
-      "content": "If you're building apps that use Blazor Server, you can use Entity Framework and other direct data access technologies as they've been discussed thus far in this chapter. However, when building Blazor WebAssembly apps, like other SPA frameworks, you will need a different strategy for data access. Typically, these applications access data and interact with the server through web API endpoints.\n\nIf the data or operations being performed are sensitive, be sure to review the section on security in the [previous chapter](develop-asp-net-core-mvc-apps.md) and protect your APIs against unauthorized access.\n\nYou'll find an example of a Blazor WebAssembly app in the [eShopOnWeb reference application](https://github.com/dotnet-architecture/eShopOnWeb), in the BlazorAdmin project. This project is hosted within the eShopOnWeb Web project, and allows users in the Administrators group to manage the items in the store. You can see a screenshot of the application in Figure 8-3.\n\n[IMAGE: md_modern-web-apps-azure_img030]\n\n**Figure 8-3.** eShopOnWeb Catalog Admin Screenshot.\n\nWhen fetching data from web APIs within a Blazor WebAssembly app, you just use an instance of `HttpClient` as you would in any .NET application. The basic steps involved are to create the request to send (if necessary, usually for POST or PUT requests), await the request itself, verify the status code, and deserialize the response. If you're going to make many requests to a given set of APIs, it's a good idea to encapsulate your APIs and configure the `HttpClient` base address centrally. This way, if you need to adjust any of these settings between environments, you can make the changes in just one place. You should add support for this service in your `Program.Main`:\n\n```csharp\nbuilder.Services.AddScoped(sp => new HttpClient\n  {\n    BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)\n  });\n```\n\nIf you need to access services securely, you should access a secure token and configure the `HttpClient` to pass this token as an Authentication header with every request:\n\n```csharp\n_httpClient.DefaultRequestHeaders.Authorization =\n  new AuthenticationHeaderValue(\"Bearer\", token);\n```\n\nThis activity can be done from any component that has the `HttpClient` injected into it, provided that `HttpClient` wasn't added to the application's services with a `Transient` lifetime. Every reference to `HttpClient` in the application references the same instance, so changes to it in one component flow through the entire application. A good place to perform this authentication check (followed by specifying the token) is in a shared component like the main navigation for the site. Learn more about this approach in the `BlazorAdmin` project in the [eShopOnWeb reference application](https://github.com/dotnet-architecture/eShopOnWeb).\n\nOne benefit of Blazor WebAssembly over traditional JavaScript SPAs is that you don't need to keep copies of your data transfer objects(DTOs) synchronized. Your Blazor WebAssembly project and your web API project can both share the same DTOs in a common shared project. This approach eliminates some of the friction involved in developing SPAs.\n\nTo quickly get data from an API endpoint, you can use the built-in helper method, `GetFromJsonAsync`. There are similar methods for POST, PUT, etc. The following shows how to get a CatalogItem from an API endpoint using a configured `HttpClient` in a Blazor WebAssembly app:\n\n```csharp\nvar item = await _httpClient.GetFromJsonAsync<CatalogItem>($\"catalog-items/{id}\");\n```\n\nOnce you have the data you need, you'll typically track changes locally. When you want to make updates to the backend data store, you'll call additional web APIs for this purpose.\n\n**References – Blazor Data**\n\n- Call a web API from ASP.NET Core Blazor\n  [https://learn.microsoft.com/aspnet/core/blazor/call-web-api](/aspnet/core/blazor/call-web-api)\n\n>[!div class=\"step-by-step\"]\n>[Previous](develop-asp-net-core-mvc-apps.md)\n>[Next](test-asp-net-core-mvc-apps.md)",
+      "content": "If you're building apps that use Blazor Server, you can use Entity Framework and other direct data access technologies as they've been discussed thus far in this chapter. However, when building Blazor WebAssembly apps, like other SPA frameworks, you will need a different strategy for data access. Typically, these applications access data and interact with the server through web API endpoints.\n\nIf the data or operations being performed are sensitive, be sure to review the section on security in the previous chapter and protect your APIs against unauthorized access.\n\nYou'll find an example of a Blazor WebAssembly app in the [eShopOnWeb reference application](https://github.com/dotnet-architecture/eShopOnWeb), in the BlazorAdmin project. This project is hosted within the eShopOnWeb Web project, and allows users in the Administrators group to manage the items in the store. You can see a screenshot of the application in Figure 8-3.\n\n[IMAGE: md_modern-web-apps-azure_0b56ac7498]\n\n**Figure 8-3.** eShopOnWeb Catalog Admin Screenshot.\n\nWhen fetching data from web APIs within a Blazor WebAssembly app, you just use an instance of `HttpClient` as you would in any .NET application. The basic steps involved are to create the request to send (if necessary, usually for POST or PUT requests), await the request itself, verify the status code, and deserialize the response. If you're going to make many requests to a given set of APIs, it's a good idea to encapsulate your APIs and configure the `HttpClient` base address centrally. This way, if you need to adjust any of these settings between environments, you can make the changes in just one place. You should add support for this service in your `Program.Main`:\n\n```csharp\nbuilder.Services.AddScoped(sp => new HttpClient\n  {\n    BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)\n  });\n```\n\nIf you need to access services securely, you should access a secure token and configure the `HttpClient` to pass this token as an Authentication header with every request:\n\n```csharp\n_httpClient.DefaultRequestHeaders.Authorization =\n  new AuthenticationHeaderValue(\"Bearer\", token);\n```\n\nThis activity can be done from any component that has the `HttpClient` injected into it, provided that `HttpClient` wasn't added to the application's services with a `Transient` lifetime. Every reference to `HttpClient` in the application references the same instance, so changes to it in one component flow through the entire application. A good place to perform this authentication check (followed by specifying the token) is in a shared component like the main navigation for the site. Learn more about this approach in the `BlazorAdmin` project in the [eShopOnWeb reference application](https://github.com/dotnet-architecture/eShopOnWeb).\n\nOne benefit of Blazor WebAssembly over traditional JavaScript SPAs is that you don't need to keep copies of your data transfer objects(DTOs) synchronized. Your Blazor WebAssembly project and your web API project can both share the same DTOs in a common shared project. This approach eliminates some of the friction involved in developing SPAs.\n\nTo quickly get data from an API endpoint, you can use the built-in helper method, `GetFromJsonAsync`. There are similar methods for POST, PUT, etc. The following shows how to get a CatalogItem from an API endpoint using a configured `HttpClient` in a Blazor WebAssembly app:\n\n```csharp\nvar item = await _httpClient.GetFromJsonAsync<CatalogItem>($\"catalog-items/{id}\");\n```\n\nOnce you have the data you need, you'll typically track changes locally. When you want to make updates to the backend data store, you'll call additional web APIs for this purpose.\n\n**References – Blazor Data**\n\n- Call a web API from ASP.NET Core Blazor\n  [https://learn.microsoft.com/aspnet/core/blazor/call-web-api](/aspnet/core/blazor/call-web-api)\n\n>[!div class=\"step-by-step\"]\n>Previous\n>Next",
       "depth": 1,
       "metadata": {
         "file_path": "work-with-data-in-asp-net-core-apps.md",
@@ -1246,8 +1246,8 @@
       },
       "images": [
         {
-          "id": "md_modern-web-apps-azure_img030",
-          "local_path": "images/md_modern-web-apps-azure_img030.jpg",
+          "id": "md_modern-web-apps-azure_0b56ac7498",
+          "local_path": "images/md_modern-web-apps-azure_0b56ac7498.jpg",
           "alt_text": "Browser screenshot of the eShopOnWeb Admin 'Manage Product Catalog' page (a Blazor admin app) listing catalog items with type, brand, name, price, and Edit/Delete buttons, plus a Create New button.",
           "context": "markdown_ref:./media/image8-3.jpg"
         }
@@ -1259,12 +1259,12 @@
     "total_tokens": 28145,
     "total_images": 31,
     "file_count": 8,
-    "extracted_at": "2026-06-10T18:42:09.251339+00:00"
+    "extracted_at": "2026-07-05T22:15:32.260268+00:00"
   },
   "images": [
     {
-      "id": "md_modern-web-apps-azure_img000",
-      "local_path": "images/md_modern-web-apps-azure_img000.png",
+      "id": "md_modern-web-apps-azure_d3eecac937",
+      "local_path": "images/md_modern-web-apps-azure_d3eecac937.png",
       "mime_type": "image/png",
       "size_bytes": 43320,
       "width": 0,
@@ -1273,8 +1273,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img001",
-      "local_path": "images/md_modern-web-apps-azure_img001.png",
+      "id": "md_modern-web-apps-azure_307c44779a",
+      "local_path": "images/md_modern-web-apps-azure_307c44779a.png",
       "mime_type": "image/png",
       "size_bytes": 78453,
       "width": 0,
@@ -1283,8 +1283,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img002",
-      "local_path": "images/md_modern-web-apps-azure_img002.png",
+      "id": "md_modern-web-apps-azure_c2fd5a1eca",
+      "local_path": "images/md_modern-web-apps-azure_c2fd5a1eca.png",
       "mime_type": "image/png",
       "size_bytes": 66353,
       "width": 0,
@@ -1293,8 +1293,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img003",
-      "local_path": "images/md_modern-web-apps-azure_img003.png",
+      "id": "md_modern-web-apps-azure_6d7265d893",
+      "local_path": "images/md_modern-web-apps-azure_6d7265d893.png",
       "mime_type": "image/png",
       "size_bytes": 127721,
       "width": 0,
@@ -1303,8 +1303,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img004",
-      "local_path": "images/md_modern-web-apps-azure_img004.png",
+      "id": "md_modern-web-apps-azure_ba12f44db4",
+      "local_path": "images/md_modern-web-apps-azure_ba12f44db4.png",
       "mime_type": "image/png",
       "size_bytes": 52846,
       "width": 0,
@@ -1313,8 +1313,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img005",
-      "local_path": "images/md_modern-web-apps-azure_img005.png",
+      "id": "md_modern-web-apps-azure_18eb17065a",
+      "local_path": "images/md_modern-web-apps-azure_18eb17065a.png",
       "mime_type": "image/png",
       "size_bytes": 123935,
       "width": 0,
@@ -1323,8 +1323,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img006",
-      "local_path": "images/md_modern-web-apps-azure_img006.png",
+      "id": "md_modern-web-apps-azure_c08be77e17",
+      "local_path": "images/md_modern-web-apps-azure_c08be77e17.png",
       "mime_type": "image/png",
       "size_bytes": 17025,
       "width": 0,
@@ -1333,8 +1333,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_modern-web-apps-azure_img007",
-      "local_path": "images/md_modern-web-apps-azure_img007.png",
+      "id": "md_modern-web-apps-azure_be21d93bc5",
+      "local_path": "images/md_modern-web-apps-azure_be21d93bc5.png",
       "mime_type": "image/png",
       "size_bytes": 31333,
       "width": 0,
@@ -1343,8 +1343,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img008",
-      "local_path": "images/md_modern-web-apps-azure_img008.png",
+      "id": "md_modern-web-apps-azure_7b35b2c24a",
+      "local_path": "images/md_modern-web-apps-azure_7b35b2c24a.png",
       "mime_type": "image/png",
       "size_bytes": 96029,
       "width": 0,
@@ -1353,8 +1353,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_modern-web-apps-azure_img009",
-      "local_path": "images/md_modern-web-apps-azure_img009.png",
+      "id": "md_modern-web-apps-azure_4fc3e4df40",
+      "local_path": "images/md_modern-web-apps-azure_4fc3e4df40.png",
       "mime_type": "image/png",
       "size_bytes": 133428,
       "width": 0,
@@ -1363,8 +1363,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img010",
-      "local_path": "images/md_modern-web-apps-azure_img010.png",
+      "id": "md_modern-web-apps-azure_4fd2f38894",
+      "local_path": "images/md_modern-web-apps-azure_4fd2f38894.png",
       "mime_type": "image/png",
       "size_bytes": 33455,
       "width": 0,
@@ -1373,8 +1373,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img011",
-      "local_path": "images/md_modern-web-apps-azure_img011.png",
+      "id": "md_modern-web-apps-azure_36824a8dde",
+      "local_path": "images/md_modern-web-apps-azure_36824a8dde.png",
       "mime_type": "image/png",
       "size_bytes": 225283,
       "width": 0,
@@ -1383,8 +1383,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img012",
-      "local_path": "images/md_modern-web-apps-azure_img012.png",
+      "id": "md_modern-web-apps-azure_e8e142542b",
+      "local_path": "images/md_modern-web-apps-azure_e8e142542b.png",
       "mime_type": "image/png",
       "size_bytes": 120795,
       "width": 0,
@@ -1393,8 +1393,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img013",
-      "local_path": "images/md_modern-web-apps-azure_img013.png",
+      "id": "md_modern-web-apps-azure_0c44fd18b4",
+      "local_path": "images/md_modern-web-apps-azure_0c44fd18b4.png",
       "mime_type": "image/png",
       "size_bytes": 117282,
       "width": 0,
@@ -1403,8 +1403,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img014",
-      "local_path": "images/md_modern-web-apps-azure_img014.png",
+      "id": "md_modern-web-apps-azure_2c20694c56",
+      "local_path": "images/md_modern-web-apps-azure_2c20694c56.png",
       "mime_type": "image/png",
       "size_bytes": 215322,
       "width": 0,
@@ -1413,8 +1413,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img015",
-      "local_path": "images/md_modern-web-apps-azure_img015.png",
+      "id": "md_modern-web-apps-azure_ac483b4c57",
+      "local_path": "images/md_modern-web-apps-azure_ac483b4c57.png",
       "mime_type": "image/png",
       "size_bytes": 80419,
       "width": 0,
@@ -1423,8 +1423,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img016",
-      "local_path": "images/md_modern-web-apps-azure_img016.png",
+      "id": "md_modern-web-apps-azure_60c1908294",
+      "local_path": "images/md_modern-web-apps-azure_60c1908294.png",
       "mime_type": "image/png",
       "size_bytes": 87020,
       "width": 0,
@@ -1433,8 +1433,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img017",
-      "local_path": "images/md_modern-web-apps-azure_img017.png",
+      "id": "md_modern-web-apps-azure_ba063cf523",
+      "local_path": "images/md_modern-web-apps-azure_ba063cf523.png",
       "mime_type": "image/png",
       "size_bytes": 12715,
       "width": 0,
@@ -1443,8 +1443,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_modern-web-apps-azure_img018",
-      "local_path": "images/md_modern-web-apps-azure_img018.png",
+      "id": "md_modern-web-apps-azure_c2361963a1",
+      "local_path": "images/md_modern-web-apps-azure_c2361963a1.png",
       "mime_type": "image/png",
       "size_bytes": 10220,
       "width": 0,
@@ -1453,8 +1453,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img019",
-      "local_path": "images/md_modern-web-apps-azure_img019.png",
+      "id": "md_modern-web-apps-azure_512330c2e9",
+      "local_path": "images/md_modern-web-apps-azure_512330c2e9.png",
       "mime_type": "image/png",
       "size_bytes": 24113,
       "width": 0,
@@ -1463,8 +1463,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_modern-web-apps-azure_img020",
-      "local_path": "images/md_modern-web-apps-azure_img020.png",
+      "id": "md_modern-web-apps-azure_47c2a39fa1",
+      "local_path": "images/md_modern-web-apps-azure_47c2a39fa1.png",
       "mime_type": "image/png",
       "size_bytes": 71750,
       "width": 0,
@@ -1473,8 +1473,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img021",
-      "local_path": "images/md_modern-web-apps-azure_img021.png",
+      "id": "md_modern-web-apps-azure_92c5b81011",
+      "local_path": "images/md_modern-web-apps-azure_92c5b81011.png",
       "mime_type": "image/png",
       "size_bytes": 8468,
       "width": 0,
@@ -1483,8 +1483,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img022",
-      "local_path": "images/md_modern-web-apps-azure_img022.png",
+      "id": "md_modern-web-apps-azure_dc48f72b17",
+      "local_path": "images/md_modern-web-apps-azure_dc48f72b17.png",
       "mime_type": "image/png",
       "size_bytes": 9267,
       "width": 0,
@@ -1493,8 +1493,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_modern-web-apps-azure_img023",
-      "local_path": "images/md_modern-web-apps-azure_img023.png",
+      "id": "md_modern-web-apps-azure_133d4c47de",
+      "local_path": "images/md_modern-web-apps-azure_133d4c47de.png",
       "mime_type": "image/png",
       "size_bytes": 844923,
       "width": 0,
@@ -1503,8 +1503,8 @@
       "educational_value": "low"
     },
     {
-      "id": "md_modern-web-apps-azure_img024",
-      "local_path": "images/md_modern-web-apps-azure_img024.png",
+      "id": "md_modern-web-apps-azure_0eb9cadf27",
+      "local_path": "images/md_modern-web-apps-azure_0eb9cadf27.png",
       "mime_type": "image/png",
       "size_bytes": 44814,
       "width": 0,
@@ -1513,8 +1513,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img025",
-      "local_path": "images/md_modern-web-apps-azure_img025.png",
+      "id": "md_modern-web-apps-azure_0ea303694c",
+      "local_path": "images/md_modern-web-apps-azure_0ea303694c.png",
       "mime_type": "image/png",
       "size_bytes": 17374,
       "width": 0,
@@ -1523,8 +1523,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_modern-web-apps-azure_img026",
-      "local_path": "images/md_modern-web-apps-azure_img026.png",
+      "id": "md_modern-web-apps-azure_c905cf9d65",
+      "local_path": "images/md_modern-web-apps-azure_c905cf9d65.png",
       "mime_type": "image/png",
       "size_bytes": 62360,
       "width": 0,
@@ -1533,8 +1533,8 @@
       "educational_value": "low"
     },
     {
-      "id": "md_modern-web-apps-azure_img027",
-      "local_path": "images/md_modern-web-apps-azure_img027.png",
+      "id": "md_modern-web-apps-azure_881091692c",
+      "local_path": "images/md_modern-web-apps-azure_881091692c.png",
       "mime_type": "image/png",
       "size_bytes": 24404,
       "width": 0,
@@ -1543,8 +1543,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_modern-web-apps-azure_img028",
-      "local_path": "images/md_modern-web-apps-azure_img028.png",
+      "id": "md_modern-web-apps-azure_ff6c819ca8",
+      "local_path": "images/md_modern-web-apps-azure_ff6c819ca8.png",
       "mime_type": "image/png",
       "size_bytes": 58213,
       "width": 0,
@@ -1553,8 +1553,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_modern-web-apps-azure_img029",
-      "local_path": "images/md_modern-web-apps-azure_img029.png",
+      "id": "md_modern-web-apps-azure_3abf4dc919",
+      "local_path": "images/md_modern-web-apps-azure_3abf4dc919.png",
       "mime_type": "image/png",
       "size_bytes": 51778,
       "width": 0,
@@ -1563,8 +1563,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img030",
-      "local_path": "images/md_modern-web-apps-azure_img030.jpg",
+      "id": "md_modern-web-apps-azure_0b56ac7498",
+      "local_path": "images/md_modern-web-apps-azure_0b56ac7498.jpg",
       "mime_type": "image/jpeg",
       "size_bytes": 177012,
       "width": 0,

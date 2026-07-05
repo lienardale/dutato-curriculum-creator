@@ -24,7 +24,7 @@
     },
     {
       "title": "Strictly separate build and run stages",
-      "content": "A [codebase](./codebase) is transformed into a (non-development) deploy through three stages:\n\n* The *build stage* is a transform which converts a code repo into an executable bundle known as a *build*.  Using a version of the code at a commit specified by the deployment process, the build stage fetches vendors [dependencies](./dependencies) and compiles binaries and assets.\n* The *release stage* takes the build produced by the build stage and combines it with the deploy's current [config](./config).  The resulting *release* contains both the build and the config and is ready for immediate execution in the execution environment.\n* The *run stage* (also known as \"runtime\") runs the app in the execution environment, by launching some set of the app's [processes](./processes) against a selected release.\n\n[IMAGE: md_en_img000]\n\n**The twelve-factor app uses strict separation between the build, release, and run stages.**  For example, it is impossible to make changes to the code at runtime, since there is no way to propagate those changes back to the build stage.\n\nDeployment tools typically offer release management tools, most notably the ability to roll back to a previous release.  For example, the [Capistrano](https://github.com/capistrano/capistrano/wiki) deployment tool stores releases in a subdirectory named `releases`, where the current release is a symlink to the current release directory.  Its `rollback` command makes it easy to quickly roll back to a previous release.\n\nEvery release should always have a unique release ID, such as a timestamp of the release (such as `2011-04-06-20:32:17`) or an incrementing number (such as `v100`).  Releases are an append-only ledger and a release cannot be mutated once it is created.  Any change must create a new release.\n\nBuilds are initiated by the app's developers whenever new code is deployed.  Runtime execution, by contrast, can happen automatically in cases such as a server reboot, or a crashed process being restarted by the process manager.  Therefore, the run stage should be kept to as few moving parts as possible, since problems that prevent an app from running can cause it to break in the middle of the night when no developers are on hand.  The build stage can be more complex, since errors are always in the foreground for a developer who is driving the deploy.",
+      "content": "A [codebase](./codebase) is transformed into a (non-development) deploy through three stages:\n\n* The *build stage* is a transform which converts a code repo into an executable bundle known as a *build*.  Using a version of the code at a commit specified by the deployment process, the build stage fetches vendors [dependencies](./dependencies) and compiles binaries and assets.\n* The *release stage* takes the build produced by the build stage and combines it with the deploy's current [config](./config).  The resulting *release* contains both the build and the config and is ready for immediate execution in the execution environment.\n* The *run stage* (also known as \"runtime\") runs the app in the execution environment, by launching some set of the app's [processes](./processes) against a selected release.\n\n[IMAGE: md_en_e410262847]\n\n**The twelve-factor app uses strict separation between the build, release, and run stages.**  For example, it is impossible to make changes to the code at runtime, since there is no way to propagate those changes back to the build stage.\n\nDeployment tools typically offer release management tools, most notably the ability to roll back to a previous release.  For example, the [Capistrano](https://github.com/capistrano/capistrano/wiki) deployment tool stores releases in a subdirectory named `releases`, where the current release is a symlink to the current release directory.  Its `rollback` command makes it easy to quickly roll back to a previous release.\n\nEvery release should always have a unique release ID, such as a timestamp of the release (such as `2011-04-06-20:32:17`) or an incrementing number (such as `v100`).  Releases are an append-only ledger and a release cannot be mutated once it is created.  Any change must create a new release.\n\nBuilds are initiated by the app's developers whenever new code is deployed.  Runtime execution, by contrast, can happen automatically in cases such as a server reboot, or a crashed process being restarted by the process manager.  Therefore, the run stage should be kept to as few moving parts as possible, since problems that prevent an app from running can cause it to break in the middle of the night when no developers are on hand.  The build stage can be more complex, since errors are always in the foreground for a developer who is driving the deploy.",
       "depth": 2,
       "metadata": {
         "file_path": "build-release-run.md",
@@ -32,8 +32,8 @@
       },
       "images": [
         {
-          "id": "md_en_img000",
-          "local_path": "images/md_en_img000.png",
+          "id": "md_en_e410262847",
+          "local_path": "images/md_en_e410262847.png",
           "alt_text": "Twelve-Factor App 'build, release, run' diagram: code is transformed by a build stage and combined with config to produce a release.",
           "context": "markdown_ref:/images/release.png"
         }
@@ -41,7 +41,7 @@
     },
     {
       "title": "One codebase tracked in revision control, many deploys",
-      "content": "A twelve-factor app is always tracked in a version control system, such as [Git](http://git-scm.com/), [Mercurial](https://www.mercurial-scm.org/), or [Subversion](http://subversion.apache.org/).  A copy of the revision tracking database is known as a *code repository*, often shortened to *code repo* or just *repo*.\n\nA *codebase* is any single repo (in a centralized revision control system like Subversion), or any set of repos who share a root commit (in a decentralized revision control system like Git).\n\n[IMAGE: md_en_img001]\n\nThere is always a one-to-one correlation between the codebase and the app:\n\n* If there are multiple codebases, it's not an app -- it's a distributed system.  Each component in a distributed system is an app, and each can individually comply with twelve-factor.\n* Multiple apps sharing the same code is a violation of twelve-factor.  The solution here is to factor shared code into libraries which can be included through the [dependency manager](./dependencies).\n\nThere is only one codebase per app, but there will be many deploys of the app.  A *deploy* is a running instance of the app.  This is typically a production site, and one or more staging sites.  Additionally, every developer has a copy of the app running in their local development environment, each of which also qualifies as a deploy.\n\nThe codebase is the same across all deploys, although different versions may be active in each deploy.  For example, a developer has some commits not yet deployed to staging; staging has some commits not yet deployed to production.  But they all share the same codebase, thus making them identifiable as different deploys of the same app.",
+      "content": "A twelve-factor app is always tracked in a version control system, such as [Git](http://git-scm.com/), [Mercurial](https://www.mercurial-scm.org/), or [Subversion](http://subversion.apache.org/).  A copy of the revision tracking database is known as a *code repository*, often shortened to *code repo* or just *repo*.\n\nA *codebase* is any single repo (in a centralized revision control system like Subversion), or any set of repos who share a root commit (in a decentralized revision control system like Git).\n\n[IMAGE: md_en_e2de21a6da]\n\nThere is always a one-to-one correlation between the codebase and the app:\n\n* If there are multiple codebases, it's not an app -- it's a distributed system.  Each component in a distributed system is an app, and each can individually comply with twelve-factor.\n* Multiple apps sharing the same code is a violation of twelve-factor.  The solution here is to factor shared code into libraries which can be included through the [dependency manager](./dependencies).\n\nThere is only one codebase per app, but there will be many deploys of the app.  A *deploy* is a running instance of the app.  This is typically a production site, and one or more staging sites.  Additionally, every developer has a copy of the app running in their local development environment, each of which also qualifies as a deploy.\n\nThe codebase is the same across all deploys, although different versions may be active in each deploy.  For example, a developer has some commits not yet deployed to staging; staging has some commits not yet deployed to production.  But they all share the same codebase, thus making them identifiable as different deploys of the same app.",
       "depth": 2,
       "metadata": {
         "file_path": "codebase.md",
@@ -49,8 +49,8 @@
       },
       "images": [
         {
-          "id": "md_en_img001",
-          "local_path": "images/md_en_img001.png",
+          "id": "md_en_e2de21a6da",
+          "local_path": "images/md_en_e2de21a6da.png",
           "alt_text": "Twelve-Factor App codebase diagram showing one codebase tracked in version control mapping to many deploys: production, staging, and individual developer environments.",
           "context": "markdown_ref:/images/codebase-deploys.png"
         }
@@ -58,7 +58,7 @@
     },
     {
       "title": "Scale out via the process model",
-      "content": "Any computer program, once run, is represented by one or more processes.  Web apps have taken a variety of process-execution forms.  For example, PHP processes run as child processes of Apache, started on demand as needed by request volume.  Java processes take the opposite approach, with the JVM providing one massive uberprocess that reserves a large block of system resources (CPU and memory) on startup, with concurrency managed internally via threads.  In both cases, the running process(es) are only minimally visible to the developers of the app.\n\n[IMAGE: md_en_img002]\n\n**In the twelve-factor app, processes are a first class citizen.**  Processes in the twelve-factor app take strong cues from [the unix process model for running service daemons](https://adam.herokuapp.com/past/2011/5/9/applying_the_unix_process_model_to_web_apps/).  Using this model, the developer can architect their app to handle diverse workloads by assigning each type of work to a *process type*.  For example, HTTP requests may be handled by a web process, and long-running background tasks handled by a worker process.\n\nThis does not exclude individual processes from handling their own internal multiplexing, via threads inside the runtime VM, or the async/evented model found in tools such as [EventMachine](https://github.com/eventmachine/eventmachine), [Twisted](http://twistedmatrix.com/trac/), or [Node.js](http://nodejs.org/).  But an individual VM can only grow so large (vertical scale), so the application must also be able to span multiple processes running on multiple physical machines.\n\nThe process model truly shines when it comes time to scale out.  The [share-nothing, horizontally partitionable nature of twelve-factor app processes](./processes) means that adding more concurrency is a simple and reliable operation.  The array of process types and number of processes of each type is known as the *process formation*.\n\nTwelve-factor app processes [should never daemonize](http://dustin.github.com/2010/02/28/running-processes.html) or write PID files.  Instead, rely on the operating system's process manager (such as [systemd](https://www.freedesktop.org/wiki/Software/systemd/), a distributed process manager on a cloud platform, or a tool like [Foreman](http://blog.daviddollar.org/2011/05/06/introducing-foreman.html) in development) to manage [output streams](./logs), respond to crashed processes, and handle user-initiated restarts and shutdowns.",
+      "content": "Any computer program, once run, is represented by one or more processes.  Web apps have taken a variety of process-execution forms.  For example, PHP processes run as child processes of Apache, started on demand as needed by request volume.  Java processes take the opposite approach, with the JVM providing one massive uberprocess that reserves a large block of system resources (CPU and memory) on startup, with concurrency managed internally via threads.  In both cases, the running process(es) are only minimally visible to the developers of the app.\n\n[IMAGE: md_en_601dfaf7a0]\n\n**In the twelve-factor app, processes are a first class citizen.**  Processes in the twelve-factor app take strong cues from [the unix process model for running service daemons](https://adam.herokuapp.com/past/2011/5/9/applying_the_unix_process_model_to_web_apps/).  Using this model, the developer can architect their app to handle diverse workloads by assigning each type of work to a *process type*.  For example, HTTP requests may be handled by a web process, and long-running background tasks handled by a worker process.\n\nThis does not exclude individual processes from handling their own internal multiplexing, via threads inside the runtime VM, or the async/evented model found in tools such as [EventMachine](https://github.com/eventmachine/eventmachine), [Twisted](http://twistedmatrix.com/trac/), or [Node.js](http://nodejs.org/).  But an individual VM can only grow so large (vertical scale), so the application must also be able to span multiple processes running on multiple physical machines.\n\nThe process model truly shines when it comes time to scale out.  The [share-nothing, horizontally partitionable nature of twelve-factor app processes](./processes) means that adding more concurrency is a simple and reliable operation.  The array of process types and number of processes of each type is known as the *process formation*.\n\nTwelve-factor app processes [should never daemonize](http://dustin.github.com/2010/02/28/running-processes.html) or write PID files.  Instead, rely on the operating system's process manager (such as [systemd](https://www.freedesktop.org/wiki/Software/systemd/), a distributed process manager on a cloud platform, or a tool like [Foreman](http://blog.daviddollar.org/2011/05/06/introducing-foreman.html) in development) to manage [output streams](./logs), respond to crashed processes, and handle user-initiated restarts and shutdowns.",
       "depth": 2,
       "metadata": {
         "file_path": "concurrency.md",
@@ -66,8 +66,8 @@
       },
       "images": [
         {
-          "id": "md_en_img002",
-          "local_path": "images/md_en_img002.png",
+          "id": "md_en_601dfaf7a0",
+          "local_path": "images/md_en_601dfaf7a0.png",
           "alt_text": "Twelve-Factor App process-model chart plotting scale (running processes) against workload diversity (process types), showing web, worker, and clock process types scaled to different counts (e.g., four workers, two web processes, one clock).",
           "context": "markdown_ref:/images/process-types.png"
         }
@@ -150,12 +150,12 @@
     "total_tokens": 4302,
     "total_images": 3,
     "file_count": 13,
-    "extracted_at": "2026-06-10T18:42:09.189414+00:00"
+    "extracted_at": "2026-07-05T22:15:31.698278+00:00"
   },
   "images": [
     {
-      "id": "md_en_img000",
-      "local_path": "images/md_en_img000.png",
+      "id": "md_en_e410262847",
+      "local_path": "images/md_en_e410262847.png",
       "mime_type": "image/png",
       "size_bytes": 14583,
       "width": 0,
@@ -164,8 +164,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_en_img001",
-      "local_path": "images/md_en_img001.png",
+      "id": "md_en_e2de21a6da",
+      "local_path": "images/md_en_e2de21a6da.png",
       "mime_type": "image/png",
       "size_bytes": 25403,
       "width": 0,
@@ -174,8 +174,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_en_img002",
-      "local_path": "images/md_en_img002.png",
+      "id": "md_en_601dfaf7a0",
+      "local_path": "images/md_en_601dfaf7a0.png",
       "mime_type": "image/png",
       "size_bytes": 21116,
       "width": 0,

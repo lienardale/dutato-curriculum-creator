@@ -276,14 +276,6 @@
     },
     {
       "source": "/home/user/dutato-curriculum-creator/input/clean-architecture",
-      "title": "1 - Architecture"
-    },
-    {
-      "source": "/home/user/dutato-curriculum-creator/input/clean-architecture",
-      "title": "2 - Architecture"
-    },
-    {
-      "source": "/home/user/dutato-curriculum-creator/input/clean-architecture",
       "title": "Clean Embedded Architecture"
     },
     {
@@ -550,8 +542,8 @@
         "Foundations of Software Architecture",
         "A Tour of Architecture Styles"
       ],
-      "chunk_index": 2,
-      "token_count": 383
+      "chunk_index": 3,
+      "token_count": 207
     },
     {
       "topic_path": [
@@ -588,19 +580,11 @@
     {
       "topic_path": [
         "Clean Architecture",
-        "Layers and Decoupling"
-      ],
-      "chunk_index": 1,
-      "token_count": 237
-    },
-    {
-      "topic_path": [
-        "Clean Architecture",
         "The Clean Architecture Pattern",
         "A Clean Web Application Example"
       ],
-      "chunk_index": 0,
-      "token_count": 1649
+      "chunk_index": 2,
+      "token_count": 262
     },
     {
       "topic_path": [
@@ -613,97 +597,12 @@
     },
     {
       "topic_path": [
-        "Architecture Styles in Practice",
-        "Monoliths and Layered Applications"
-      ],
-      "chunk_index": 1,
-      "token_count": 225
-    },
-    {
-      "topic_path": [
-        "Architecture Styles in Practice",
-        "N-Tier Architecture Style"
-      ],
-      "chunk_index": 1,
-      "token_count": 270
-    },
-    {
-      "topic_path": [
-        "Architecture Styles in Practice",
-        "Event-Driven Architecture Style"
-      ],
-      "chunk_index": 1,
-      "token_count": 1548
-    },
-    {
-      "topic_path": [
-        "Web Application Architecture",
-        "Modern Web App Characteristics"
-      ],
-      "chunk_index": 0,
-      "token_count": 1511
-    },
-    {
-      "topic_path": [
-        "Web Application Architecture",
-        "Front-End Architecture",
-        "Client-Side Web Technologies"
-      ],
-      "chunk_index": 0,
-      "token_count": 1556
-    },
-    {
-      "topic_path": [
-        "Web Application Architecture",
-        "Server-Side Application Patterns",
-        "MVC and Razor Pages"
-      ],
-      "chunk_index": 2,
-      "token_count": 249
-    },
-    {
-      "topic_path": [
-        "API Design and Integration",
-        "HTTP and Web Protocols"
-      ],
-      "chunk_index": 1,
-      "token_count": 396
-    },
-    {
-      "topic_path": [
-        "API Design and Integration",
-        "RESTful API Design",
-        "Advanced API Capabilities"
-      ],
-      "chunk_index": 1,
-      "token_count": 417
-    },
-    {
-      "topic_path": [
-        "API Design and Integration",
-        "RESTful API Design",
-        "API Versioning"
-      ],
-      "chunk_index": 0,
-      "token_count": 1654
-    },
-    {
-      "topic_path": [
         "API Design and Integration",
         "Web API Implementation",
-        "Request Processing Practices"
+        "Exceptions, Caching, and Concurrency"
       ],
-      "chunk_index": 1,
-      "token_count": 353
-    },
-    {
-      "topic_path": [
-        "Scalability and Distributed Systems",
-        "Database Scaling",
-        "Operating Partitioned Systems"
-      ],
-      "chunk_index": 1,
-      "token_count": 235
+      "chunk_index": 3,
+      "token_count": 332
     },
     {
       "topic_path": [
@@ -716,15 +615,6 @@
     },
     {
       "topic_path": [
-        "Scalability and Distributed Systems",
-        "Asynchronous Work",
-        "Background Job Design"
-      ],
-      "chunk_index": 0,
-      "token_count": 1599
-    },
-    {
-      "topic_path": [
         "Microservices",
         "Microservices Architecture Style"
       ],
@@ -733,62 +623,18 @@
     },
     {
       "topic_path": [
-        "Microservices",
-        "Containers and Orchestration"
-      ],
-      "chunk_index": 0,
-      "token_count": 1683
-    },
-    {
-      "topic_path": [
-        "Cloud-Native Operations",
-        "The Twelve-Factor App",
-        "Processes Through Admin Processes"
-      ],
-      "chunk_index": 1,
-      "token_count": 1617
-    },
-    {
-      "topic_path": [
-        "Cloud-Native Operations",
-        "CI/CD and Deployment",
-        "CI/CD for Microservices"
-      ],
-      "chunk_index": 1,
-      "token_count": 409
-    },
-    {
-      "topic_path": [
-        "Cloud-Native Operations",
-        "CI/CD and Deployment",
-        "Deployment Strategies"
-      ],
-      "chunk_index": 1,
-      "token_count": 240
-    },
-    {
-      "topic_path": [
         "Cloud-Native Operations",
         "Monitoring and Observability",
-        "Performance and Security Monitoring"
+        "Instrumentation"
       ],
-      "chunk_index": 1,
-      "token_count": 257
-    },
-    {
-      "topic_path": [
-        "Cloud-Native Operations",
-        "Monitoring and Observability",
-        "SLA, Usage, and Audit Monitoring"
-      ],
-      "chunk_index": 1,
-      "token_count": 459
+      "chunk_index": 2,
+      "token_count": 1523
     }
   ],
   "totals": {
-    "sections": 805,
-    "sections_used": 689,
-    "chunks": 152,
+    "sections": 803,
+    "sections_used": 690,
+    "chunks": 164,
     "tokens": 166301
   }
 }

@@ -1,9 +1,10 @@
 # Pipeline Feedback — Software Architecture Curriculum Run (2026-06)
 
 Findings from operating the full pipeline end-to-end on GitHub-hosted sources
-(7 markdown repos → 9 depth-0 topics, 94 leaves, 152 chunks / 166k tokens,
-121 images, exercises, review, 3 condensed variants). Each finding lists
-severity, what happened, and what was done or is recommended.
+(7 markdown repos → 9 depth-0 topics, 94 leaves, 164 chunks / 166k tokens,
+115 images, 62 exercises, review, 3 condensed variants), then iterating a
+second time to fix what the run surfaced. Each finding lists severity, what
+happened, and what was done or is recommended.
 
 ## Fixed during this run (committed)
 
@@ -35,9 +36,8 @@ refs, and per-source collision-qualified titles (see #4).
   equivalent of book-meta — were kept and polluted extraction (49 of the 57
   duplicate-title warnings came from them).
 **Fix:** dash-aware prefix patterns + doc-nav titles added to `EXACT_META`.
-Remaining (not fixed): `Part 5.1 - Architecture` still normalizes to
-`1 - Architecture` (multi-part numbering with dash); pattern needs
-`Part\s+[IVX0-9]+(\.\d+)?`.
+Second iteration: multi-part numbering (`Part V - 1 - Architecture`,
+`Part 5.1 - X`) now strips fully as well.
 
 ### 4. Title-keyed matching breaks on doc-site sources (high) — FIXED
 The pipeline's core assumption — section titles are unique keys — fails for
@@ -56,7 +56,7 @@ initially; chunker's last-wins indexing silently drops earlier sections).
 same qualification helper; cross-source duplicates could also be flagged as
 errors (not warnings) when actually referenced ambiguously.
 
-## Open findings (recommended, not implemented)
+## Fixed in the second iteration (committed)
 
 ### 5. Image ids are positional and unstable across re-extraction (high)
 Image ids (`md_<source>_imgNNN`) are sequence numbers. Excluding one source
@@ -65,23 +65,47 @@ twice in this run — which silently misaligned the already-authored
 `image_analysis.json` descriptions (wrong description on the wrong image, no
 error anywhere). Had to be detected by hand via `size_bytes` comparison and
 repaired with remapping scripts.
-**Recommendation:** derive image ids from a content hash (e.g.
-`md_<source>_<sha1[:8]>`), so re-extraction is stable and stale analysis
-entries are detectable. Alternatively store `size_bytes`+source-file in the
-extracted JSON and have `analyze_images.py prepare` reconcile by content.
+**Fixed:** the markdown extractor now derives ids from a content hash
+(`md_<source>_<sha1[:10]>`) — stable across re-extraction and deduplicating
+byte-identical images (6 duplicates removed in this curriculum). Other
+extractors still use positional ids and should adopt the same scheme.
 
 ### 6. `analyze_images.py prepare` destroys existing work (medium)
 `prepare` rebuilds `image_analysis.json` from scratch, wiping descriptions
 already authored. Combined with #5 this makes iterative extraction risky.
-**Recommendation:** `prepare` should merge — keep existing entries whose
-id+size still match, list only new/changed images as needing analysis (the
-stage is documented as resumable; currently it isn't).
+**Fixed:** `prepare` now preserves analysis fields for entries whose id and
+size_bytes still match, so re-running it only queues new/changed images.
 
 ### 7. Chunker emits small tail chunks (low)
 30/152 chunks fell outside the 500–1500 soft range; most are topic *tail*
 chunks (202–484 tokens) left over after the chunker fills earlier chunks.
-**Recommendation:** when a topic's final chunk lands under `min_tokens`,
-merge it into the previous chunk if the combined size stays ≤ hard max.
+**Fixed:** `shared/chunk.py` now balances chunk sizes — when a text must
+split, it targets `total/⌈total/max⌉` tokens per chunk instead of filling
+to max and leaving a small remainder. Out-of-soft-range chunks dropped from
+30 to 13 (the rest are single-chunk leaves inherently below 500 tokens).
+
+### 9. Orphan-section warnings are all-or-nothing (medium)
+131 of 132 structure-stage warnings were `structure.orphan_section` for
+*deliberately* excluded sections (Azure product walkthroughs, interview-prep
+meta, big-data/embedded out of scope). Real misses (the microservices
+design-patterns catalog, `Collect usage data`) were buried in the noise —
+one was nearly shipped missing.
+**Fixed:** the manifest now supports
+`"excluded_sections": [{"match": "<fnmatch pattern | file.json::pattern>",
+"reason": "..."}]`. `validate.py` skips acknowledged orphans, warns on
+`structure.stale_exclusion` (pattern matching nothing — this immediately
+caught two entries invalidated by the Part-prefix fix) and on
+`structure.excluded_but_referenced` (excluded yet mapped). Warning noise
+dropped from 182 to 27, all justified in review.json.
+
+### 11. Relative markdown links survive into chunks (low)
+Chunk content kept source-repo-relative links
+(`[actor](part-3-design-principles.md#chapter-7...)`) that are dead in the
+app. **Fixed:** the markdown extractor de-links relative `.md` and
+same-page `#anchor` references, keeping the anchor text; http(s) links are
+left intact.
+
+## Still open (recommended, not implemented)
 
 ### 8. Markdown extractor doesn't download remote images (low)
 `![...](https://...)` refs (e.g. system-design-primer's imgur diagrams,
@@ -91,18 +115,6 @@ download images.
 **Recommendation:** optional `--download-remote-images` reusing
 `extractors/web.py:_download_image`.
 
-### 9. Orphan-section warnings are all-or-nothing (medium)
-131 of 132 structure-stage warnings were `structure.orphan_section` for
-*deliberately* excluded sections (Azure product walkthroughs, interview-prep
-meta, big-data/embedded out of scope). Real misses (the microservices
-design-patterns catalog, `Collect usage data`) were buried in the noise —
-one was nearly shipped missing.
-**Recommendation:** support an explicit exclusion list (e.g.
-`"excluded_sections"` in structure.json or manifest, with reasons);
-validator then warns only on *unacknowledged* orphans and errors on
-acknowledged-but-referenced ones. This mirrors how `gaps[].resolution`
-already works in exploration.json.
-
 ### 10. Heading-only sections are dropped silently (low)
 Container headings with no body (e.g. the `## Chapter 10 - The Interface
 Segregation Principle` heading whose content lives entirely in
@@ -111,12 +123,6 @@ markdown extractor (they can't be referenced), losing the canonical names.
 **Recommendation:** fold a heading-only container's title into its first
 child (`"ISP: ISP at the programming language level"`) or keep it as
 metadata on the children.
-
-### 11. Relative markdown links survive into chunks (low)
-Chunk content keeps source-repo-relative links
-(`[actor](part-3-design-principles.md#chapter-7...)`) that are dead in the
-app. **Recommendation:** the markdown extractor should de-link relative
-`.md` references (keep the anchor text), the way it already handles images.
 
 ### 12. Whole-pipeline ergonomics (informational)
 - The environment's network allowlist blocked every non-GitHub doc site
@@ -136,10 +142,10 @@ app. **Recommendation:** the markdown extractor should de-link relative
 
 | Stage | Result |
 |---|---|
-| Sources | 7 markdown repos (GitHub), 826 sections after normalization |
-| Images | 121 extracted, all described, 106 attached to chunks |
+| Sources | 7 markdown repos (GitHub), 803 sections after normalization |
+| Images | 115 extracted (content-hash ids, 6 duplicates deduped), all described |
 | Structure | 9 depth-0 topics, 94 leaves, 0 validation errors |
-| Chunks | 152 chunks, 166,301 tokens, avg 1,094/chunk, 0 unmatched refs |
+| Chunks | 164 balanced chunks, 166,301 tokens, avg 1,014/chunk, 0 unmatched refs |
 | Exercises | 62 exercises on 59/94 leaves (3 progressive hints, 2-4 mistakes each) |
-| Review | approved; 0 errors, 182 warnings — all justified in review.json |
+| Review | approved; 0 errors, 27 warnings (was 182 before the acknowledged-orphan mechanism) — all justified in review.json |
 | Variants | detailed 9.1x, classic 101.4x, core 385x compression |

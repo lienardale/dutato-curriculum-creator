@@ -2,41 +2,58 @@
   "total_topics": 125,
   "depth0_topics": 9,
   "leaf_topics": 94,
-  "total_chunks": 152,
+  "total_chunks": 164,
   "total_exercises": 62,
   "total_tokens": 166301,
-  "avg_tokens_per_chunk": 1094,
-  "chunks_per_topic": {"min": 1, "max": 3, "avg": 1.6},
+  "avg_tokens_per_chunk": 1014,
+  "chunks_per_topic": {
+    "min": 1,
+    "max": 4,
+    "avg": 1.7
+  },
   "empty_topics": [],
   "orphan_chunks": 0,
   "objectives_coverage": "125/125 topics have learning objectives (leaves 2-5, parents 1-2)",
   "prerequisites_count": 11,
   "exercises_coverage": "59/94 leaf topics have exercises (62 total); definitional/reference leaves skipped per rubric",
   "level_distribution": "3 Level-1, 3 Level-2, 3 Level-3 depth-0 topics (33/33/33 vs 30/40/30 target)",
-  "images": "121 images described and applied; 106 attached to chunks (15 belong to deliberately excluded sections)",
+  "images": "115 images (content-hash ids, 6 byte-identical duplicates deduped) described and applied; attached to chunks",
   "variants": {
-    "detailed": {"topics": 31, "chunks": 26, "tokens": 18269, "ratio": "9.1x"},
-    "classic": {"topics": 5, "chunks": 5, "tokens": 1640, "ratio": "101.4x"},
-    "core": {"topics": 2, "chunks": 2, "tokens": 432, "ratio": "385x"}
+    "detailed": {
+      "topics": 31,
+      "chunks": 27,
+      "tokens": 18269,
+      "ratio": "9.1x"
+    },
+    "classic": {
+      "topics": 5,
+      "chunks": 5,
+      "tokens": 1640,
+      "ratio": "101.4x"
+    },
+    "core": {
+      "topics": 2,
+      "chunks": 2,
+      "tokens": 432,
+      "ratio": "385x"
+    }
   },
   "validation": {
-    "checked_at": "2026-06-10T16:35:00+00:00",
+    "checked_at": "2026-06-10T18:05:00+00:00",
     "stage": "all",
     "errors": 0,
-    "warnings": 182,
+    "warnings": 27,
     "by_check": {
-      "structure.orphan_section": 131,
-      "chunks.token_range": 40,
-      "extracted.duplicate_title": 10,
+      "chunks.token_range": 14,
+      "extracted.duplicate_title": 12,
       "structure.giant_topic": 1
     }
   },
   "quality_concerns": [
-    "structure.orphan_section (131): all deliberate exclusions, audited individually — Azure product walkthroughs (Azure Managed Redis recipes, Azure Monitor autoscale, APIM, compute-platform comparisons, background-job hosting menus), system-design-primer interview-prep meta (study guide, question banks, Anki, company blogs, license), big-data/big-compute and embedded-architecture pages (outside the web-focused scope), and docfx description stubs (4-8 words). Two genuine misses found during the audit (microservices design-patterns catalog, 'Collect usage data') were added to the structure before approval.",
-    "chunks.token_range (40): 30 extensive + 10 variant chunks outside the soft range; all within hard bounds. Mostly topic tail chunks (202-484 tokens) produced by the chunker's fill-then-remainder behaviour, plus a few 1500-1700 token chunks where a single section exceeded the target. Content quality unaffected; chunker improvement suggested in PIPELINE_FEEDBACK.md #7.",
-    "extracted.duplicate_title (10): cross-source duplicates ('Security', 'Entities', 'SQL or NoSQL', 'Introduction', 'Microservices', 'Deployment', 'Other considerations', 'Introduction: Challenges'); every structure reference to these uses the new file-qualified 'file.json::Title' form, so chunking resolved them unambiguously (chunk_report: 0 unmatched).",
-    "structure.giant_topic (1): 'SLA, Usage, and Audit Monitoring' maps 11 source sections — kept together because the SLA/audit/usage trio is one coherent monitoring block of short sections (~1950 tokens total).",
-    "Known content nits: chunk text retains relative markdown links from source repos (e.g. '[actor](part-3-design-principles.md#...)') which will be dead links in the app; the markdown extractor could strip or de-link these (PIPELINE_FEEDBACK.md). Some Clean Architecture summary subsections are inherently terse (the source is a summary); objectives for those leaves were scoped to what the text supports."
+    "chunks.token_range (14): 11 are single-chunk leaves whose total content is below 500 tokens (e.g. 'Case Study: Video Sales' at 202) — splitting cannot fix an inherently small leaf; 2 chunks at 1523 slightly exceed 1500 due to heading-with-body keeping; balanced chunking (this iteration) already reduced the count from 30.",
+    "extracted.duplicate_title (12): cross-source duplicates plus two 13-word 'Architecture' part-intro stubs in clean-architecture created by the Part-prefix normalization; every structure reference to a duplicated title uses the file-qualified 'file.json::Title' form, so chunking resolves unambiguously (chunk_report: 0 unmatched).",
+    "structure.giant_topic (1): 'SLA, Usage, and Audit Monitoring' maps 11 source sections — kept together as one coherent monitoring block (~1950 tokens).",
+    "The previous run's 131 orphan-section warnings are now acknowledged via manifest 'excluded_sections' (129 entries with reasons); validate.py flags only unacknowledged orphans and stale exclusion patterns."
   ],
   "judgment_checks": {
     "objective_answerability": "Sampled leaves across all 9 depth-0 topics (including the smallest: 'Functional Programming and Immutability', 'Case Study: Video Sales') — objectives answerable from attached chunks; objectives were authored directly from the section map.",
@@ -45,5 +62,5 @@
     "naming": "Topic titles are noun phrases without chapter numbers or source branding; cross-source generic titles disambiguated."
   },
   "approved": true,
-  "reviewed_at": "2026-06-10T16:40:00+00:00"
+  "reviewed_at": "2026-06-10T18:10:00+00:00"
 }

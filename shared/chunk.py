@@ -155,6 +155,12 @@ def chunk_text(
     if split_after_headings:
         _split_set = {h.strip().lower() for h in split_after_headings}
 
+    # Balance chunk sizes: filling every chunk to max_tokens leaves the
+    # remainder as an undersized tail (e.g. 1700 tokens → 1500 + 200).
+    # Aim for equal shares instead (1700 → ~850 + ~850).
+    n_chunks = -(-total_tokens // max_tokens)  # ceil
+    target_tokens = max(min_tokens, -(-total_tokens // n_chunks))
+
     paragraphs = split_into_paragraphs(text)
     chunks: list[dict] = []
     current_parts: list[str] = []
@@ -194,9 +200,10 @@ def chunk_text(
             })
             continue
 
-        # If adding this paragraph exceeds max, start new chunk —
-        # UNLESS the last buffered part is a heading (keep heading with body)
-        if current_tokens + para_tokens > max_tokens and current_tokens >= min_tokens:
+        # If adding this paragraph exceeds the balanced target, start a new
+        # chunk — UNLESS the last buffered part is a heading (keep heading
+        # with body)
+        if current_tokens + para_tokens > target_tokens and current_tokens >= min_tokens:
             if not (current_parts and _is_heading(current_parts[-1])):
                 _flush()
 

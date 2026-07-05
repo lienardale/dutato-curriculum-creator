@@ -1,17 +1,29 @@
 {
   "summary": {
-    "checked_at": "2026-06-10T19:07:22+00:00",
+    "checked_at": "2026-07-05T22:16:41+00:00",
     "stage": "all",
     "errors": 0,
-    "warnings": 182,
+    "warnings": 29,
     "by_check": {
-      "chunks.token_range": 40,
-      "extracted.duplicate_title": 10,
+      "chunks.token_range": 14,
+      "extracted.duplicate_title": 12,
       "structure.giant_topic": 1,
-      "structure.orphan_section": 131
+      "structure.stale_exclusion": 2
     }
   },
   "findings": [
+    {
+      "check_id": "extracted.duplicate_title",
+      "severity": "warning",
+      "location": "extracted/clean-architecture.json sections[57]",
+      "message": "Title 'Architecture' also appears in architecture-styles.json — title-keyed matching (chunker, condense) is ambiguous"
+    },
+    {
+      "check_id": "extracted.duplicate_title",
+      "severity": "warning",
+      "location": "extracted/clean-architecture.json sections[95]",
+      "message": "Title 'Architecture' also appears in architecture-styles.json — title-keyed matching (chunker, condense) is ambiguous"
+    },
     {
       "check_id": "extracted.duplicate_title",
       "severity": "warning",
@@ -79,790 +91,16 @@
       "message": "Leaf maps 11 source sections (max 10 recommended)"
     },
     {
-      "check_id": "structure.orphan_section",
+      "check_id": "structure.stale_exclusion",
       "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Api Implementation: Introduction' is referenced by no topic — its content will be silently dropped at chunking"
+      "location": "manifest.json",
+      "message": "excluded_sections pattern '1 - Architecture' matches no orphan section — remove it or fix the pattern"
     },
     {
-      "check_id": "structure.orphan_section",
+      "check_id": "structure.stale_exclusion",
       "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Using Azure API Management' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Monitoring a web API directly' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Monitoring a web API through the API Management Service' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Configure autoscaling for an Azure solution' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Use the Azure Monitor autoscale feature' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Background Jobs: Introduction' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Hosting environment' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Functions' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Functions considerations' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Container Apps' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Container Apps considerations' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'AKS' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'AKS considerations' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Batch' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Batch considerations' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Virtual Machines' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Virtual Machines considerations' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'App Service WebJobs' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'App Service WebJobs considerations' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Implement caching with Azure Managed Redis' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Connect and configure client applications' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Choose a .NET client library' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Implement caching patterns' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Implement the cache-aside pattern' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Perform atomic and batch operations' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Perform fire and forget cache operations' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Specify automatically expiring keys' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Cross-correlate cached items' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Find recently accessed items' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Implement a leaderboard' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Add items to a leaderboard' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Retrieve ranked items' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Retrieve top-N items' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Retrieve items by score range' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Caching session state and HTML output' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'ASP.NET Core' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section '.NET Aspire integration' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'High availability, scalability, and partitioning' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Active geo-replication' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Data persistence' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Protect cached data in Azure Managed Redis' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Serialization considerations' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Message Encode: Introduction' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Monitoring: Introduction' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Issue tracking' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Requirements for issue tracking' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Collect issue-tracking data' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Analyze issue-tracking data' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Tracing operations and debugging software releases' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Requirements for tracing and debugging' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/api-best-practices.json",
-      "message": "Section 'Collect tracing and debugging data' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/architecture-styles.json",
-      "message": "Section 'Big compute architecture style' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/architecture-styles.json",
-      "message": "Section 'Big compute architecture style: When to use this architecture' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/architecture-styles.json",
-      "message": "Section 'Big compute architecture style: Benefits' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/architecture-styles.json",
-      "message": "Section 'Big compute architecture style: Challenges' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/architecture-styles.json",
-      "message": "Section 'Big compute by using Azure Batch' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/architecture-styles.json",
-      "message": "Section 'Big compute that runs on VMs' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/architecture-styles.json",
-      "message": "Section 'HPC Pack deployed to Azure' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/architecture-styles.json",
-      "message": "Section 'Burst an HPC cluster to Azure' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/architecture-styles.json",
-      "message": "Section 'Big data architecture style' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/architecture-styles.json",
-      "message": "Section 'Big data architecture style: When to use this architecture' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/architecture-styles.json",
-      "message": "Section 'Big data architecture style: Benefits' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/architecture-styles.json",
-      "message": "Section 'Big data architecture style: Challenges' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/architecture-styles.json",
-      "message": "Section 'Big data architecture style: Best practices' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/architecture-styles.json",
-      "message": "Section 'IoT architecture' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/clean-architecture.json",
-      "message": "Section 'Starting with the Bricks: Programming Paradigms' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/clean-architecture.json",
-      "message": "Section 'A note about dynamic languages' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/clean-architecture.json",
-      "message": "Section '1 - Architecture' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/clean-architecture.json",
-      "message": "Section '2 - Architecture' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/clean-architecture.json",
-      "message": "Section 'Clean Embedded Architecture' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/clean-architecture.json",
-      "message": "Section 'App-titude Test: The problem with just making it work' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/clean-architecture.json",
-      "message": "Section 'The Target-Hardware Bottleneck Problem' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/clean-architecture.json",
-      "message": "Section 'Building clean embedded architectures' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/microservices-design.json",
-      "message": "Section 'Choose an Azure compute option for microservices' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/microservices-design.json",
-      "message": "Section 'Azure compute platforms for microservices' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/microservices-design.json",
-      "message": "Section 'Azure Kubernetes Service (AKS)' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/microservices-design.json",
-      "message": "Section 'Azure Container Apps' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/microservices-design.json",
-      "message": "Section 'Azure Functions' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/microservices-design.json",
-      "message": "Section 'Azure App Service' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/microservices-design.json",
-      "message": "Section 'Azure Red Hat OpenShift' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/microservices-design.json",
-      "message": "Section 'Compare platforms for microservices' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/microservices-design.json",
-      "message": "Section 'Choose your platform' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/microservices-design.json",
-      "message": "Section 'Choose an Azure compute option for microservices: Considerations' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/microservices-design.json",
-      "message": "Section 'Reliability' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/microservices-design.json",
-      "message": "Section 'Cost Optimization' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/microservices-design.json",
-      "message": "Section 'Reference architectures' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/modern-web-apps.json",
-      "message": "Section 'References – Common web architectures' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'The System Design Primer' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Motivation' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Learn how to design large-scale systems' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Learn from the open source community' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Prep for the system design interview' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Anki flashcards' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Coding Resource: Interactive Coding Challenges' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Index of system design topics' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Study guide' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'How to approach a system design interview question' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Step 1: Outline use cases, constraints, and assumptions' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Step 2: Create a high level design' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Step 3: Design core components' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Step 4: Scale the design' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Back-of-the-envelope calculations' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'System design interview questions with solutions' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Design Pastebin.com (or Bit.ly)' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Design the Twitter timeline and search (or Facebook feed and search)' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Design a web crawler' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Design Mint.com' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Design the data structures for a social network' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Design a key-value store for a search engine' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section \"Design Amazon's sales ranking by category feature\" is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Design a system that scales to millions of users on AWS' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Object-oriented design interview questions with solutions' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'System design topics: start here' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Step 1: Review the scalability video lecture' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Step 2: Review the scalability article' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Master-slave and master-master' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Appendix' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Powers of two table' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Power      Exact Value     Approx Value    Bytes' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Latency numbers every programmer should know' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Latency Comparison Numbers' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Notes' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Latency numbers visualized' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Additional system design interview questions' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Real world architectures' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Company architectures' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Company engineering blogs' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Under development' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'Contact info' is referenced by no topic — its content will be silently dropped at chunking"
-    },
-    {
-      "check_id": "structure.orphan_section",
-      "severity": "warning",
-      "location": "extracted/system-design-primer.json",
-      "message": "Section 'License' is referenced by no topic — its content will be silently dropped at chunking"
+      "location": "manifest.json",
+      "message": "excluded_sections pattern '2 - Architecture' matches no orphan section — remove it or fix the pattern"
     },
     {
       "check_id": "chunks.token_range",
@@ -879,230 +117,74 @@
     {
       "check_id": "chunks.token_range",
       "severity": "warning",
-      "location": "chunks.json[6] (Foundations of Software Architecture > A Tour of Architecture Styles)",
-      "message": "387 tokens — outside target range [500, 1500]"
+      "location": "chunks.json[7] (Foundations of Software Architecture > A Tour of Architecture Styles)",
+      "message": "210 tokens — outside target range [500, 1500]"
     },
     {
       "check_id": "chunks.token_range",
       "severity": "warning",
-      "location": "chunks.json[9] (Design Principles > The SOLID Principles at a Glance)",
+      "location": "chunks.json[10] (Design Principles > The SOLID Principles at a Glance)",
       "message": "453 tokens — outside target range [500, 1500]"
     },
     {
       "check_id": "chunks.token_range",
       "severity": "warning",
-      "location": "chunks.json[10] (Design Principles > The Single Responsibility Principle)",
+      "location": "chunks.json[11] (Design Principles > The Single Responsibility Principle)",
       "message": "370 tokens — outside target range [500, 1500]"
     },
     {
       "check_id": "chunks.token_range",
       "severity": "warning",
-      "location": "chunks.json[12] (Design Principles > Liskov Substitution and Interface Segregation)",
+      "location": "chunks.json[13] (Design Principles > Liskov Substitution and Interface Segregation)",
       "message": "484 tokens — outside target range [500, 1500]"
     },
     {
       "check_id": "chunks.token_range",
       "severity": "warning",
-      "location": "chunks.json[13] (Design Principles > The Dependency Inversion Principle)",
+      "location": "chunks.json[14] (Design Principles > The Dependency Inversion Principle)",
       "message": "393 tokens — outside target range [500, 1500]"
     },
     {
       "check_id": "chunks.token_range",
       "severity": "warning",
-      "location": "chunks.json[17] (Clean Architecture > Layers and Decoupling)",
-      "message": "240 tokens — outside target range [500, 1500]"
+      "location": "chunks.json[27] (Clean Architecture > The Clean Architecture Pattern > A Clean Web Application Example)",
+      "message": "265 tokens — outside target range [500, 1500]"
     },
     {
       "check_id": "chunks.token_range",
       "severity": "warning",
-      "location": "chunks.json[24] (Clean Architecture > The Clean Architecture Pattern > A Clean Web Application Example)",
-      "message": "1660 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[26] (Clean Architecture > Organizing Code > Packaging Strategies)",
-      "message": "1511 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[27] (Clean Architecture > Organizing Code > Case Study: Video Sales)",
+      "location": "chunks.json[31] (Clean Architecture > Organizing Code > Case Study: Video Sales)",
       "message": "202 tokens — outside target range [500, 1500]"
     },
     {
       "check_id": "chunks.token_range",
       "severity": "warning",
-      "location": "chunks.json[29] (Architecture Styles in Practice > Monoliths and Layered Applications)",
-      "message": "1506 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[30] (Architecture Styles in Practice > Monoliths and Layered Applications)",
-      "message": "228 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[34] (Architecture Styles in Practice > N-Tier Architecture Style)",
-      "message": "273 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[37] (Architecture Styles in Practice > Event-Driven Architecture Style)",
-      "message": "1566 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[38] (Web Application Architecture > Modern Web App Characteristics)",
-      "message": "1521 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[39] (Web Application Architecture > Front-End Architecture > Traditional Web Apps vs SPAs)",
-      "message": "1513 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[41] (Web Application Architecture > Front-End Architecture > Client-Side Web Technologies)",
-      "message": "1567 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[45] (Web Application Architecture > Server-Side Application Patterns > MVC and Razor Pages)",
-      "message": "1509 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[46] (Web Application Architecture > Server-Side Application Patterns > MVC and Razor Pages)",
-      "message": "254 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[48] (Web Application Architecture > Server-Side Application Patterns > Dependency Injection and Application Structure)",
+      "location": "chunks.json[59] (Web Application Architecture > Data Access > Entity Framework Core Patterns)",
       "message": "1504 tokens — outside target range [500, 1500]"
     },
     {
       "check_id": "chunks.token_range",
       "severity": "warning",
-      "location": "chunks.json[52] (Web Application Architecture > Data Access > Entity Framework Core Patterns)",
-      "message": "1504 tokens — outside target range [500, 1500]"
+      "location": "chunks.json[84] (API Design and Integration > Web API Implementation > Exceptions, Caching, and Concurrency)",
+      "message": "332 tokens — outside target range [500, 1500]"
     },
     {
       "check_id": "chunks.token_range",
       "severity": "warning",
-      "location": "chunks.json[62] (API Design and Integration > HTTP and Web Protocols)",
-      "message": "397 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[68] (API Design and Integration > RESTful API Design > Advanced API Capabilities)",
-      "message": "421 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[69] (API Design and Integration > RESTful API Design > API Versioning)",
-      "message": "1669 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[72] (API Design and Integration > Web API Implementation > Request Processing Practices)",
-      "message": "354 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[91] (Scalability and Distributed Systems > Database Scaling > Operating Partitioned Systems)",
-      "message": "237 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[98] (Scalability and Distributed Systems > Asynchronous Work > Message and Task Queues)",
+      "location": "chunks.json[107] (Scalability and Distributed Systems > Asynchronous Work > Message and Task Queues)",
       "message": "474 tokens — outside target range [500, 1500]"
     },
     {
       "check_id": "chunks.token_range",
       "severity": "warning",
-      "location": "chunks.json[99] (Scalability and Distributed Systems > Asynchronous Work > Background Job Design)",
-      "message": "1614 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[105] (Microservices > Microservices Architecture Style)",
+      "location": "chunks.json[115] (Microservices > Microservices Architecture Style)",
       "message": "1539 tokens — outside target range [500, 1500]"
     },
     {
       "check_id": "chunks.token_range",
       "severity": "warning",
-      "location": "chunks.json[108] (Microservices > Domain-Driven Design > Domain Analysis and Bounded Contexts)",
-      "message": "1504 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[126] (Microservices > Containers and Orchestration)",
-      "message": "1700 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[129] (Cloud-Native Operations > The Twelve-Factor App > Processes Through Admin Processes)",
-      "message": "1508 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[130] (Cloud-Native Operations > The Twelve-Factor App > Processes Through Admin Processes)",
-      "message": "1627 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[131] (Cloud-Native Operations > CI/CD and Deployment > CI/CD for Microservices)",
-      "message": "1511 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[132] (Cloud-Native Operations > CI/CD and Deployment > CI/CD for Microservices)",
-      "message": "412 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[134] (Cloud-Native Operations > CI/CD and Deployment > Deployment Strategies)",
-      "message": "245 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[141] (Cloud-Native Operations > Monitoring and Observability > Performance and Security Monitoring)",
-      "message": "257 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[142] (Cloud-Native Operations > Monitoring and Observability > SLA, Usage, and Audit Monitoring)",
-      "message": "1515 tokens — outside target range [500, 1500]"
-    },
-    {
-      "check_id": "chunks.token_range",
-      "severity": "warning",
-      "location": "chunks.json[143] (Cloud-Native Operations > Monitoring and Observability > SLA, Usage, and Audit Monitoring)",
-      "message": "464 tokens — outside target range [500, 1500]"
+      "location": "chunks.json[158] (Cloud-Native Operations > Monitoring and Observability > Instrumentation)",
+      "message": "1536 tokens — outside target range [500, 1500]"
     }
   ]
 }

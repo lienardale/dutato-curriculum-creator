@@ -12,6 +12,7 @@ the canonical content is .md files on disk — extracting the rendered
 HTML pages through the web extractor loses headings and code blocks.
 """
 
+import hashlib
 import re
 import sys
 from pathlib import Path
@@ -44,6 +45,10 @@ _SETEXT_H1_PATTERN = re.compile(r"^([^\s#>|-][^\n]*)\n=+[ \t]*$", re.MULTILINE)
 _SETEXT_H2_PATTERN = re.compile(r"^([^\s#>|-][^\n]*)\n-{2,}[ \t]*$", re.MULTILINE)
 _REF_IMAGE_PATTERN = re.compile(r"!\[([^\]]*)\]\[([^\]]+)\]")
 _REF_DEF_PATTERN = re.compile(r"^\[([^\]]+)\]:\s*(\S+)[ \t]*$", re.MULTILINE)
+# Non-image link whose target is a repo-relative document/anchor — dead once
+# the content leaves the repo, so keep only the anchor text
+_RELATIVE_LINK_PATTERN = re.compile(
+    r"(?<!!)\[([^\]]+)\]\((?!https?://|mailto:)(?:[^)\s]*\.md(?:#[^)\s]*)?|#[^)\s]*)\)")
 
 
 def _clean_markdown(text: str) -> str:
@@ -65,6 +70,7 @@ def _clean_markdown(text: str) -> str:
     # Setext headings (Title\n====) → ATX so the heading splitter sees them
     text = _SETEXT_H1_PATTERN.sub(lambda m: f"# {m.group(1).strip()}", text)
     text = _SETEXT_H2_PATTERN.sub(lambda m: f"## {m.group(1).strip()}", text)
+    text = _RELATIVE_LINK_PATTERN.sub(lambda m: m.group(1), text)
     # Reference-style images → inline so image extraction sees them
     ref_defs = dict(_REF_DEF_PATTERN.findall(text))
     if ref_defs:
@@ -123,10 +129,16 @@ def _register_images(
             candidate = (md_file.parent / ref_path).resolve()
         if not candidate.is_file() or candidate.suffix.lower() not in _IMAGE_EXTENSIONS:
             continue
-        img_id = f"{id_prefix}_img{len(registry):03d}"
+        data = candidate.read_bytes()
+        # Content-hash id: stable across re-extraction (adding or removing
+        # other images/files doesn't shift it) and deduplicates identical bytes
+        img_id = f"{id_prefix}_{hashlib.sha1(data).hexdigest()[:10]}"
+        existing = next((e for e in registry if e["id"] == img_id), None)
+        if existing:
+            image_map[ref] = existing
+            continue
         filename = f"{img_id}{candidate.suffix.lower()}"
         images_dir.mkdir(parents=True, exist_ok=True)
-        data = candidate.read_bytes()
         (images_dir / filename).write_bytes(data)
         entry = {
             "id": img_id,

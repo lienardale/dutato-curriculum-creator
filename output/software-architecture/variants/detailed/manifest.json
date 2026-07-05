@@ -82,8 +82,8 @@
   "condensation_stats": {
     "original_topics": 125,
     "condensed_topics": 31,
-    "original_chunks": 152,
-    "condensed_chunks": 26,
+    "original_chunks": 164,
+    "condensed_chunks": 27,
     "original_tokens": 166301,
     "condensed_tokens": 18269,
     "compression_ratio": 9.1

@@ -46,7 +46,9 @@ PREFIX_PATTERNS: list[re.Pattern[str]] = [
     re.compile(r"^\d+\.\s+(?=[A-Z])"),                     # "1. Meet Kafka" -> "Meet Kafka"
     re.compile(r"^\d+:\s+(?=[A-Z])"),                      # "5: The Docker Engine" -> "The Docker Engine"
     re.compile(r"^\d+\s+(?=[A-Z])"),                       # "3 Pods: ..." -> "Pods: ..."
-    re.compile(r"^Part\s+[IVX0-9]+\s*[-–—:.]?\s*(?=\S)", re.I),  # "Part I. Setting the Stage" / "Part I - X" -> "X"
+    # "Part I. Setting the Stage" / "Part V.1 - X" / "Part V - 1 - X" / "Part 5.1 - X" -> "X"
+    re.compile(r"^Part\s+[IVX]+(\.\d+|\s*[-–—]\s*\d+)?\s*[-–—:.]?\s*(?=\S)", re.I),
+    re.compile(r"^Part\s+\d+(\.\d+|\s*[-–—]\s*\d+)?\s*[-–—:.]?\s*(?=\S)", re.I),
     re.compile(r"^Section\s+\d+\s*[-–—:.]?\s*(?=\S)", re.I),     # "Section 1: X" -> "X"
 ]
 

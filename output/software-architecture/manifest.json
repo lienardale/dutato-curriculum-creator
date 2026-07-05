@@ -12,7 +12,10 @@
       "origin": "https://github.com/serodriguez68/clean-architecture",
       "title": "Clean Architecture — book summary (Robert C. Martin, summarized by S. Rodriguez)",
       "include": "*.md",
-      "exclude": ["readme", "00-preface"]
+      "exclude": [
+        "readme",
+        "00-preface"
+      ]
     },
     {
       "type": "markdown",
@@ -26,7 +29,10 @@
       "origin": "https://github.com/heroku/12factor",
       "title": "The Twelve-Factor App (Adam Wiggins / Heroku)",
       "include": "*.md",
-      "exclude": ["who", "background"],
+      "exclude": [
+        "who",
+        "background"
+      ],
       "image_root": "input/12factor/public"
     },
     {
@@ -35,7 +41,11 @@
       "origin": "https://github.com/dotnet/docs/tree/main/docs/architecture/modern-web-apps-azure",
       "title": "Architect Modern Web Applications with ASP.NET Core (Microsoft)",
       "include": "*.md",
-      "exclude": ["index", "azure-hosting-recommendations-for-asp-net-web-apps", "development-process-for-azure"]
+      "exclude": [
+        "index",
+        "azure-hosting-recommendations-for-asp-net-web-apps",
+        "development-process-for-azure"
+      ]
     },
     {
       "type": "markdown",
@@ -50,7 +60,10 @@
       "origin": "https://github.com/MicrosoftDocs/architecture-center/tree/main/docs/microservices",
       "title": "Microservices Design Guide — Azure Architecture Center (Microsoft)",
       "include": "**/*.md",
-      "exclude": ["ci-cd-kubernetes-content", "index"]
+      "exclude": [
+        "ci-cd-kubernetes-content",
+        "index"
+      ]
     },
     {
       "type": "markdown",
@@ -58,9 +71,530 @@
       "origin": "https://github.com/MicrosoftDocs/architecture-center/tree/main/docs/best-practices",
       "title": "Web API and Scalability Best Practices — Azure Architecture Center (Microsoft)",
       "include": "*.md",
-      "exclude": ["host-name-preservation", "index-best-practices"]
+      "exclude": [
+        "host-name-preservation",
+        "index-best-practices"
+      ]
     }
   ],
   "created_at": "2026-06-10T14:10:00+00:00",
-  "created_by": "agent"
+  "created_by": "agent",
+  "excluded_sections": [
+    {
+      "match": "Api Implementation: Introduction",
+      "reason": "Docfx description stub (a few words)"
+    },
+    {
+      "match": "Using Azure API Management",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Monitoring a web API directly",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Monitoring a web API through the API Management Service",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Configure autoscaling for an Azure solution",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Use the Azure Monitor autoscale feature",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Background Jobs: Introduction",
+      "reason": "Docfx description stub (a few words)"
+    },
+    {
+      "match": "Hosting environment",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Functions",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Functions considerations",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Container Apps",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Container Apps considerations",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "AKS",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "AKS considerations",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Batch",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Batch considerations",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Virtual Machines",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Virtual Machines considerations",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "App Service WebJobs",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "App Service WebJobs considerations",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Implement caching with Azure Managed Redis",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Connect and configure client applications",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Choose a .NET client library",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Implement caching patterns",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Implement the cache-aside pattern",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Perform atomic and batch operations",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Perform fire and forget cache operations",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Specify automatically expiring keys",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Cross-correlate cached items",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Find recently accessed items",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Implement a leaderboard",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Add items to a leaderboard",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Retrieve ranked items",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Retrieve top-N items",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Retrieve items by score range",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Caching session state and HTML output",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "ASP.NET Core",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": ".NET Aspire integration",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "High availability, scalability, and partitioning",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Active geo-replication",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Data persistence",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Protect cached data in Azure Managed Redis",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Serialization considerations",
+      "reason": "Azure/product-specific implementation walkthrough; vendor-neutral guidance is covered instead"
+    },
+    {
+      "match": "Message Encode: Introduction",
+      "reason": "Docfx description stub (a few words)"
+    },
+    {
+      "match": "Monitoring: Introduction",
+      "reason": "Docfx description stub (a few words)"
+    },
+    {
+      "match": "Issue tracking",
+      "reason": "Monitoring sub-scenario descoped to keep the monitoring topic within size limits"
+    },
+    {
+      "match": "Requirements for issue tracking",
+      "reason": "Monitoring sub-scenario descoped to keep the monitoring topic within size limits"
+    },
+    {
+      "match": "Collect issue-tracking data",
+      "reason": "Monitoring sub-scenario descoped to keep the monitoring topic within size limits"
+    },
+    {
+      "match": "Analyze issue-tracking data",
+      "reason": "Monitoring sub-scenario descoped to keep the monitoring topic within size limits"
+    },
+    {
+      "match": "Tracing operations and debugging software releases",
+      "reason": "Deliberately descoped"
+    },
+    {
+      "match": "Requirements for tracing and debugging",
+      "reason": "Monitoring sub-scenario descoped to keep the monitoring topic within size limits"
+    },
+    {
+      "match": "Collect tracing and debugging data",
+      "reason": "Monitoring sub-scenario descoped to keep the monitoring topic within size limits"
+    },
+    {
+      "match": "Big compute architecture style",
+      "reason": "Big data / big compute styles are outside the web-focused scope (tour section covers them)"
+    },
+    {
+      "match": "Big compute architecture style: When to use this architecture",
+      "reason": "Big data / big compute styles are outside the web-focused scope (tour section covers them)"
+    },
+    {
+      "match": "Big compute architecture style: Benefits",
+      "reason": "Big data / big compute styles are outside the web-focused scope (tour section covers them)"
+    },
+    {
+      "match": "Big compute architecture style: Challenges",
+      "reason": "Big data / big compute styles are outside the web-focused scope (tour section covers them)"
+    },
+    {
+      "match": "Big compute by using Azure Batch",
+      "reason": "Big data / big compute styles are outside the web-focused scope (tour section covers them)"
+    },
+    {
+      "match": "Big compute that runs on VMs",
+      "reason": "Big data / big compute styles are outside the web-focused scope (tour section covers them)"
+    },
+    {
+      "match": "HPC Pack deployed to Azure",
+      "reason": "Big data / big compute styles are outside the web-focused scope (tour section covers them)"
+    },
+    {
+      "match": "Burst an HPC cluster to Azure",
+      "reason": "Big data / big compute styles are outside the web-focused scope (tour section covers them)"
+    },
+    {
+      "match": "Big data architecture style",
+      "reason": "Big data / big compute styles are outside the web-focused scope (tour section covers them)"
+    },
+    {
+      "match": "Big data architecture style: When to use this architecture",
+      "reason": "Big data / big compute styles are outside the web-focused scope (tour section covers them)"
+    },
+    {
+      "match": "Big data architecture style: Benefits",
+      "reason": "Big data / big compute styles are outside the web-focused scope (tour section covers them)"
+    },
+    {
+      "match": "Big data architecture style: Challenges",
+      "reason": "Big data / big compute styles are outside the web-focused scope (tour section covers them)"
+    },
+    {
+      "match": "Big data architecture style: Best practices",
+      "reason": "Big data / big compute styles are outside the web-focused scope (tour section covers them)"
+    },
+    {
+      "match": "IoT architecture",
+      "reason": "Big data / big compute styles are outside the web-focused scope (tour section covers them)"
+    },
+    {
+      "match": "Starting with the Bricks: Programming Paradigms",
+      "reason": "Part-heading / aside stub with no standalone teaching content"
+    },
+    {
+      "match": "A note about dynamic languages",
+      "reason": "Part-heading / aside stub with no standalone teaching content"
+    },
+    {
+      "match": "Clean Embedded Architecture",
+      "reason": "Embedded architecture chapter is outside the web-focused scope"
+    },
+    {
+      "match": "App-titude Test: The problem with just making it work",
+      "reason": "Embedded architecture chapter is outside the web-focused scope"
+    },
+    {
+      "match": "The Target-Hardware Bottleneck Problem",
+      "reason": "Embedded architecture chapter is outside the web-focused scope"
+    },
+    {
+      "match": "Building clean embedded architectures",
+      "reason": "Embedded architecture chapter is outside the web-focused scope"
+    },
+    {
+      "match": "Choose an Azure compute option for microservices",
+      "reason": "Azure-specific compute platform comparison; vendor-neutral decision factors are covered instead"
+    },
+    {
+      "match": "Azure compute platforms for microservices",
+      "reason": "Azure-specific compute platform comparison; vendor-neutral decision factors are covered instead"
+    },
+    {
+      "match": "Azure Kubernetes Service (AKS)",
+      "reason": "Azure-specific compute platform comparison; vendor-neutral decision factors are covered instead"
+    },
+    {
+      "match": "Azure Container Apps",
+      "reason": "Azure-specific compute platform comparison; vendor-neutral decision factors are covered instead"
+    },
+    {
+      "match": "Azure Functions",
+      "reason": "Azure-specific compute platform comparison; vendor-neutral decision factors are covered instead"
+    },
+    {
+      "match": "Azure App Service",
+      "reason": "Azure-specific compute platform comparison; vendor-neutral decision factors are covered instead"
+    },
+    {
+      "match": "Azure Red Hat OpenShift",
+      "reason": "Azure-specific compute platform comparison; vendor-neutral decision factors are covered instead"
+    },
+    {
+      "match": "Compare platforms for microservices",
+      "reason": "Azure-specific compute platform comparison; vendor-neutral decision factors are covered instead"
+    },
+    {
+      "match": "Choose your platform",
+      "reason": "Azure-specific compute platform comparison; vendor-neutral decision factors are covered instead"
+    },
+    {
+      "match": "Choose an Azure compute option for microservices: Considerations",
+      "reason": "Azure-specific compute platform comparison; vendor-neutral decision factors are covered instead"
+    },
+    {
+      "match": "Reliability",
+      "reason": "Azure-specific compute platform comparison; vendor-neutral decision factors are covered instead"
+    },
+    {
+      "match": "Cost Optimization",
+      "reason": "Azure-specific compute platform comparison; vendor-neutral decision factors are covered instead"
+    },
+    {
+      "match": "Reference architectures",
+      "reason": "Azure-specific compute platform comparison; vendor-neutral decision factors are covered instead"
+    },
+    {
+      "match": "References – Common web architectures",
+      "reason": "External reference list"
+    },
+    {
+      "match": "The System Design Primer",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Motivation",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Learn how to design large-scale systems",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Learn from the open source community",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Prep for the system design interview",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Anki flashcards",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Coding Resource: Interactive Coding Challenges",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Index of system design topics",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Study guide",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "How to approach a system design interview question",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Step 1: Outline use cases, constraints, and assumptions",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Step 2: Create a high level design",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Step 3: Design core components",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Step 4: Scale the design",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Back-of-the-envelope calculations",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "System design interview questions with solutions",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Design Pastebin.com (or Bit.ly)",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Design the Twitter timeline and search (or Facebook feed and search)",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Design a web crawler",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Design Mint.com",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Design the data structures for a social network",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Design a key-value store for a search engine",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Design Amazon's sales ranking by category feature",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Design a system that scales to millions of users on AWS",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Object-oriented design interview questions with solutions",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "System design topics: start here",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Step 1: Review the scalability video lecture",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Step 2: Review the scalability article",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Master-slave and master-master",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Appendix",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Powers of two table",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Power      Exact Value     Approx Value    Bytes",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Latency numbers every programmer should know",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Latency Comparison Numbers",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Notes",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Latency numbers visualized",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Additional system design interview questions",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Real world architectures",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Company architectures",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Company engineering blogs",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Under development",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "Contact info",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    },
+    {
+      "match": "License",
+      "reason": "Interview-prep / repo meta content, not curriculum material"
+    }
+  ]
 }

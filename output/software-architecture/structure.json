@@ -996,7 +996,7 @@
         ],
         "source_sections": [
           "Event-driven architecture style",
-          "Architecture",
+          "architecture-styles.json::Architecture",
           "Event-driven architecture style: When to use this architecture",
           "Event-driven architecture style: Benefits",
           "Event-driven architecture style: Challenges",

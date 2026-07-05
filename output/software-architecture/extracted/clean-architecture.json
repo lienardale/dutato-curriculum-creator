@@ -131,7 +131,7 @@
     },
     {
       "title": "Dependency Inversion (this is the important thing)",
-      "content": "> **Polymorphism enables Dependency Inversion. Dependency Inversion is a\n> very powerful concept that allows us to treat and design other\n> software parts as plugins. This is the core of clean architecture.**\n\n[IMAGE: md_clean-architecture_img000]\n\nOO gave the programmers the possibility to control the direction of\nsource code dependencies independently from the direct of execution\n(flow of control).\n\n**This has profound architectural implications.** This means we can\n**decide** what depends on what By doing the right decisions we can\ndecouple our code to a point where we:\n\n- Can **compile and deploy** the different modules of the code\n  **independently** (e.g. independent gems or jar files).\n- If they can be deployed separately, then they can be **developed\n  independently** (safe team independence by design).\n\nMartin gives an example of the \"Business Rules\" code being decoupled\nfrom both the UI and the Database. Both the UI and the Database act as\n*plugins* to the business rules.\n\n[IMAGE: md_clean-architecture_img001]\n\n<!-- Images -->",
+      "content": "> **Polymorphism enables Dependency Inversion. Dependency Inversion is a\n> very powerful concept that allows us to treat and design other\n> software parts as plugins. This is the core of clean architecture.**\n\n[IMAGE: md_clean-architecture_a21c5176d6]\n\nOO gave the programmers the possibility to control the direction of\nsource code dependencies independently from the direct of execution\n(flow of control).\n\n**This has profound architectural implications.** This means we can\n**decide** what depends on what By doing the right decisions we can\ndecouple our code to a point where we:\n\n- Can **compile and deploy** the different modules of the code\n  **independently** (e.g. independent gems or jar files).\n- If they can be deployed separately, then they can be **developed\n  independently** (safe team independence by design).\n\nMartin gives an example of the \"Business Rules\" code being decoupled\nfrom both the UI and the Database. Both the UI and the Database act as\n*plugins* to the business rules.\n\n[IMAGE: md_clean-architecture_2f8b8b7b7b]\n\n<!-- Images -->",
       "depth": 3,
       "metadata": {
         "file_path": "part-2-starting-with-the-bricks-programming-paradigms.md",
@@ -139,14 +139,14 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img000",
-          "local_path": "images/md_clean-architecture_img000.png",
+          "id": "md_clean-architecture_a21c5176d6",
+          "local_path": "images/md_clean-architecture_a21c5176d6.png",
           "alt_text": "Diagram of Dependency Inversion: a high-level component HL1 calls through an interface <I> while the medium-level implementation ML1's source-code dependency arrow points up against the flow of control, showing polymorphism lets us choose the dependency direction.",
           "context": "markdown_ref:./images/part-2/dependency-inversion.png"
         },
         {
-          "id": "md_clean-architecture_img001",
-          "local_path": "images/md_clean-architecture_img001.png",
+          "id": "md_clean-architecture_2f8b8b7b7b",
+          "local_path": "images/md_clean-architecture_2f8b8b7b7b.png",
           "alt_text": "Diagram of architectural boundaries where Business Rules define UI<I> and DB<I> interfaces that the UI and DB implement, making each side independently deployable and developable; legend distinguishes flow of control, source-code dependency direction, and the boundary.",
           "context": "markdown_ref:./images/part-2/dependency-inversion-ui-db-example.png"
         }
@@ -207,7 +207,7 @@
     },
     {
       "title": "Violation of SRP Symptom 1: Accidental duplication",
-      "content": "Here is an example that illustrates accidental duplication.\n\n[IMAGE: md_clean-architecture_img002]",
+      "content": "Here is an example that illustrates accidental duplication.\n\n[IMAGE: md_clean-architecture_cb5b7a574d]",
       "depth": 2,
       "metadata": {
         "file_path": "part-3-design-principles.md",
@@ -215,8 +215,8 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img002",
-          "local_path": "images/md_clean-architecture_img002.png",
+          "id": "md_clean-architecture_cb5b7a574d",
+          "local_path": "images/md_clean-architecture_cb5b7a574d.png",
           "alt_text": "Single Responsibility Principle violation example: an Employee class with calculatePay, reportHours, and save serves three different actors (CFO, COO, CTO), and a shared regularHours method causes accidental duplication of logic between payroll and operations.",
           "context": "markdown_ref:./images/part-3/srp-violation-accidental-duplication.png"
         }
@@ -242,7 +242,7 @@
     },
     {
       "title": "Approach 1: Separate all Methods from Data and Introduce a Facade",
-      "content": "[IMAGE: md_clean-architecture_img003]",
+      "content": "[IMAGE: md_clean-architecture_e5237f5be7]",
       "depth": 3,
       "metadata": {
         "file_path": "part-3-design-principles.md",
@@ -250,8 +250,8 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img003",
-          "local_path": "images/md_clean-architecture_img003.png",
+          "id": "md_clean-architecture_e5237f5be7",
+          "local_path": "images/md_clean-architecture_e5237f5be7.png",
           "alt_text": "SRP-compliant refactoring using a Facade: a thin EmployeeFacade instantiates and delegates to PayCalculator, HourReporter, and EmployeeSaver classes, which share a method-less Employee Data structure.",
           "context": "markdown_ref:./images/part-3/srp-violation-solution-1.png"
         }
@@ -259,7 +259,7 @@
     },
     {
       "title": "Approach 2: Use class as Facade",
-      "content": "[IMAGE: md_clean-architecture_img004]",
+      "content": "[IMAGE: md_clean-architecture_abcfc5dd48]",
       "depth": 3,
       "metadata": {
         "file_path": "part-3-design-principles.md",
@@ -267,8 +267,8 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img004",
-          "local_path": "images/md_clean-architecture_img004.png",
+          "id": "md_clean-architecture_abcfc5dd48",
+          "local_path": "images/md_clean-architecture_abcfc5dd48.png",
           "alt_text": "Alternative SRP refactoring where the Employee class keeps its data plus the most important method (calculatePay) and delegates reportHours and save to separate HourReporter and EmployeeSaver classes.",
           "context": "markdown_ref:./images/part-3/srp-violation-solution-2.png"
         }
@@ -285,7 +285,7 @@
     },
     {
       "title": "The Open-Closed Principle",
-      "content": "This section presents the OCP as goal: build systems that are easy to\nextend without requiring high cost of change.\n\nThe interesting bits of this chapter are a series of inter-related ideas\nthat explain *how* to achieve the goal.\n\nLet's start by clarifying some of the diagram conventions:\n\n- Any type of arrow in the direction A -> B means: A explicitly mentions\n  the class name of B. This means that A is vulnerable from changes made\n  to B. This also means that B is *protected* from changes made to A.\n  Note that this is also known as a *source code dependency.*\n  - **Arrows point towards the components that we want to protect from\n    change.**\n- An arrow with an open head means a *using* relationship. For example:\n  A -> B means that A *uses* B to do its work.\n- An arrow with a triangular head means *implements* or *inherits*. For\n  example: A &#8702; B means A *implements* B.\n- Double lines (==) denote a **component** boundary. A **component** is\n  a collection of classes / modules that have the same reason to change\n  (the single responsibility principle).\n- `<I>` are interfaces and `<DS>` are data structures.\n\nThe following diagram will help us illustrate the ideas to achieve the\ngoal. Note that the arrows on the hierarchy diagram on the right only\nindicate the direction of protection (i.e. the *using* and *inherit*\nrelationships don't apply to the hierarchy diagram).\n\n\n[IMAGE: md_clean-architecture_img005]",
+      "content": "This section presents the OCP as goal: build systems that are easy to\nextend without requiring high cost of change.\n\nThe interesting bits of this chapter are a series of inter-related ideas\nthat explain *how* to achieve the goal.\n\nLet's start by clarifying some of the diagram conventions:\n\n- Any type of arrow in the direction A -> B means: A explicitly mentions\n  the class name of B. This means that A is vulnerable from changes made\n  to B. This also means that B is *protected* from changes made to A.\n  Note that this is also known as a *source code dependency.*\n  - **Arrows point towards the components that we want to protect from\n    change.**\n- An arrow with an open head means a *using* relationship. For example:\n  A -> B means that A *uses* B to do its work.\n- An arrow with a triangular head means *implements* or *inherits*. For\n  example: A &#8702; B means A *implements* B.\n- Double lines (==) denote a **component** boundary. A **component** is\n  a collection of classes / modules that have the same reason to change\n  (the single responsibility principle).\n- `<I>` are interfaces and `<DS>` are data structures.\n\nThe following diagram will help us illustrate the ideas to achieve the\ngoal. Note that the arrows on the hierarchy diagram on the right only\nindicate the direction of protection (i.e. the *using* and *inherit*\nrelationships don't apply to the hierarchy diagram).\n\n\n[IMAGE: md_clean-architecture_e9a931044b]",
       "depth": 1,
       "metadata": {
         "file_path": "part-3-design-principles.md",
@@ -293,8 +293,8 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img005",
-          "local_path": "images/md_clean-architecture_img005.png",
+          "id": "md_clean-architecture_e9a931044b",
+          "local_path": "images/md_clean-architecture_e9a931044b.png",
           "alt_text": "Two-panel figure of a Financial Report system: component-and-module architecture where all dependencies flow in one direction across boundaries via dependency inversion, and a hierarchy-of-protection view placing the highest-level business rules as the most protected.",
           "context": "markdown_ref:./images/part-3/ocp-components-protection-hierarchy.png"
         }
@@ -356,7 +356,7 @@
     },
     {
       "title": "ISP at the programming language level",
-      "content": "[IMAGE: md_clean-architecture_img006]\n\nAt the programming language level, only **statically typed** languages\nare vulnerable to ISP violations. Dynamic languages, don't have to do\nrecompilation and hence are not vulnerable to this.\n\n> This is the primary reason why dynamic languages create systems that\n> are more flexible and less tightly coupled than statically typed\n> languages.",
+      "content": "[IMAGE: md_clean-architecture_6ea1084fa9]\n\nAt the programming language level, only **statically typed** languages\nare vulnerable to ISP violations. Dynamic languages, don't have to do\nrecompilation and hence are not vulnerable to this.\n\n> This is the primary reason why dynamic languages create systems that\n> are more flexible and less tightly coupled than statically typed\n> languages.",
       "depth": 2,
       "metadata": {
         "file_path": "part-3-design-principles.md",
@@ -364,8 +364,8 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img006",
-          "local_path": "images/md_clean-architecture_img006.png",
+          "id": "md_clean-architecture_6ea1084fa9",
+          "local_path": "images/md_clean-architecture_6ea1084fa9.png",
           "alt_text": "Interface Segregation Principle comparison: three User classes all depending on a fat OPS class (any change forces recompiling all users) versus ISP-compliant code where each user depends only on its own segregated interface (U1Ops, U2Ops, U3Ops).",
           "context": "markdown_ref:images/part-3/isp-in-programming-languages.png"
         }
@@ -400,7 +400,7 @@
     },
     {
       "title": "`Abstract Factories`",
-      "content": "Initializing a new object requires our code to directly depend on the\nconcrete class of that object. For example:\n\n```ruby\nclass Application\n  def initialize(service: nil)\n    # Our code is depending on ConcreteImpl\n    @service = service || ConcreteImpl.new\n  end\nend\n```\n\nThe `Abstract Factory` pattern helps our high-level code to depend only\non abstractions and creates an **architectural boundary** that separates\nthe abstract from the concrete.\n\n[IMAGE: md_clean-architecture_img007]",
+      "content": "Initializing a new object requires our code to directly depend on the\nconcrete class of that object. For example:\n\n```ruby\nclass Application\n  def initialize(service: nil)\n    # Our code is depending on ConcreteImpl\n    @service = service || ConcreteImpl.new\n  end\nend\n```\n\nThe `Abstract Factory` pattern helps our high-level code to depend only\non abstractions and creates an **architectural boundary** that separates\nthe abstract from the concrete.\n\n[IMAGE: md_clean-architecture_ce6b64b829]",
       "depth": 3,
       "metadata": {
         "file_path": "part-3-design-principles.md",
@@ -408,8 +408,8 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img007",
-          "local_path": "images/md_clean-architecture_img007.png",
+          "id": "md_clean-architecture_ce6b64b829",
+          "local_path": "images/md_clean-architecture_ce6b64b829.png",
           "alt_text": "Abstract Factory pattern crossing an architectural boundary: Application calls ServiceFactory<I>.makeSvc to obtain a Service<I>, with ServiceFactoryImpl and ConcreteImpl on the concretions side; dependency lines cross the boundary only from concrete to abstract.",
           "context": "markdown_ref:images/part-3/abstract-factories.png"
         }
@@ -417,7 +417,7 @@
     },
     {
       "title": "Component Principles",
-      "content": "The [SOLID design principles in part III](part-3-design-principles.md)\nshowed us how to arrange code into classes / modules and how to\ninterconnect those classes.\n\nPart IV will go one level up to show us what **components** are, how to\ncompose them and how they should interact in a system.",
+      "content": "The SOLID design principles in part III\nshowed us how to arrange code into classes / modules and how to\ninterconnect those classes.\n\nPart IV will go one level up to show us what **components** are, how to\ncompose them and how they should interact in a system.",
       "depth": 0,
       "metadata": {
         "file_path": "part-4-component-principles.md"
@@ -452,7 +452,7 @@
     },
     {
       "title": "The Common Closure Principle (CCP)",
-      "content": "> Gather into components those classes that change for the same reasons\n> and at the same times. Separate into different components those\n> classes that change at different times and for different reasons.\n\nThis is the\n[single responsibility principle](part-3-design-principles.md#chapter-7---the-single-responsibility-principle)\napplied at the *component* level. Remember that *\"reason for change\"* is\nrelated to the **actors** that depend on those components.",
+      "content": "> Gather into components those classes that change for the same reasons\n> and at the same times. Separate into different components those\n> classes that change at different times and for different reasons.\n\nThis is the\nsingle responsibility principle\napplied at the *component* level. Remember that *\"reason for change\"* is\nrelated to the **actors** that depend on those components.",
       "depth": 2,
       "metadata": {
         "file_path": "part-4-component-principles.md",
@@ -461,7 +461,7 @@
     },
     {
       "title": "The Common Reuse Principle (CRP)",
-      "content": "As with the [REP](#the-reuse--release-equivalence-principle-rep) and the\n[CCP](#the-common-closure-principle-ccp), the CRP also help us decide\nwhich classes **shouldn't** be placed together into the same component.\n\nWhen we code a component, the classes within that component will depend\non each other to do the overall work. Components will naturally have a\nset of *inseparable classes* where **all classes** are needed for the\ncomponent to work. If there is a class that is not absolutely needed,\nthen it shouldn't belong in that component.",
+      "content": "As with the REP and the\nCCP, the CRP also help us decide\nwhich classes **shouldn't** be placed together into the same component.\n\nWhen we code a component, the classes within that component will depend\non each other to do the overall work. Components will naturally have a\nset of *inseparable classes* where **all classes** are needed for the\ncomponent to work. If there is a class that is not absolutely needed,\nthen it shouldn't belong in that component.",
       "depth": 2,
       "metadata": {
         "file_path": "part-4-component-principles.md",
@@ -470,7 +470,7 @@
     },
     {
       "title": "The Tension Diagram For Component Cohesion",
-      "content": "REP and CCP are *inclusive* principles that tend to make components\nlarger. The *CRP* is exclusive, driving components smaller.As a result,\nthere is an inherent tension in component design.\n\nIt is the job of the architect to decide where in this space the design\nshould be considering the *current* concerns of the development team and\nto change the balance as the concerns change (the balance is dynamic as\nprojects mature).\n\n[IMAGE: md_clean-architecture_img008]",
+      "content": "REP and CCP are *inclusive* principles that tend to make components\nlarger. The *CRP* is exclusive, driving components smaller.As a result,\nthere is an inherent tension in component design.\n\nIt is the job of the architect to decide where in this space the design\nshould be considering the *current* concerns of the development team and\nto change the balance as the concerns change (the balance is dynamic as\nprojects mature).\n\n[IMAGE: md_clean-architecture_33c8ef5210]",
       "depth": 2,
       "metadata": {
         "file_path": "part-4-component-principles.md",
@@ -478,8 +478,8 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img008",
-          "local_path": "images/md_clean-architecture_img008.png",
+          "id": "md_clean-architecture_33c8ef5210",
+          "local_path": "images/md_clean-architecture_33c8ef5210.png",
           "alt_text": "Tension triangle of the component cohesion principles REP, CCP, and CRP, with edge labels showing the cost of abandoning each (too many unneeded releases, too many components change, hard to reuse) and asking where your component falls in the space.",
           "context": "markdown_ref:images/part-4/tension-diagram-for-component-cohesion.png"
         }
@@ -487,7 +487,7 @@
     },
     {
       "title": "Component Coupling",
-      "content": "[Component Cohesion](#chapter-13---component-cohesion-principles) was\nabout the inner design of components (i.e *\"Which classes belong in\nwhich components?*). Component Coupling is about the **relationships\nbetween components.**\n\nHere there is a tension again between **develop-ability** and **logical\ndesign**.",
+      "content": "Component Cohesion was\nabout the inner design of components (i.e *\"Which classes belong in\nwhich components?*). Component Coupling is about the **relationships\nbetween components.**\n\nHere there is a tension again between **develop-ability** and **logical\ndesign**.",
       "depth": 1,
       "metadata": {
         "file_path": "part-4-component-principles.md",
@@ -505,7 +505,7 @@
     },
     {
       "title": "The Acyclic Component Dependencies Principle",
-      "content": "> Allow no cycles in the component dependency graph.\n\n[IMAGE: md_clean-architecture_img009]\n\n\nHaving cycles in the source code component dependency graph brings the\nfollowing complications. They are particularly painful in compiled\nlanguages, but are also present in dynamic languages when components are\ndeployed independently as packages (e.g. gems) that have a dependencies\non each other.\n- Unit testing becomes very hard.\n- Working out the order of the build is difficult and there probably is\n  no correct order.\n- You need to have version agreements between multiple components to be\n  able to release. You lose independence of release-ability and the\n  entangled components now need to be released together.",
+      "content": "> Allow no cycles in the component dependency graph.\n\n[IMAGE: md_clean-architecture_4ba89edfa2]\n\n\nHaving cycles in the source code component dependency graph brings the\nfollowing complications. They are particularly painful in compiled\nlanguages, but are also present in dynamic languages when components are\ndeployed independently as packages (e.g. gems) that have a dependencies\non each other.\n- Unit testing becomes very hard.\n- Working out the order of the build is difficult and there probably is\n  no correct order.\n- You need to have version agreements between multiple components to be\n  able to release. You lose independence of release-ability and the\n  entangled components now need to be released together.",
       "depth": 2,
       "metadata": {
         "file_path": "part-4-component-principles.md",
@@ -513,8 +513,8 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img009",
-          "local_path": "images/md_clean-architecture_img009.png",
+          "id": "md_clean-architecture_4ba89edfa2",
+          "local_path": "images/md_clean-architecture_4ba89edfa2.png",
           "alt_text": "Component diagram illustrating a dependency cycle (highlighted in red) among Entities, Authorizer, and Interactors: each needs a pinned version of the next, so the components must coordinate builds and behave like a single coupled component.",
           "context": "markdown_ref:images/part-4/dependency-cycle.png"
         }
@@ -522,7 +522,7 @@
     },
     {
       "title": "Technique 1: Use Dependency Inversion",
-      "content": "[We've seen this before](part-3-design-principles.md#chapter-11---the-dependency-inversion-principle)\n[IMAGE: md_clean-architecture_img010]",
+      "content": "We've seen this before\n[IMAGE: md_clean-architecture_e71befafda]",
       "depth": 4,
       "metadata": {
         "file_path": "part-4-component-principles.md",
@@ -530,8 +530,8 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img010",
-          "local_path": "images/md_clean-architecture_img010.png",
+          "id": "md_clean-architecture_e71befafda",
+          "local_path": "images/md_clean-architecture_e71befafda.png",
           "alt_text": "Breaking a component dependency cycle with the Dependency Inversion Principle: instead of Entities' User depending directly on Authorizer's Permissions, a Permissions interface is placed inside Entities and implemented by Authorizer, reversing the dependency.",
           "context": "markdown_ref:images/part-4/break-cycle-with-dependency-inversion.png"
         }
@@ -539,7 +539,7 @@
     },
     {
       "title": "Technique 2: Create a new component",
-      "content": "[IMAGE: md_clean-architecture_img011]\n\nCreating a new component also allows us to break the cycle. However,\nkeep in mind that this may cause some problems:\n- This causes the number of components to grow. As we add new components\n  to break cycles, we need to continuously monitor the structure of the\n  dependency graph to make sure we don't create new cycles. This in turn\n  may require for further use of breaking cycle techniques.",
+      "content": "[IMAGE: md_clean-architecture_58659564d7]\n\nCreating a new component also allows us to break the cycle. However,\nkeep in mind that this may cause some problems:\n- This causes the number of components to grow. As we add new components\n  to break cycles, we need to continuously monitor the structure of the\n  dependency graph to make sure we don't create new cycles. This in turn\n  may require for further use of breaking cycle techniques.",
       "depth": 4,
       "metadata": {
         "file_path": "part-4-component-principles.md",
@@ -547,8 +547,8 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img011",
-          "local_path": "images/md_clean-architecture_img011.png",
+          "id": "md_clean-architecture_58659564d7",
+          "local_path": "images/md_clean-architecture_58659564d7.png",
           "alt_text": "Component diagram of the system after breaking the cycle: a new Permissions component is introduced so Authorizer and Entities both depend on it, restoring an acyclic dependency graph among Main, View, Controllers, Presenters, Interactors, Database, and Entities.",
           "context": "markdown_ref:images/part-4/break-cycle-with-new-component.png"
         }
@@ -556,7 +556,7 @@
     },
     {
       "title": "Top-Down Design: The develop-ability VS logical",
-      "content": "design tension\n\nOne could design the component source code dependency graph only\noptimising for *build-ability* and end up with a graph that is very easy\nto build but makes no intuitive sense with what the application does.\n\nOn the other hand, one could design the component dependency graph\ntrying to protect our high-value (high-level) components from volatile\ncomponents\n([as we saw in the OCP chapter](part-3-design-principles.md)). This will\nlead to a structure that makes more sense but perhaps is less *reusable*\nor *buildable*.\n\n**So, how to solve this tension?**\n\nAlways start by designing dependencies to protect `high-level`\ncomponents. Once that macro structure is in place, optimise for\n*buildability* locally.\n\nThis also means that the component coupling strategy you use as an\narchitect changes over time. At the beginning of the project, you guide\nyour decisions more by **high-level protection** and later you start\nconsidering **re-usability** and **build-ability**.",
+      "content": "design tension\n\nOne could design the component source code dependency graph only\noptimising for *build-ability* and end up with a graph that is very easy\nto build but makes no intuitive sense with what the application does.\n\nOn the other hand, one could design the component dependency graph\ntrying to protect our high-value (high-level) components from volatile\ncomponents\n(as we saw in the OCP chapter). This will\nlead to a structure that makes more sense but perhaps is less *reusable*\nor *buildable*.\n\n**So, how to solve this tension?**\n\nAlways start by designing dependencies to protect `high-level`\ncomponents. Once that macro structure is in place, optimise for\n*buildability* locally.\n\nThis also means that the component coupling strategy you use as an\narchitect changes over time. At the beginning of the project, you guide\nyour decisions more by **high-level protection** and later you start\nconsidering **re-usability** and **build-ability**.",
       "depth": 2,
       "metadata": {
         "file_path": "part-4-component-principles.md",
@@ -609,7 +609,7 @@
       }
     },
     {
-      "title": "1 - Architecture",
+      "title": "Architecture",
       "content": "Note: this was divided into 2 files because it was getting too long.",
       "depth": 0,
       "metadata": {
@@ -627,7 +627,7 @@
     },
     {
       "title": "Facilitate Development",
-      "content": "The architecture must make it possible for the teams to organize as they\nneed without interfering with each other.\n\nJump ahead to\n[Layers and Independent Develop-ability](#layers-and-independent-develop-ability)\nto see how this is possible.",
+      "content": "The architecture must make it possible for the teams to organize as they\nneed without interfering with each other.\n\nJump ahead to\nLayers and Independent Develop-ability\nto see how this is possible.",
       "depth": 2,
       "metadata": {
         "file_path": "part-5-1-architecture.md",
@@ -672,7 +672,7 @@
     },
     {
       "title": "Operation Performance",
-      "content": "For reasonably well programmed applications, performance problems can\nalmost always be solved by throwing more hardware at them. If the\narchitecture is good, it is rarely the cause of the performance problems\nand does not get in the way of solving them.\n- People are more expensive than hardware. Unless the performance is\n  horrible, the cost of bad performance is typically much lower than the\n  cost of hard develop-ability, deployment or maintenance.\n\nComponent arrangement to optimize performance should be treated\n[as a detail whose decision's can be deferred](#good-architecture-keeping-options-open).\nAn architecture that maintains proper isolation of its components and\ndoes not assume the means of communication between them makes it easy to\narrange the processing elements in a way that can be tuned for\nperformance: e.g. easily parallelize-able in different servers or\nthreads, independently deployable and scalable on different servers.\n\nJump ahead to\n[Vertical layers and operation performance](#vertical-layers-and-operation-performance)\nto see how this is possible.",
+      "content": "For reasonably well programmed applications, performance problems can\nalmost always be solved by throwing more hardware at them. If the\narchitecture is good, it is rarely the cause of the performance problems\nand does not get in the way of solving them.\n- People are more expensive than hardware. Unless the performance is\n  horrible, the cost of bad performance is typically much lower than the\n  cost of hard develop-ability, deployment or maintenance.\n\nComponent arrangement to optimize performance should be treated\nas a detail whose decision's can be deferred.\nAn architecture that maintains proper isolation of its components and\ndoes not assume the means of communication between them makes it easy to\narrange the processing elements in a way that can be tuned for\nperformance: e.g. easily parallelize-able in different servers or\nthreads, independently deployable and scalable on different servers.\n\nJump ahead to\nVertical layers and operation performance\nto see how this is possible.",
       "depth": 3,
       "metadata": {
         "file_path": "part-5-1-architecture.md",
@@ -717,7 +717,7 @@
     },
     {
       "title": "Thinking in Layers",
-      "content": "[IMAGE: md_clean-architecture_img012]\n\n- **Vertical Layers:** related to what the system does (use cases). Use\n  cases change for different reasons and different rates from each\n  other, therefore, they should be protected from each other.\n  - If we wanted to achieve perfect vertical layer decoupling, we need\n    to separate the horizontal bits of each use case. For example, the\n    *add-order* use case has its UI and DB code that is different from\n    the *delete-order* one.\n- **Horizontal Layers:** related to the functional purpose of the layer\n  in the code (e.g persistence).",
+      "content": "[IMAGE: md_clean-architecture_8ff0e2b340]\n\n- **Vertical Layers:** related to what the system does (use cases). Use\n  cases change for different reasons and different rates from each\n  other, therefore, they should be protected from each other.\n  - If we wanted to achieve perfect vertical layer decoupling, we need\n    to separate the horizontal bits of each use case. For example, the\n    *add-order* use case has its UI and DB code that is different from\n    the *delete-order* one.\n- **Horizontal Layers:** related to the functional purpose of the layer\n  in the code (e.g persistence).",
       "depth": 2,
       "metadata": {
         "file_path": "part-5-1-architecture.md",
@@ -725,8 +725,8 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img012",
-          "local_path": "images/md_clean-architecture_img012.png",
+          "id": "md_clean-architecture_8ff0e2b340",
+          "local_path": "images/md_clean-architecture_8ff0e2b340.png",
           "alt_text": "Side-by-side vertical slices of two use cases, Add Order and Delete Order, each layered into UI, application-specific business rules (validations), application-independent business rules (approval or refund process), and persistence.",
           "context": "markdown_ref:images/part-5/thinking-in-layers.png"
         }
@@ -734,7 +734,7 @@
     },
     {
       "title": "Vertical Layers and Operation Performance",
-      "content": "In any application, some use cases are used far more often than others\nor have stricter performance requirements. The concept of vertical\nseparation by use cases enables a powerful idea: if we absolutely needed\nto support high throughput for a particular use case, we already have a\nnatural place where to cut without too much changes as the software is\nalready modularized.\n\nBy making the vertical separation strict, avoiding any assumption that\nother use-cases are accessible via the same machine, use-cases can be\ndeployed and scaled independently as *services* / *micro-services*. See\n[Decoupling Modes](#decoupling-modes) for more details.\n\nThis idea of vertical separation **does not mean** that *micro-services*\nare the way to go. The point of this section is to illustrate that a\nwell though architecture allows us to defer decisions about\n[Operation Performance](#operation-performance) and **keep our options\nopen for when we have more information.**",
+      "content": "In any application, some use cases are used far more often than others\nor have stricter performance requirements. The concept of vertical\nseparation by use cases enables a powerful idea: if we absolutely needed\nto support high throughput for a particular use case, we already have a\nnatural place where to cut without too much changes as the software is\nalready modularized.\n\nBy making the vertical separation strict, avoiding any assumption that\nother use-cases are accessible via the same machine, use-cases can be\ndeployed and scaled independently as *services* / *micro-services*. See\nDecoupling Modes for more details.\n\nThis idea of vertical separation **does not mean** that *micro-services*\nare the way to go. The point of this section is to illustrate that a\nwell though architecture allows us to defer decisions about\nOperation Performance and **keep our options\nopen for when we have more information.**",
       "depth": 2,
       "metadata": {
         "file_path": "part-5-1-architecture.md",
@@ -752,7 +752,7 @@
     },
     {
       "title": "Layers and Independent Deploy-ability",
-      "content": "Horizontal layers give us the possibility of, for example, compiling the\nUI or persistence layers of a use-case independently from its business\nlogic. Changing the UI version is just a matter of swapping the jar\nfile.\n- With horizontal layering, you *could* also deploy the FE in different\n  servers if you wanted to. Again, a good architecture allows you to\n  make this decisions later.\n\nVertical layers give us a similar possibility, and optionally we could\ntake it to the point of deploying to different *micro-services* as shown\nin the\n[Vertical Layers and Operation Performance](#vertical-layers-and-operation-performance)\nsection. See [Decoupling Modes](#decoupling-modes) for more details.",
+      "content": "Horizontal layers give us the possibility of, for example, compiling the\nUI or persistence layers of a use-case independently from its business\nlogic. Changing the UI version is just a matter of swapping the jar\nfile.\n- With horizontal layering, you *could* also deploy the FE in different\n  servers if you wanted to. Again, a good architecture allows you to\n  make this decisions later.\n\nVertical layers give us a similar possibility, and optionally we could\ntake it to the point of deploying to different *micro-services* as shown\nin the\nVertical Layers and Operation Performance\nsection. See Decoupling Modes for more details.",
       "depth": 2,
       "metadata": {
         "file_path": "part-5-1-architecture.md",
@@ -779,7 +779,7 @@
     },
     {
       "title": "The pitfall of micro-services by default",
-      "content": "It has become increasingly popular for teams to default to\nmicro-services* since day 1 of a project.\n\nDealing with distributed systems and network service boundaries is very\ndifficult. This is a waste of effort and resources when there is no good\nreason to have two uses cases running in different services.\n\nAdditionally, the *micro-services by default* mindset tends to make\npeople think that the vertical layering at the micro-service level is\nsufficient and internally the micro-services' code are *big balls of\nmud.* In reality, it is likely that the internal code also needs some\nvertical layering.\n\nThere is nothing intrinsically wrong with a software system that has\nbeen architected around the idea of use-case services. Problems arise\nwhen teams commit early to a **service-level DECOUPLING MODE** without\nreally needing it.\n\nNote: in the context of this book, *micro-service \"architecture\"* and\n*service-oriented \"architecture\"* are the same thing (they only defer on\na vague definition of lines of code per service). Also \"architecture\" is\nin quotes because the decision of decoupling at the service level and\ndeploying in different servers is a **decoupling mode / topology**\ndecision, not an architecture.\n\nSee \"[Are Services Boundaries?](#are-services-boundaries)\" for more tips\non how to architect the relationships between boundaries.\n\nSee\n[Chapter 27 - Services: Great and Small](part-5-2-architecture.md#chapter-27---services-great-and-small)\nfor a more extended discussion about Service Oriented \"Architectures\"\nand Microservices.",
+      "content": "It has become increasingly popular for teams to default to\nmicro-services* since day 1 of a project.\n\nDealing with distributed systems and network service boundaries is very\ndifficult. This is a waste of effort and resources when there is no good\nreason to have two uses cases running in different services.\n\nAdditionally, the *micro-services by default* mindset tends to make\npeople think that the vertical layering at the micro-service level is\nsufficient and internally the micro-services' code are *big balls of\nmud.* In reality, it is likely that the internal code also needs some\nvertical layering.\n\nThere is nothing intrinsically wrong with a software system that has\nbeen architected around the idea of use-case services. Problems arise\nwhen teams commit early to a **service-level DECOUPLING MODE** without\nreally needing it.\n\nNote: in the context of this book, *micro-service \"architecture\"* and\n*service-oriented \"architecture\"* are the same thing (they only defer on\na vague definition of lines of code per service). Also \"architecture\" is\nin quotes because the decision of decoupling at the service level and\ndeploying in different servers is a **decoupling mode / topology**\ndecision, not an architecture.\n\nSee \"Are Services Boundaries?\" for more tips\non how to architect the relationships between boundaries.\n\nSee\nChapter 27 - Services: Great and Small\nfor a more extended discussion about Service Oriented \"Architectures\"\nand Microservices.",
       "depth": 3,
       "metadata": {
         "file_path": "part-5-1-architecture.md",
@@ -806,7 +806,7 @@
     },
     {
       "title": "Which lines do you draw, and when do you draw them?",
-      "content": "> Draw lines between things that matter and things that don’t. The GUI\n> doesn't matter to the business rules, so there should be a line\n> between them. The database doesn't matter to the GUI, so there should\n> be a line between them. The database doesn't matter to the business\n> rules, so there should be a line between them.\n\nAlso draw lines between things that change at different times and for\ndifferent reasons. See\n[The Common Closure Principle (CCP)](part-4-component-principles.md#the-common-closure-principle-ccp)\nsection for more details.",
+      "content": "> Draw lines between things that matter and things that don’t. The GUI\n> doesn't matter to the business rules, so there should be a line\n> between them. The database doesn't matter to the GUI, so there should\n> be a line between them. The database doesn't matter to the business\n> rules, so there should be a line between them.\n\nAlso draw lines between things that change at different times and for\ndifferent reasons. See\nThe Common Closure Principle (CCP)\nsection for more details.",
       "depth": 2,
       "metadata": {
         "file_path": "part-5-1-architecture.md",
@@ -815,7 +815,7 @@
     },
     {
       "title": "The relationship between the database and the business rules",
-      "content": "Often people think that the database is inextricably connected to the\nbusiness rules. This is not true. The business rules only need to know\nthat there is a set of functions to fetch and save data, meaning that\nthe DB can be hidden behind an interface.\n- Note that in a real application there would be many business rules\n  classes, many databases interfaces and many classes that implement\n  those interfaces to access the database. See\n  [Thinking in Layers](#thinking-in-layers) for an example.",
+      "content": "Often people think that the database is inextricably connected to the\nbusiness rules. This is not true. The business rules only need to know\nthat there is a set of functions to fetch and save data, meaning that\nthe DB can be hidden behind an interface.\n- Note that in a real application there would be many business rules\n  classes, many databases interfaces and many classes that implement\n  those interfaces to access the database. See\n  Thinking in Layers for an example.",
       "depth": 3,
       "metadata": {
         "file_path": "part-5-1-architecture.md",
@@ -833,7 +833,7 @@
     },
     {
       "title": "The Plugin Architecture - The Foundational Idea of Clean Architecture",
-      "content": "[IMAGE: md_clean-architecture_img013]\n\nMaking the DB and GUI act as plugins to the **business rules** we have\nmade it possible to implement and swap different GUIs (e.g web based,\nSOA based, console based) and Databases (SQL, NoSQL, file system).\n\nIt is the business rules that determine which operations need to be\nsupported by whatever GUI and Persistence mechanism we decide to use and\nit is up to those plugins to implement them.\n\nMaking these type of replacements most likely is not going to be\ntrivial. The point being made here is that by adopting the plugin idea\nwe at least have made this changes **possible.**\n- Changes like these are impossible / impractical to do in systems in\n  which the business rules have code that is tailored to a particular\n  GUI or a particular Persistence technology.",
+      "content": "[IMAGE: md_clean-architecture_a50406710d]\n\nMaking the DB and GUI act as plugins to the **business rules** we have\nmade it possible to implement and swap different GUIs (e.g web based,\nSOA based, console based) and Databases (SQL, NoSQL, file system).\n\nIt is the business rules that determine which operations need to be\nsupported by whatever GUI and Persistence mechanism we decide to use and\nit is up to those plugins to implement them.\n\nMaking these type of replacements most likely is not going to be\ntrivial. The point being made here is that by adopting the plugin idea\nwe at least have made this changes **possible.**\n- Changes like these are impossible / impractical to do in systems in\n  which the business rules have code that is tailored to a particular\n  GUI or a particular Persistence technology.",
       "depth": 2,
       "metadata": {
         "file_path": "part-5-1-architecture.md",
@@ -841,8 +841,8 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img013",
-          "local_path": "images/md_clean-architecture_img013.png",
+          "id": "md_clean-architecture_a50406710d",
+          "local_path": "images/md_clean-architecture_a50406710d.png",
           "alt_text": "Diagram showing the DB and GUI components acting as plugins to the Business Rules, with boundary lines separating them and both dependency arrows pointing inward toward the business rules.",
           "context": "markdown_ref:images/part-5/plugin-architecture.png"
         }
@@ -868,7 +868,7 @@
     },
     {
       "title": "Boundaries and Monoliths",
-      "content": "As mention in the [Decoupling Modes](#decoupling-modes) section,\nboundaries can exist even if all the code is in the same project (a\nmonolith) using **source-level** decoupling.\n\nFurthermore it is possible to have monoliths with no boundaries. Those\nprojects will suffer from develop-ability, maintenance, etc difficulties\ndespite having all the code in a single project.\n\nDisciplined partitioning of code into components using boundaries can\ngreatly aid developing, testing and deployment of the project.",
+      "content": "As mention in the Decoupling Modes section,\nboundaries can exist even if all the code is in the same project (a\nmonolith) using **source-level** decoupling.\n\nFurthermore it is possible to have monoliths with no boundaries. Those\nprojects will suffer from develop-ability, maintenance, etc difficulties\ndespite having all the code in a single project.\n\nDisciplined partitioning of code into components using boundaries can\ngreatly aid developing, testing and deployment of the project.",
       "depth": 2,
       "metadata": {
         "file_path": "part-5-1-architecture.md",
@@ -895,7 +895,7 @@
     },
     {
       "title": "Are Services Boundaries?",
-      "content": "Yes, it is the strongest boundary. Services assume that all\ncommunications take place over the network (even if they run on the same\nmachine).Communication is very expensive so calls that cross the service\nboundary should be avoided if possible.\n\nThe general idea of **plugin** architecture also holds: low-level\nservices should act as a plugin to higher level ones.\n\nSee\n[The pitfall of micro-services by default](#the-pitfall-of-micro-services-by-default)\nfor more information.",
+      "content": "Yes, it is the strongest boundary. Services assume that all\ncommunications take place over the network (even if they run on the same\nmachine).Communication is very expensive so calls that cross the service\nboundary should be avoided if possible.\n\nThe general idea of **plugin** architecture also holds: low-level\nservices should act as a plugin to higher level ones.\n\nSee\nThe pitfall of micro-services by default\nfor more information.",
       "depth": 3,
       "metadata": {
         "file_path": "part-5-1-architecture.md",
@@ -931,7 +931,7 @@
     },
     {
       "title": "Use Cases (Application-specific Business Rules)",
-      "content": "They are business rules that make or save money by defining the way the\n*automated* system operates. They wouldn't exist if the business\noperated in a manual environment.\n\nFor example, the bank application may not allow the bank clerk to\nproceed to the bank payment estimation screen, until the client's\ncontact information and credit score have been gathered and validated.\n\n**Important points about use cases:**\n\n- Each use case is a description of the way the system is used.\n- They specify the input provided by the user, the processing steps and\n  the output returned.\n  - It uses other data elements to represent input data and output data.\n    See [Requests and Response Models](#requests-and-response-models).\n- They specify how and when the\n  [Entities'](#entities-application-independent-business-rules) Critical\n  Business Rules are invoked.\n  - Entities have no knowledge of the use cases that control them.\n    Entities are at a higher-level than use cases and therefore **do not\n    depend** on them.\n- It does NOT describe the user interface. It only specifies the data to\n  be passed in. Use cases don't know if they are part of a web-system, a\n  desktop client, etc.\n- A use case is an object that has one or more functions that implement\n  the application-specific business rules.\n\n[IMAGE: md_clean-architecture_img014]",
+      "content": "They are business rules that make or save money by defining the way the\n*automated* system operates. They wouldn't exist if the business\noperated in a manual environment.\n\nFor example, the bank application may not allow the bank clerk to\nproceed to the bank payment estimation screen, until the client's\ncontact information and credit score have been gathered and validated.\n\n**Important points about use cases:**\n\n- Each use case is a description of the way the system is used.\n- They specify the input provided by the user, the processing steps and\n  the output returned.\n  - It uses other data elements to represent input data and output data.\n    See Requests and Response Models.\n- They specify how and when the\n  Entities' Critical\n  Business Rules are invoked.\n  - Entities have no knowledge of the use cases that control them.\n    Entities are at a higher-level than use cases and therefore **do not\n    depend** on them.\n- It does NOT describe the user interface. It only specifies the data to\n  be passed in. Use cases don't know if they are part of a web-system, a\n  desktop client, etc.\n- A use case is an object that has one or more functions that implement\n  the application-specific business rules.\n\n[IMAGE: md_clean-architecture_702dd41670]",
       "depth": 2,
       "metadata": {
         "file_path": "part-5-1-architecture.md",
@@ -939,8 +939,8 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img014",
-          "local_path": "images/md_clean-architecture_img014.png",
+          "id": "md_clean-architecture_702dd41670",
+          "local_path": "images/md_clean-architecture_702dd41670.png",
           "alt_text": "Use case example written as an index card, 'Gather Contact Info for New Loan', listing input, output, and a numbered primary course (validate name and address, get credit score, deny if below 500, else create Customer), annotated that use cases coordinate the use of entities.",
           "context": "markdown_ref:images/part-5/use-case-example.png"
         }
@@ -948,7 +948,7 @@
     },
     {
       "title": "Requests and Response Models",
-      "content": "Since we want the use case to get input data and return output without\ncoupling them to any particular type of I/O device (like the web or the\nDB), we need to introduce simple (non-web related) **Request** and\n**Response** data structures. These structures **should not depend on\nanything**:\n- They should not know about the web or the DB.\n- They should not know about the framework.\n- They should not contain references to Entity objects.\n  - Despite probably sharing data with Entity objects, **the purpose of\n    these two objects is very different and they will change for very\n    different reasons.** Therefore this is\n    [accidental duplication](#the-fear-of-duplication-trap) and it is\n    better to keep them separate.\n\nNot complying with the above will result in your use cases indirectly\ndepending on things like the web or the framework.",
+      "content": "Since we want the use case to get input data and return output without\ncoupling them to any particular type of I/O device (like the web or the\nDB), we need to introduce simple (non-web related) **Request** and\n**Response** data structures. These structures **should not depend on\nanything**:\n- They should not know about the web or the DB.\n- They should not know about the framework.\n- They should not contain references to Entity objects.\n  - Despite probably sharing data with Entity objects, **the purpose of\n    these two objects is very different and they will change for very\n    different reasons.** Therefore this is\n    accidental duplication and it is\n    better to keep them separate.\n\nNot complying with the above will result in your use cases indirectly\ndepending on things like the web or the framework.",
       "depth": 3,
       "metadata": {
         "file_path": "part-5-1-architecture.md",
@@ -974,7 +974,7 @@
       }
     },
     {
-      "title": "2 - Architecture",
+      "title": "Architecture",
       "content": "Note: this was divided into 2 files because it was getting too long.",
       "depth": 0,
       "metadata": {
@@ -983,7 +983,7 @@
     },
     {
       "title": "The Clean Architecture",
-      "content": "Hexagonal Architecture (aka ports and adapters), DCI, BCE are all\narchitecture structures that have this common set of characteristics\n(they vary a little in their details):\n- **Independent of frameworks**\n- **Testable**: business rules are testable without the UI, the DB, the\n  web server, and any other external element.\n- **Independent of the UI:** The UI can change easily with no impact to\n  the business rules. The UI can easily be replaced.\n- **Independent of the database**\n- **Independent of external agents:** The business rules don't know\n  anything about interfaces to the outside world.\n\n**The clean architecture** is an attempt at integrating all these\narchitectures in to a single actionable idea:\n\n[IMAGE: md_clean-architecture_img015]\n\nNext we will explore different aspects of this idea.",
+      "content": "Hexagonal Architecture (aka ports and adapters), DCI, BCE are all\narchitecture structures that have this common set of characteristics\n(they vary a little in their details):\n- **Independent of frameworks**\n- **Testable**: business rules are testable without the UI, the DB, the\n  web server, and any other external element.\n- **Independent of the UI:** The UI can change easily with no impact to\n  the business rules. The UI can easily be replaced.\n- **Independent of the database**\n- **Independent of external agents:** The business rules don't know\n  anything about interfaces to the outside world.\n\n**The clean architecture** is an attempt at integrating all these\narchitectures in to a single actionable idea:\n\n[IMAGE: md_clean-architecture_4c27e5d9c1]\n\nNext we will explore different aspects of this idea.",
       "depth": 1,
       "metadata": {
         "file_path": "part-5-2-architecture.md",
@@ -991,8 +991,8 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img015",
-          "local_path": "images/md_clean-architecture_img015.png",
+          "id": "md_clean-architecture_4c27e5d9c1",
+          "local_path": "images/md_clean-architecture_4c27e5d9c1.png",
           "alt_text": "The classic Clean Architecture concentric-circles diagram (Entities, Use Cases, Interface Adapters, Frameworks & Drivers) with dependencies pointing inward, plus a crossing-boundaries example where a Controller and Presenter talk to a Use Case Interactor through input and output ports.",
           "context": "markdown_ref:images/part-5/clean-architecture.png"
         }
@@ -1018,7 +1018,7 @@
     },
     {
       "title": "Use Cases",
-      "content": "They are *application-specific* business rules. We do expect certain\nchanges to the operation of the software (particularly on how it is\nused) to cause changes in this layer.\n\nThey control the dance of the `Entities` and also use the `Data Access\nInterfaces` to fetch the data used by those Entities into memory from\nthe `Database`. See the\n[Use Cases (Application-specific Business Rules)](part-5-1-architecture.md#use-cases-application-specific-business-rules)\nfor more details.",
+      "content": "They are *application-specific* business rules. We do expect certain\nchanges to the operation of the software (particularly on how it is\nused) to cause changes in this layer.\n\nThey control the dance of the `Entities` and also use the `Data Access\nInterfaces` to fetch the data used by those Entities into memory from\nthe `Database`. See the\nUse Cases (Application-specific Business Rules)\nfor more details.",
       "depth": 3,
       "metadata": {
         "file_path": "part-5-2-architecture.md",
@@ -1081,7 +1081,7 @@
     },
     {
       "title": "Crossing Boundaries",
-      "content": "The diagram above shows an example on how to cross the boundaries. Note\nthe usage of\n[Dependency Inversion](part-3-design-principles.md#chapter-11---the-dependency-inversion-principle)\nto ensure that source code dependencies always point to higher-level\nlayers. Also note that the source code dependency direction is\nindependent from the flow of control (aka flow of execution) direction.",
+      "content": "The diagram above shows an example on how to cross the boundaries. Note\nthe usage of\nDependency Inversion\nto ensure that source code dependencies always point to higher-level\nlayers. Also note that the source code dependency direction is\nindependent from the flow of control (aka flow of execution) direction.",
       "depth": 3,
       "metadata": {
         "file_path": "part-5-2-architecture.md",
@@ -1099,7 +1099,7 @@
     },
     {
       "title": "When should I use and not use the Clean Architecture?",
-      "content": "Note: This section is not en the book. However, Mr. Martin makes\nreference to this in different parts of the book.\n\n**There is an inherent tradeoff between how easy a project is to change\nand maintain and it's simplicity.** This in turn translates into a\ntradeoff between\n[the Cost of Implementing VS Ignoring Boundaries](#chapter-25---the-cost-of-implementing-vs-ignoring-boundaries).\n\n[Chapter 25 - The Cost of Implementing VS Ignoring Boundaries](#chapter-25---the-cost-of-implementing-vs-ignoring-boundaries)\ngives some high-level guidance on how to use a cost-driven approach to\ndetermine which boundaries need to be there, which can be\n[partially implemented](#chapter-24---partial-boundaries) and which can\nbe ignored. However, we offer some practical guidelines on the types of\nprojects that tend to benefit from implementing The Clean Architecture\nVS the types of projects for which it is over-engineered and ends up\nhurting them.",
+      "content": "Note: This section is not en the book. However, Mr. Martin makes\nreference to this in different parts of the book.\n\n**There is an inherent tradeoff between how easy a project is to change\nand maintain and it's simplicity.** This in turn translates into a\ntradeoff between\nthe Cost of Implementing VS Ignoring Boundaries.\n\nChapter 25 - The Cost of Implementing VS Ignoring Boundaries\ngives some high-level guidance on how to use a cost-driven approach to\ndetermine which boundaries need to be there, which can be\npartially implemented and which can\nbe ignored. However, we offer some practical guidelines on the types of\nprojects that tend to benefit from implementing The Clean Architecture\nVS the types of projects for which it is over-engineered and ends up\nhurting them.",
       "depth": 2,
       "metadata": {
         "file_path": "part-5-2-architecture.md",
@@ -1108,7 +1108,7 @@
     },
     {
       "title": "When to use it",
-      "content": "- Long running multi-year projects that should be able to keep up with\n  technology changes (e.g. changes databases or frameworks).\n- Projects that need to support multiple I/O devices (e.g. web, console\n  and desktop).\n- The project needs to be worked on by multiple teams of developers\n  (e.g. 4+ teams).\n- When you *think* you might need to evolve your decoupling mode into\n  [Service Level / Service / Microservice decoupling](part-5-1-architecture.md#the-pitfall-of-micro-services-by-default)\n  but you want to deffer that decision as much as possible.\n  - This service level decoupling desire should be driven by data of\n    which use cases are used more or are expensive that warrant\n    independent deployment and scalability.\n- You are dealing with a domain that has a high inherent complexity to\n  it.\n- Your project will be subject to a lot of change and you are unsure\n  what that changes will be.\n- The stakes of getting it wrong are high.\n\nNote that we can apply the Clean Architecture idea to *parts* of the\nsystem to protect business rules from things that are likely to change.\nWhat is likely to change depends on your business. For example, we could\nprotect the business rules from the UI with a strict boundary but accept\nthat the changing the backing database is unlikely and therefore we can\ntolerate a less strict\n[partial boundary](#chapter-24---partial-boundaries).",
+      "content": "- Long running multi-year projects that should be able to keep up with\n  technology changes (e.g. changes databases or frameworks).\n- Projects that need to support multiple I/O devices (e.g. web, console\n  and desktop).\n- The project needs to be worked on by multiple teams of developers\n  (e.g. 4+ teams).\n- When you *think* you might need to evolve your decoupling mode into\n  Service Level / Service / Microservice decoupling\n  but you want to deffer that decision as much as possible.\n  - This service level decoupling desire should be driven by data of\n    which use cases are used more or are expensive that warrant\n    independent deployment and scalability.\n- You are dealing with a domain that has a high inherent complexity to\n  it.\n- Your project will be subject to a lot of change and you are unsure\n  what that changes will be.\n- The stakes of getting it wrong are high.\n\nNote that we can apply the Clean Architecture idea to *parts* of the\nsystem to protect business rules from things that are likely to change.\nWhat is likely to change depends on your business. For example, we could\nprotect the business rules from the UI with a strict boundary but accept\nthat the changing the backing database is unlikely and therefore we can\ntolerate a less strict\npartial boundary.",
       "depth": 3,
       "metadata": {
         "file_path": "part-5-2-architecture.md",
@@ -1126,7 +1126,7 @@
     },
     {
       "title": "A web application example",
-      "content": "The diagram below shows how the clean architecture could be used in the\ncontext of a request response cycle of a database backed web\napplication.\n\n[IMAGE: md_clean-architecture_img016]\n\nUncle Bob explains how this works clearly in the book:\n\n> The Controller packages that data into a plain old Java object and\n> passes this object through the InputBoundary to the UseCaseInteractor.\n> The UseCaseInteractor interprets that data and uses it to control the\n> dance of the Entities. It also uses the DataAccessInterface to bring\n> the data used by those Entities into memory from the Database. Upon\n> completion, the UseCaseInteractor gathers data from the Entities and\n> constructs the OutputData as another plain old Java object. The\n> OutputData is then passed through the OutputBoundary interface to the\n> Presenter.\n>\n> The job of the Presenter is to repackage the OutputData into viewable\n> form as the ViewModel, which is yet another plain old Java object. The\n> ViewModel contains mostly Strings and flags that the View uses to\n> display the data. Whereas the OutputData may contain Date objects, the\n> Presenter will load the ViewModel with corresponding Strings already\n> formatted properly for the user. The same is true of Currency objects\n> or any other business-related data. Button and MenuItem names are\n> placed in the ViewModel, as are flags that tell the View whether those\n> Buttons and MenuItems should be gray.\n>\n> This leaves the View with almost nothing to do other than to move the\n> data from the ViewModel into the HTML page.\n\n\nNote that this example assumes that we want to maintain strict\narchitectural boundaries between the layers and therefore represents an\nideal case. In\n[Chapter 24 - Partial Boundaries](#chapter-24---partial-boundaries),\nUncle Bob discusses the cost of maintaining strict boundaries and offers\nsome ways of introducing less strict boundaries that *could* become\nstrict if needed.",
+      "content": "The diagram below shows how the clean architecture could be used in the\ncontext of a request response cycle of a database backed web\napplication.\n\n[IMAGE: md_clean-architecture_5f4f17f5bb]\n\nUncle Bob explains how this works clearly in the book:\n\n> The Controller packages that data into a plain old Java object and\n> passes this object through the InputBoundary to the UseCaseInteractor.\n> The UseCaseInteractor interprets that data and uses it to control the\n> dance of the Entities. It also uses the DataAccessInterface to bring\n> the data used by those Entities into memory from the Database. Upon\n> completion, the UseCaseInteractor gathers data from the Entities and\n> constructs the OutputData as another plain old Java object. The\n> OutputData is then passed through the OutputBoundary interface to the\n> Presenter.\n>\n> The job of the Presenter is to repackage the OutputData into viewable\n> form as the ViewModel, which is yet another plain old Java object. The\n> ViewModel contains mostly Strings and flags that the View uses to\n> display the data. Whereas the OutputData may contain Date objects, the\n> Presenter will load the ViewModel with corresponding Strings already\n> formatted properly for the user. The same is true of Currency objects\n> or any other business-related data. Button and MenuItem names are\n> placed in the ViewModel, as are flags that tell the View whether those\n> Buttons and MenuItems should be gray.\n>\n> This leaves the View with almost nothing to do other than to move the\n> data from the ViewModel into the HTML page.\n\n\nNote that this example assumes that we want to maintain strict\narchitectural boundaries between the layers and therefore represents an\nideal case. In\nChapter 24 - Partial Boundaries,\nUncle Bob discusses the cost of maintaining strict boundaries and offers\nsome ways of introducing less strict boundaries that *could* become\nstrict if needed.",
       "depth": 2,
       "metadata": {
         "file_path": "part-5-2-architecture.md",
@@ -1134,8 +1134,8 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img016",
-          "local_path": "images/md_clean-architecture_img016.png",
+          "id": "md_clean-architecture_5f4f17f5bb",
+          "local_path": "images/md_clean-architecture_5f4f17f5bb.png",
           "alt_text": "Detailed source-code dependency diagram of a Clean Architecture scenario: Controller and Presenter communicate with a Use Case Interactor via Input/Output Data structures and Use Case ports, with a Data Access Interface shielding the database; a note stresses it shows dependencies, not flow of control.",
           "context": "markdown_ref:images/part-5/clean-architecture-in-a-web-application-example.png"
         }
@@ -1143,7 +1143,7 @@
     },
     {
       "title": "Sample Code",
-      "content": "The code below contains a possible pseudo-code implementation of the\narchitecture above.Only the parts that can cause confusion are shown,\nthe others I think are fairly obvious.\n\nNote that this code is only schematic. These are a couple of things to\nconsider when reading this code:\n- The classes could be decoupled further by using dependency injection\n  frameworks,\n  [`Abstract Factories`](part-3-design-principles.md#abstract-factories)\n  among other patterns. As with everything with software, whether you\n  want to use these other techniques or not... **it depends** on your\n  situation.\n- The code below assumes that the `Presenter` is the entrypoint to all\n  view-related logic and that it is capable of rendering the html\n  templates. There are benefits to this approach. However, most web\n  frameworks like Rails make the controller actions determine which html\n  template needs to be rendered.\n  - In this case, the controller code changes slightly. See\n    [the discussion about option#1 and option#2 on this Stack Overflow post](https://softwareengineering.stackexchange.com/questions/357052/clean-architecture-use-case-containing-the-presenter-or-returning-data)\n    for more information about these approaches.\n- The names of the classes were selected to match the diagram. In a real\n  application, this names will match concepts from the domain.",
+      "content": "The code below contains a possible pseudo-code implementation of the\narchitecture above.Only the parts that can cause confusion are shown,\nthe others I think are fairly obvious.\n\nNote that this code is only schematic. These are a couple of things to\nconsider when reading this code:\n- The classes could be decoupled further by using dependency injection\n  frameworks,\n  `Abstract Factories`\n  among other patterns. As with everything with software, whether you\n  want to use these other techniques or not... **it depends** on your\n  situation.\n- The code below assumes that the `Presenter` is the entrypoint to all\n  view-related logic and that it is capable of rendering the html\n  templates. There are benefits to this approach. However, most web\n  frameworks like Rails make the controller actions determine which html\n  template needs to be rendered.\n  - In this case, the controller code changes slightly. See\n    [the discussion about option#1 and option#2 on this Stack Overflow post](https://softwareengineering.stackexchange.com/questions/357052/clean-architecture-use-case-containing-the-presenter-or-returning-data)\n    for more information about these approaches.\n- The names of the classes were selected to match the diagram. In a real\n  application, this names will match concepts from the domain.",
       "depth": 3,
       "metadata": {
         "file_path": "part-5-2-architecture.md",
@@ -1215,7 +1215,7 @@
     },
     {
       "title": "Partial Boundaries",
-      "content": "Fully-fledged strict architectural boundaries result the creation of a\nlot of `interfaces` and `data structure` classes to maintain. Sometimes,\nthis can be judged as too complex or too expensive to build in light of\nthe specifics of the project. See\n[the next chapter](#chapter-25---the-cost-of-implementing-vs-ignoring-boundaries)\nfor more information of when to use these.\n\nFor those cases, we might want to introduce a **Partial Boundary**. A\npartial boundary allows us to reduce the complexity (in terms of number\nof files) but ideally still leaves room to upgrade to a strict boundary\nif needed.\n\nNote that all partial boundaries are open to degradation if developers\nare not disciplined. Therefore, there might be some work required to\nupgrade it to a strict boundary.\n\nNote that as a general rule of thumb, code from outer layers should be\ncompromised with partial boundaries first.\n\nUncle Bob offers 3 examples of how to introduce partial boundaries.\nThere are many more ways.",
+      "content": "Fully-fledged strict architectural boundaries result the creation of a\nlot of `interfaces` and `data structure` classes to maintain. Sometimes,\nthis can be judged as too complex or too expensive to build in light of\nthe specifics of the project. See\nthe next chapter\nfor more information of when to use these.\n\nFor those cases, we might want to introduce a **Partial Boundary**. A\npartial boundary allows us to reduce the complexity (in terms of number\nof files) but ideally still leaves room to upgrade to a strict boundary\nif needed.\n\nNote that all partial boundaries are open to degradation if developers\nare not disciplined. Therefore, there might be some work required to\nupgrade it to a strict boundary.\n\nNote that as a general rule of thumb, code from outer layers should be\ncompromised with partial boundaries first.\n\nUncle Bob offers 3 examples of how to introduce partial boundaries.\nThere are many more ways.",
       "depth": 1,
       "metadata": {
         "file_path": "part-5-2-architecture.md",
@@ -1224,7 +1224,7 @@
     },
     {
       "title": "Partial Boundary 1: Use Source Level Decoupling Mode",
-      "content": "Of the 3 techniques offered, this is the one that compromises the least\nin terms of boundary strictness.\n\nIt is basically doing all the coding work to achieve true\n[Source Level Decoupling](part-5-1-architecture.md#decoupling-modes) but\nnot taking the step into\n[Deployment Level Decoupling](part-5-1-architecture.md#decoupling-modes).\n\nSource Level decoupling is significantly cheaper than deployment level\nbecause there is no multi-package version tracking or release / build\nmanagement burden.\n\nHowever, since the code is still in the same project, it is easy for\ndevelopers to weaken the boundary by making source code imports that\ncross the boundaries in the wrong direction.",
+      "content": "Of the 3 techniques offered, this is the one that compromises the least\nin terms of boundary strictness.\n\nIt is basically doing all the coding work to achieve true\nSource Level Decoupling but\nnot taking the step into\nDeployment Level Decoupling.\n\nSource Level decoupling is significantly cheaper than deployment level\nbecause there is no multi-package version tracking or release / build\nmanagement burden.\n\nHowever, since the code is still in the same project, it is easy for\ndevelopers to weaken the boundary by making source code imports that\ncross the boundaries in the wrong direction.",
       "depth": 2,
       "metadata": {
         "file_path": "part-5-2-architecture.md",
@@ -1233,7 +1233,7 @@
     },
     {
       "title": "Partial Boundary 2: Group Service Interfaces or Implementations",
-      "content": "This is better explained through an example. Imagine we are implementing\na `ListAllUsers` use case.\n\nIn a strict implementation that separates both vertical and horizontal\nlayers, we would declare a `ListAllUsersDataAccessInterface` that\nrequires the implementation of `#listUsers`. In turn, we would create a\n`ListAllUsersRepo` that implements `ListAllUsersDataAccessInterface` and\nactually makes the query to the DB. So far we have 3 files.\n\nNow imagine we also want to create the `ListAllAdminUsers` use case. In\na strict implementation, this will result in another interface and\nanother repository files to be created.\n\nWe now have 6 files in total (not counting tests). This is perfect\nvertical separation, but a lot of code to maintain.\n\nWe could reduce the number of files by for example keeping the interface\ndeclaration separate but declaring a single `UsersRepository` that\nimplements all interfaces.\n\nVertical separation is lost and moving into deployment level decoupling\nis no longer immediately possible. However, it shouldn't be too hard to\nrefactor out back into vertical slices if needed.\n\nWe can reduce the file number even more by avoiding the interfaces\naltogether. However, the compromises here are larger and the risk of\nlosing control of the boundary is also higher.\n\n[IMAGE: md_clean-architecture_img017]\n\nSee\n[Chapter 33 - Case Study: Video Sales](part-6-details.md#step-2-create-a-preliminary-component-architecture)\nfor a practical example of this partial boundary.",
+      "content": "This is better explained through an example. Imagine we are implementing\na `ListAllUsers` use case.\n\nIn a strict implementation that separates both vertical and horizontal\nlayers, we would declare a `ListAllUsersDataAccessInterface` that\nrequires the implementation of `#listUsers`. In turn, we would create a\n`ListAllUsersRepo` that implements `ListAllUsersDataAccessInterface` and\nactually makes the query to the DB. So far we have 3 files.\n\nNow imagine we also want to create the `ListAllAdminUsers` use case. In\na strict implementation, this will result in another interface and\nanother repository files to be created.\n\nWe now have 6 files in total (not counting tests). This is perfect\nvertical separation, but a lot of code to maintain.\n\nWe could reduce the number of files by for example keeping the interface\ndeclaration separate but declaring a single `UsersRepository` that\nimplements all interfaces.\n\nVertical separation is lost and moving into deployment level decoupling\nis no longer immediately possible. However, it shouldn't be too hard to\nrefactor out back into vertical slices if needed.\n\nWe can reduce the file number even more by avoiding the interfaces\naltogether. However, the compromises here are larger and the risk of\nlosing control of the boundary is also higher.\n\n[IMAGE: md_clean-architecture_bef09df545]\n\nSee\nChapter 33 - Case Study: Video Sales\nfor a practical example of this partial boundary.",
       "depth": 2,
       "metadata": {
         "file_path": "part-5-2-architecture.md",
@@ -1241,8 +1241,8 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img017",
-          "local_path": "images/md_clean-architecture_img017.png",
+          "id": "md_clean-architecture_bef09df545",
+          "local_path": "images/md_clean-architecture_bef09df545.png",
           "alt_text": "Comparison of partial-boundary strategies: split data-access interfaces with one Users Repository implementing both (recompilation cost but boundary preserved) versus no interfaces (boundary crossed in the wrong direction, harder to split vertically later).",
           "context": "markdown_ref:images/part-5/partial-boundaries-grouping-interfaces.png"
         }
@@ -1250,7 +1250,7 @@
     },
     {
       "title": "Partial Boundary 3: Reduce Cognitive Load Introducing a Facade",
-      "content": "In Part III, we saw how\n[Facades](part-3-design-principles.md#approach-2-use-class-as-facade)\ncan be used to reduce the cognitive load of having to deal with many\nsmall classes.\n\nThe next diagram shows that that pattern can be used to introduce a\npartial boundary. It also comes with the compromise of boundaries being\ncrossed in the wrong direction and risk of losing control of the\nboundary.\n\n[IMAGE: md_clean-architecture_img018]",
+      "content": "In Part III, we saw how\nFacades\ncan be used to reduce the cognitive load of having to deal with many\nsmall classes.\n\nThe next diagram shows that that pattern can be used to introduce a\npartial boundary. It also comes with the compromise of boundaries being\ncrossed in the wrong direction and risk of losing control of the\nboundary.\n\n[IMAGE: md_clean-architecture_63503ad2cd]",
       "depth": 2,
       "metadata": {
         "file_path": "part-5-2-architecture.md",
@@ -1258,8 +1258,8 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img018",
-          "local_path": "images/md_clean-architecture_img018.png",
+          "id": "md_clean-architecture_63503ad2cd",
+          "local_path": "images/md_clean-architecture_63503ad2cd.png",
           "alt_text": "Partial boundary using a Facade: List All Users and List All Admin Users use cases call a Users Facade that fronts separate Users and Admin Users repositories, keeping splittable components centralized for cognitive simplicity despite the dependency crossing the boundary in the wrong direction.",
           "context": "markdown_ref:images/part-5/partial-boundaries-facades.png"
         }
@@ -1267,7 +1267,7 @@
     },
     {
       "title": "The Cost of Implementing VS Ignoring Boundaries",
-      "content": "This chapter shows an example of how Clean Architecture thinking can be\napplied to a simple game that has increasingly complex requirements and\nhow that leads to discovery of potential boundaries that didn't look\napparent.\n\nThe points being made here are:\n- Even for simple programs, we can come up with many architectural\n  boundaries everywhere if we try hard enough.\n- Software architecture has an unfortunate inherent trade-off between\n  the cost of implementing boundaries VS the cost of ignoring them.\n- Implementing a strict boundary when the software is simple and the\n  boundary could be ignored is costly and leads to over-engineering.\n- Implementing a boundary after we have ignored one is costly and risky.\n  Also, permanently ignoring one where it is needed makes the project\n  costly to maintain and change.\n- **So what do we do?** We weigh the costs and risks of implementing vs\n  ignoring to determine where architectural boundaries lie, which should\n  be strict, which can be [partial](#chapter-24---partial-boundaries)\n  and which can be ignored.\n- Note that this is not one time decision. As the project evolves, we\n  watch what things are causing friction in the development and\n  maintainability and could use a boundary.\n  - Our goal is to implement the boundary at the point where **the cost\n    of implementation is less than the cost of ignoring.**",
+      "content": "This chapter shows an example of how Clean Architecture thinking can be\napplied to a simple game that has increasingly complex requirements and\nhow that leads to discovery of potential boundaries that didn't look\napparent.\n\nThe points being made here are:\n- Even for simple programs, we can come up with many architectural\n  boundaries everywhere if we try hard enough.\n- Software architecture has an unfortunate inherent trade-off between\n  the cost of implementing boundaries VS the cost of ignoring them.\n- Implementing a strict boundary when the software is simple and the\n  boundary could be ignored is costly and leads to over-engineering.\n- Implementing a boundary after we have ignored one is costly and risky.\n  Also, permanently ignoring one where it is needed makes the project\n  costly to maintain and change.\n- **So what do we do?** We weigh the costs and risks of implementing vs\n  ignoring to determine where architectural boundaries lie, which should\n  be strict, which can be partial\n  and which can be ignored.\n- Note that this is not one time decision. As the project evolves, we\n  watch what things are causing friction in the development and\n  maintainability and could use a boundary.\n  - Our goal is to implement the boundary at the point where **the cost\n    of implementation is less than the cost of ignoring.**",
       "depth": 1,
       "metadata": {
         "file_path": "part-5-2-architecture.md",
@@ -1276,7 +1276,7 @@
     },
     {
       "title": "The Main Component, The Ultimate Detail",
-      "content": "> In every system, there is at least one component that creates,\n> coordinates, and oversees the others. I call this component `Main`.\n\nUnder the *Clean Architecture*, `Main` is the outer-most layer and is\nthe lowest-level plugin to the application. This layer is not depicted\nin the diagram shown in\n[Chapter 22 - The Clean Architecture](#chapter-22---the-clean-architecture).\n\nThe job of `Main` is:\n- Create all Factories, Strategies and other global facilities, then\n  hand over control to the high-level portions of the system.\n- The dependency injection framework should inject dependencies into\n  `Main`. Then `Main` should distribute those dependencies just using\n  code (without a framework).\n\nSince main is a plugin, it is possible to have many `Main` components,\none for each configuration of your app. For example:\n- `Main` for `Dev` another for `Test` and another for `Production`.\n- One `Main` for every deployment region of your business.",
+      "content": "> In every system, there is at least one component that creates,\n> coordinates, and oversees the others. I call this component `Main`.\n\nUnder the *Clean Architecture*, `Main` is the outer-most layer and is\nthe lowest-level plugin to the application. This layer is not depicted\nin the diagram shown in\nChapter 22 - The Clean Architecture.\n\nThe job of `Main` is:\n- Create all Factories, Strategies and other global facilities, then\n  hand over control to the high-level portions of the system.\n- The dependency injection framework should inject dependencies into\n  `Main`. Then `Main` should distribute those dependencies just using\n  code (without a framework).\n\nSince main is a plugin, it is possible to have many `Main` components,\none for each configuration of your app. For example:\n- `Main` for `Dev` another for `Test` and another for `Production`.\n- One `Main` for every deployment region of your business.",
       "depth": 1,
       "metadata": {
         "file_path": "part-5-2-architecture.md",
@@ -1285,7 +1285,7 @@
     },
     {
       "title": "Services: Great and Small",
-      "content": "This chapter expands on the ideas exposed in\n[Chapter 16 - Vertical and Horizontal Layers and Independence](part-5-1-architecture.md#chapter-16---vertical-and-horizontal-layers-and-independence)  \nbut purely focused on services (i.e. a service-level decoupling mode). I\nrecommend you read that chapter first.\n\nService-oriented \"architectures\" and microservices have become popular\nrecently due to 2 reasons:\n- Services *seem* to be strongly decoupled from each other. As we shall\n  see, this is only partially true.\n- Services *appear* to support independence of development and\n  deployment. Again, as we shall see, this is only partially true.",
+      "content": "This chapter expands on the ideas exposed in\nChapter 16 - Vertical and Horizontal Layers and Independence  \nbut purely focused on services (i.e. a service-level decoupling mode). I\nrecommend you read that chapter first.\n\nService-oriented \"architectures\" and microservices have become popular\nrecently due to 2 reasons:\n- Services *seem* to be strongly decoupled from each other. As we shall\n  see, this is only partially true.\n- Services *appear* to support independence of development and\n  deployment. Again, as we shall see, this is only partially true.",
       "depth": 1,
       "metadata": {
         "file_path": "part-5-2-architecture.md",
@@ -1294,7 +1294,7 @@
     },
     {
       "title": "Are Services an Architecture?",
-      "content": "Services are really a\n[Decoupling Mode](part-5-1-architecture.md#decoupling-modes), not an\narchitecture in itself.\n- Sometimes services *are* architecturally significant. This happens\n  when a well defined architectural component has been decoupled as a\n  service.\n- Applications can have ill-conceived services, where they do not have\n  architectural relevance. In these cases, the system is polluted with\n  expensive network calls between undefined boundaries (e.g. distributed\n  monoliths).\n- Services ***don't have to be** architecturally relevant. There are\n  legitimate reasons to have code running in independent services. This\n  chapter only focuses on services that are architecturally significant.\n\nThe point is, the services **do not define the architecture.**",
+      "content": "Services are really a\nDecoupling Mode, not an\narchitecture in itself.\n- Sometimes services *are* architecturally significant. This happens\n  when a well defined architectural component has been decoupled as a\n  service.\n- Applications can have ill-conceived services, where they do not have\n  architectural relevance. In these cases, the system is polluted with\n  expensive network calls between undefined boundaries (e.g. distributed\n  monoliths).\n- Services ***don't have to be** architecturally relevant. There are\n  legitimate reasons to have code running in independent services. This\n  chapter only focuses on services that are architecturally significant.\n\nThe point is, the services **do not define the architecture.**",
       "depth": 2,
       "metadata": {
         "file_path": "part-5-2-architecture.md",
@@ -1321,7 +1321,7 @@
     },
     {
       "title": "The Pitfall of Services by Functional Decomposition",
-      "content": "A naive strategy for deciding how to divide a system into independent\nservices is divide them **by function** (aka functional decomposition).\nFor example, in a ride-sharing application like Uber, the engineers\ncould create the following microservices:\n- Ride Finder Service: keeps the inventory of all possible rides.\n- Ride Selector Service: Selects the best ride for the user given its\n  constraints on location, cost, time, luxury, etc.\n- Ride Dispatcher Service: Once selected, orders the ride.\n\nThis type of decomposition is that it is a **\"purely horizontal\"**\ndivision and completely ignores\n[the vertical layers](part-5-1-architecture.md#chapter-16---vertical-and-horizontal-layers-and-independence)  \nthat are based on use cases.\n\nThe problem with this division is that it is very hard to change in\nlight of cross-cutting feature changes (changes that require to touch\neverything from the UI to the DB). For example, if the Uber marketing\nteam now wanted the business to offer delivery of small parcels\n(something conceptually very similar to delivering people), the\nengineering team would be forced to modify **every single\nmicroservice**. Even worse, they face the risk of breaking the **people\ndelivery** part of the business while working on the **parcel delivery\npart**.",
+      "content": "A naive strategy for deciding how to divide a system into independent\nservices is divide them **by function** (aka functional decomposition).\nFor example, in a ride-sharing application like Uber, the engineers\ncould create the following microservices:\n- Ride Finder Service: keeps the inventory of all possible rides.\n- Ride Selector Service: Selects the best ride for the user given its\n  constraints on location, cost, time, luxury, etc.\n- Ride Dispatcher Service: Once selected, orders the ride.\n\nThis type of decomposition is that it is a **\"purely horizontal\"**\ndivision and completely ignores\nthe vertical layers  \nthat are based on use cases.\n\nThe problem with this division is that it is very hard to change in\nlight of cross-cutting feature changes (changes that require to touch\neverything from the UI to the DB). For example, if the Uber marketing\nteam now wanted the business to offer delivery of small parcels\n(something conceptually very similar to delivering people), the\nengineering team would be forced to modify **every single\nmicroservice**. Even worse, they face the risk of breaking the **people\ndelivery** part of the business while working on the **parcel delivery\npart**.",
       "depth": 2,
       "metadata": {
         "file_path": "part-5-2-architecture.md",
@@ -1339,7 +1339,7 @@
     },
     {
       "title": "Distributed Vertical Layers",
-      "content": "If you already are in a situation where your system has microservices\ndivided by functional decomposition, there are still things you can do\nto make it easier to change in the light of cross-cutting changes. The\nnext diagram summarises the idea.\n\n[IMAGE: md_clean-architecture_img019]",
+      "content": "If you already are in a situation where your system has microservices\ndivided by functional decomposition, there are still things you can do\nto make it easier to change in the light of cross-cutting changes. The\nnext diagram summarises the idea.\n\n[IMAGE: md_clean-architecture_617d60f610]",
       "depth": 2,
       "metadata": {
         "file_path": "part-5-2-architecture.md",
@@ -1347,8 +1347,8 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img019",
-          "local_path": "images/md_clean-architecture_img019.png",
+          "id": "md_clean-architecture_617d60f610",
+          "local_path": "images/md_clean-architecture_617d60f610.png",
           "alt_text": "Two-panel taxi aggregator case study: the architecture designed while ignoring the current microservices (Taxi Finder/Selector/Dispatcher with Rides and Parcels logic kept separate) versus its implementation in the current state of microservices, with one horizontal layer per business line and internal component boundaries.",
           "context": "markdown_ref:images/part-5/recovering-from-services-by-functional-decomposition.png"
         }
@@ -1428,7 +1428,7 @@
     },
     {
       "title": "Relational Databases",
-      "content": "Relational databases are elegant and mathematically sound technology.\nHowever, while relational tables represent a convenient form of data\nstorage and access, there is nothing architecturally significant about\narranging data in rows within tables.\n\n- Your use cases should not know or care about the way data is stored.\n- Knowledge of the tabular structure should be restricted to the data\n  access (aka gateways) layer of the\n  [clean architecture](part-5-2-architecture.md#chapter-22---the-clean-architecture).\n- Many frameworks allow database rows and tables to be passed around the\n  system. This is an architectural error that couples use cases,\n  business rules and even the UI to the structure of the data.\n- Your use cases should depend on your **data model**, which most likely\n  is a set of rich objects or data structures like linked lists, trees,\n  hash tables, queues, etc. We almost always map the tabular data into\n  other data structures and very rarely work with rows and tables\n  directly on our use cases or business rules.",
+      "content": "Relational databases are elegant and mathematically sound technology.\nHowever, while relational tables represent a convenient form of data\nstorage and access, there is nothing architecturally significant about\narranging data in rows within tables.\n\n- Your use cases should not know or care about the way data is stored.\n- Knowledge of the tabular structure should be restricted to the data\n  access (aka gateways) layer of the\n  clean architecture.\n- Many frameworks allow database rows and tables to be passed around the\n  system. This is an architectural error that couples use cases,\n  business rules and even the UI to the structure of the data.\n- Your use cases should depend on your **data model**, which most likely\n  is a set of rich objects or data structures like linked lists, trees,\n  hash tables, queues, etc. We almost always map the tabular data into\n  other data structures and very rarely work with rows and tables\n  directly on our use cases or business rules.",
       "depth": 2,
       "metadata": {
         "file_path": "part-6-details.md",
@@ -1482,7 +1482,7 @@
     },
     {
       "title": "Use frameworks but do not marry them",
-      "content": "Treat frameworks as details and limit its use to the outer layers of the\n[clean architecture.](part-5-2-architecture.md#chapter-22---the-clean-architecture)\nThat is, don't let them into your `Use Cases` or `Entities`.\n\nIf you *need* to let them in, don't derive a framework class, derive a\nproxy instead that you control and that acts as a *plugin* to the\nbusiness rules.",
+      "content": "Treat frameworks as details and limit its use to the outer layers of the\nclean architecture.\nThat is, don't let them into your `Use Cases` or `Entities`.\n\nIf you *need* to let them in, don't derive a framework class, derive a\nproxy instead that you control and that acts as a *plugin* to the\nbusiness rules.",
       "depth": 2,
       "metadata": {
         "file_path": "part-6-details.md",
@@ -1509,7 +1509,7 @@
     },
     {
       "title": "Step 1: Use Case Analysis: Identify the actors and their use cases",
-      "content": "- Each\n  [actor](part-3-design-principles.md#chapter-7---the-single-responsibility-principle)\n  represents a group of people that will drive changes into the system\n  (they are reasons why the systems needs to change).\n- Partition the system such that changes for one actor does not impact\n  other actors.\n\n[IMAGE: md_clean-architecture_img020]",
+      "content": "- Each\n  actor\n  represents a group of people that will drive changes into the system\n  (they are reasons why the systems needs to change).\n- Partition the system such that changes for one actor does not impact\n  other actors.\n\n[IMAGE: md_clean-architecture_6a25650534]",
       "depth": 2,
       "metadata": {
         "file_path": "part-6-details.md",
@@ -1517,8 +1517,8 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img020",
-          "local_path": "images/md_clean-architecture_img020.png",
+          "id": "md_clean-architecture_6a25650534",
+          "local_path": "images/md_clean-architecture_6a25650534.png",
           "alt_text": "UML use case diagram for a video streaming product with Author, Admin, Purchaser, and Viewer actors and their use cases (submit MP4, purchase licenses, view catalog, stream video), highlighting abstract use cases shared across actors with a note to keep concrete use cases separate.",
           "context": "markdown_ref:images/part-6/use-case-analysis-example.png"
         }
@@ -1526,7 +1526,7 @@
     },
     {
       "title": "Step 2: Create a Preliminary Component Architecture",
-      "content": "[IMAGE: md_clean-architecture_img021]\n\nNote that in this case, the `Gateways` are not divided by use case,\nmeaning that this architecture does not follow the strict\n[vertical and horizontal layer division](part-5-1-architecture.md#thinking-in-layers)\npresented before.\n\nThis an example of a\n[partial boundary](part-5-2-architecture.md#partial-boundary-2-group-service-interfaces-or-implementations)\ntrade-off, made to reduce the project complexity. Note that the rest of\nthe components do maintain vertical and horizontal layering and that the\ncompromise was made on one of the outer layers (not on the use cases or\nentities).",
+      "content": "[IMAGE: md_clean-architecture_c58cd43b14]\n\nNote that in this case, the `Gateways` are not divided by use case,\nmeaning that this architecture does not follow the strict\nvertical and horizontal layer division\npresented before.\n\nThis an example of a\npartial boundary\ntrade-off, made to reduce the project complexity. Note that the rest of\nthe components do maintain vertical and horizontal layering and that the\ncompromise was made on one of the outer layers (not on the use cases or\nentities).",
       "depth": 2,
       "metadata": {
         "file_path": "part-6-details.md",
@@ -1534,8 +1534,8 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img021",
-          "local_path": "images/md_clean-architecture_img021.png",
+          "id": "md_clean-architecture_c58cd43b14",
+          "local_path": "images/md_clean-architecture_c58cd43b14.png",
           "alt_text": "Component diagram of the video streaming system partitioned by actor: Admin, Author, Purchaser, and Viewer each get Views, Presenters, Interactors, and Controllers, with Revenue/Data/Database gateways below; notes explain decoupling-mode options and that boundary crossings follow the dependency rule.",
           "context": "markdown_ref:images/part-6/preliminary-architecture-example.png"
         }
@@ -1543,7 +1543,7 @@
     },
     {
       "title": "Step 3: Verify the Dependency Management",
-      "content": "Make sure your preliminary design follows the\n[Dependency Rule](part-5-2-architecture.md#the-dependency-rule):\n- Arrows point towards the higher-level components.\n- All arrows cross boundaries in the same direction.",
+      "content": "Make sure your preliminary design follows the\nDependency Rule:\n- Arrows point towards the higher-level components.\n- All arrows cross boundaries in the same direction.",
       "depth": 2,
       "metadata": {
         "file_path": "part-6-details.md",
@@ -1561,7 +1561,7 @@
     },
     {
       "title": "Strategy 1: Package by layer",
-      "content": "- Separate code by what it does form the technical perspective, for\n  example `models`, `views` and `controllers`.\n- This is a horizontal-only layering approach. Ideally layers only\n  depend on the next adjacent layer.\n- In Java, layers are often implemented as packages.\n- **Pros:** simple way to get started. Easy to understand.\n- **Cons:**\n  - As software becomes more complex, the pre-established amount of\n    layers is not sufficient. Not all features require all layers.\n  - The project structure does not\n    [scream](part-5-1-architecture.md#chapter-21---screaming-architecture)\n    what the project does.\n  - It is easy for developers to \"skip a layer\" and still maintain the\n    rule of \"all dependencies should point downward\". For example, a\n    controller may import a repository directly skipping the\n    interactors. \"Skipping a layer\" can quickly degrade into big balls\n    of mud.",
+      "content": "- Separate code by what it does form the technical perspective, for\n  example `models`, `views` and `controllers`.\n- This is a horizontal-only layering approach. Ideally layers only\n  depend on the next adjacent layer.\n- In Java, layers are often implemented as packages.\n- **Pros:** simple way to get started. Easy to understand.\n- **Cons:**\n  - As software becomes more complex, the pre-established amount of\n    layers is not sufficient. Not all features require all layers.\n  - The project structure does not\n    scream\n    what the project does.\n  - It is easy for developers to \"skip a layer\" and still maintain the\n    rule of \"all dependencies should point downward\". For example, a\n    controller may import a repository directly skipping the\n    interactors. \"Skipping a layer\" can quickly degrade into big balls\n    of mud.",
       "depth": 3,
       "metadata": {
         "file_path": "part-6-details.md",
@@ -1579,7 +1579,7 @@
     },
     {
       "title": "Strategy 3: Ports and adapters",
-      "content": "- Architectures like \"ports and adapters\", \"hexagonal architecture\",\n  \"boundaries, controllers, entities\" all have this organisation\n  strategy.\n- Roughly speaking, all bits of code on a project can be categorized as\n  being \"inside\" if they are part of the domain business rules, or\n  \"outside\" if the are infrastructure or details.\n- Things \"inside\" are independent from technical implementation details\n  such as frameworks and databases.\n- Things \"outside\" depend on things \"inside\", not the other way around.\n- An example of packaging in java is shown next.\n- **Pros:**\n  - Good encapsulation that naturally follows the\n    [horizontal and vertical](part-5-1-architecture.md#thinking-in-layers)\n    layering.\n- **Cons:**\n  - Will lead to a large number of packages.\n  - It is still technically possible for the `OrdersController` to\n    import the `Orders<I>` skipping the `OrdersService<I>` (more on this\n    on the next section).\n\n[IMAGE: md_clean-architecture_img022]",
+      "content": "- Architectures like \"ports and adapters\", \"hexagonal architecture\",\n  \"boundaries, controllers, entities\" all have this organisation\n  strategy.\n- Roughly speaking, all bits of code on a project can be categorized as\n  being \"inside\" if they are part of the domain business rules, or\n  \"outside\" if the are infrastructure or details.\n- Things \"inside\" are independent from technical implementation details\n  such as frameworks and databases.\n- Things \"outside\" depend on things \"inside\", not the other way around.\n- An example of packaging in java is shown next.\n- **Pros:**\n  - Good encapsulation that naturally follows the\n    horizontal and vertical\n    layering.\n- **Cons:**\n  - Will lead to a large number of packages.\n  - It is still technically possible for the `OrdersController` to\n    import the `Orders<I>` skipping the `OrdersService<I>` (more on this\n    on the next section).\n\n[IMAGE: md_clean-architecture_b6d8167d29]",
       "depth": 3,
       "metadata": {
         "file_path": "part-6-details.md",
@@ -1587,8 +1587,8 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img022",
-          "local_path": "images/md_clean-architecture_img022.png",
+          "id": "md_clean-architecture_b6d8167d29",
+          "local_path": "images/md_clean-architecture_b6d8167d29.png",
           "alt_text": "UML package diagram of a ports-and-adapters style layout marking inside versus outside: OrdersController in the web package and JdbcOrdersRepository in the database package are outside, while the domain package with OrdersService interface, OrdersServiceImpl, and Orders interface is inside.",
           "context": "markdown_ref:images/part-6/example-of-ports-and-adapters-packaging.png"
         }
@@ -1596,7 +1596,7 @@
     },
     {
       "title": "Strategy 4: Simon Brown's Package by Component",
-      "content": "This is Simon Brown's preference on how to organize code It uses a\nslightly different definition of \"component\" than Uncle Bob's.\n- For Uncle Bob, a \"component\" is a fine grained grouping of\n  functionality that, if needed *could* be packaged into a single jar\n  file each. The *actual* division of components into packages is not\n  prescribed by Uncle Bob and left up to the engineers to figure out\n  what makes sense for their application (although he gives some\n  pointers\n  [here](part-5-1-architecture.md#uncle-bobs-preferred-decoupling-mode-strategy)).\n  See\n  [the preliminary component architecture above](#step-2-create-a-preliminary-component-architecture)\n  fo an example of what he means by components.\n- For Simon, \"components\" are coarser and the concept is much more\n  related to an actual suggested Java package division strategy for code\n  organisation an the usage of **package visibility modifiers** to\n  **enforce the architecture and encapsulation.**\n\nSimon's \"package by component\" does not contradict the ideas from Clean\nArchitecture. His idea represent a practical implementation of how to\ndivide code into Java packages.\n\nThe problems he is trying to solve are:\n- In the \"package by layer\", \"package by feature\" and \"ports and\n  adapters\" packaging strategies there is nothing stopping a developer\n  from \"skipping a layer\" and doing something like importing the\n  `OrdersRepository<I>` in the `OrdersController`.\n- To avoid problems like this to happen, teams often rely on discipline\n  (but we know how that goes) or extra static analysis tools to detect\n  when the intended architecture has been violated. He argues that the\n  best approach to enforce this architectural principle is via the\n  compiler.\n  - Static analysis tools work, but sometimes extend the feedback cycle\n    too much.\n\nThe next image illustrates Simon's \"package by component\" strategy.\n\n[IMAGE: md_clean-architecture_img023]",
+      "content": "This is Simon Brown's preference on how to organize code It uses a\nslightly different definition of \"component\" than Uncle Bob's.\n- For Uncle Bob, a \"component\" is a fine grained grouping of\n  functionality that, if needed *could* be packaged into a single jar\n  file each. The *actual* division of components into packages is not\n  prescribed by Uncle Bob and left up to the engineers to figure out\n  what makes sense for their application (although he gives some\n  pointers\n  here).\n  See\n  the preliminary component architecture above\n  fo an example of what he means by components.\n- For Simon, \"components\" are coarser and the concept is much more\n  related to an actual suggested Java package division strategy for code\n  organisation an the usage of **package visibility modifiers** to\n  **enforce the architecture and encapsulation.**\n\nSimon's \"package by component\" does not contradict the ideas from Clean\nArchitecture. His idea represent a practical implementation of how to\ndivide code into Java packages.\n\nThe problems he is trying to solve are:\n- In the \"package by layer\", \"package by feature\" and \"ports and\n  adapters\" packaging strategies there is nothing stopping a developer\n  from \"skipping a layer\" and doing something like importing the\n  `OrdersRepository<I>` in the `OrdersController`.\n- To avoid problems like this to happen, teams often rely on discipline\n  (but we know how that goes) or extra static analysis tools to detect\n  when the intended architecture has been violated. He argues that the\n  best approach to enforce this architectural principle is via the\n  compiler.\n  - Static analysis tools work, but sometimes extend the feedback cycle\n    too much.\n\nThe next image illustrates Simon's \"package by component\" strategy.\n\n[IMAGE: md_clean-architecture_c5e015e20b]",
       "depth": 3,
       "metadata": {
         "file_path": "part-6-details.md",
@@ -1604,8 +1604,8 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img023",
-          "local_path": "images/md_clean-architecture_img023.png",
+          "id": "md_clean-architecture_c5e015e20b",
+          "local_path": "images/md_clean-architecture_c5e015e20b.png",
           "alt_text": "Package-by-component diagram of an 'orders component': external code enters through a single OrdersComponent interface, package visibility modifiers hide the internals, and the well-defined component inside a monolith is presented as a steppingstone to extracting a microservice.",
           "context": "markdown_ref:images/part-6/package-by-component.png"
         }
@@ -1613,7 +1613,7 @@
     },
     {
       "title": "Trade-offs",
-      "content": "Compared to \"ports and adapters\", trade-offs a little bit of the\nstrictness in the\n[horizontal](part-5-1-architecture.md#thinking-in-layers) layering for\nhaving less packages and making it impossible to import the wrong thing\nfrom the `OrdersController`.\n- Less packages = easier to understand and deploy. All the code needed\n  to make the `OrdersComponent` work travels together.\n- Cheat-proof: It is impossible to import the `OrdersRepository<I>` from\n  the controller.\n- Swapping with arbitrary implementations of the `OrdersRepository<I>`\n  is no longer possible, although the code still maintains the proper\n  separation of concerns internally, so it shouldn't be hard.",
+      "content": "Compared to \"ports and adapters\", trade-offs a little bit of the\nstrictness in the\nhorizontal layering for\nhaving less packages and making it impossible to import the wrong thing\nfrom the `OrdersController`.\n- Less packages = easier to understand and deploy. All the code needed\n  to make the `OrdersComponent` work travels together.\n- Cheat-proof: It is impossible to import the `OrdersRepository<I>` from\n  the controller.\n- Swapping with arbitrary implementations of the `OrdersRepository<I>`\n  is no longer possible, although the code still maintains the proper\n  separation of concerns internally, so it shouldn't be hard.",
       "depth": 4,
       "metadata": {
         "file_path": "part-6-details.md",
@@ -1622,7 +1622,7 @@
     },
     {
       "title": "More on the strategies: Organization VS Encapsulation",
-      "content": "This section extends the previous adding a new optic: the usage of\npackage visibility modifiers.\n\nUsing packages to organize code and not using the visibility modifiers\nto only make public what strictly needs to be public is equivalent to\njust packages as folders to organize code.\n\nIn the scenario where everything is public there is no real\nencapsulation difference between the \"package by layer\", \"package by\nfeature\", \"ports and adapters\" and \"packaged by component\" strategies.\nSure, the code organisation might *look* a little different but the\nencapsulation is non-existent and the compiler does not help you to\nenforce the architecture.\n\n[IMAGE: md_clean-architecture_img024]\n\nWhen package visibility is used to limit what is `public`, it becomes\nclearer that different \"package by X\" strategies provide different\nlevels of architecture enforcement via the compiler.\n\n[IMAGE: md_clean-architecture_img025]\n\n- \"*Package by layer*\": it is possible for the `OrdersController`\n  package to import the `OrdersRepository<Interface>`, breaking the\n  architecture.\n- \"*Package by feature*\": the `OrdersController` is the **only**\n  entrypoint into the orders functionality. This may or may not be\n  desirable. For example, if we want to have a `WebOrdersController` and\n  a `MobileOrdersController`, then this packaging strategy does not\n  work.\n- \"*Ports and adapters*\": has sound vertical and horizontal layering. It\n  is still technically possible for the `OrdersController` to import the\n  `Orders<I>` skipping the `OrdersService<I>`.\n- \"*Package by component*\": has sound encapsulation and the compiler can\n  help us enforce the architecture. It is impossible for anything\n  outside to directly import the `OrdersRepository<I>`. The compiler\n  enforces this architectural principle.",
+      "content": "This section extends the previous adding a new optic: the usage of\npackage visibility modifiers.\n\nUsing packages to organize code and not using the visibility modifiers\nto only make public what strictly needs to be public is equivalent to\njust packages as folders to organize code.\n\nIn the scenario where everything is public there is no real\nencapsulation difference between the \"package by layer\", \"package by\nfeature\", \"ports and adapters\" and \"packaged by component\" strategies.\nSure, the code organisation might *look* a little different but the\nencapsulation is non-existent and the compiler does not help you to\nenforce the architecture.\n\n[IMAGE: md_clean-architecture_9509ee0754]\n\nWhen package visibility is used to limit what is `public`, it becomes\nclearer that different \"package by X\" strategies provide different\nlevels of architecture enforcement via the compiler.\n\n[IMAGE: md_clean-architecture_09abdfa689]\n\n- \"*Package by layer*\": it is possible for the `OrdersController`\n  package to import the `OrdersRepository<Interface>`, breaking the\n  architecture.\n- \"*Package by feature*\": the `OrdersController` is the **only**\n  entrypoint into the orders functionality. This may or may not be\n  desirable. For example, if we want to have a `WebOrdersController` and\n  a `MobileOrdersController`, then this packaging strategy does not\n  work.\n- \"*Ports and adapters*\": has sound vertical and horizontal layering. It\n  is still technically possible for the `OrdersController` to import the\n  `Orders<I>` skipping the `OrdersService<I>`.\n- \"*Package by component*\": has sound encapsulation and the compiler can\n  help us enforce the architecture. It is impossible for anything\n  outside to directly import the `OrdersRepository<I>`. The compiler\n  enforces this architectural principle.",
       "depth": 3,
       "metadata": {
         "file_path": "part-6-details.md",
@@ -1630,14 +1630,14 @@
       },
       "images": [
         {
-          "id": "md_clean-architecture_img024",
-          "local_path": "images/md_clean-architecture_img024.png",
+          "id": "md_clean-architecture_9509ee0754",
+          "local_path": "images/md_clean-architecture_9509ee0754.png",
           "alt_text": "Side-by-side comparison of four packaging strategies for the Orders feature (package by layer, package by feature, ports and adapters, package by component); the caption notes that if every class is public the four architectures are effectively the same, differing only in folder distribution.",
           "context": "markdown_ref:images/part-6/all-public-packages.png"
         },
         {
-          "id": "md_clean-architecture_img025",
-          "local_path": "images/md_clean-architecture_img025.png",
+          "id": "md_clean-architecture_09abdfa689",
+          "local_path": "images/md_clean-architecture_09abdfa689.png",
           "alt_text": "The same four packaging strategies (by layer, by feature, ports and adapters, by component) redrawn with Java package boundaries, using shading to distinguish public classes from package-protected ones and showing how each strategy enforces encapsulation differently.",
           "context": "markdown_ref:images/part-6/package-visibility-to-enforce-architecture.png"
         }
@@ -1667,12 +1667,12 @@
     "total_tokens": 15279,
     "total_images": 26,
     "file_count": 7,
-    "extracted_at": "2026-06-10T18:42:09.089596+00:00"
+    "extracted_at": "2026-07-05T22:15:30.852658+00:00"
   },
   "images": [
     {
-      "id": "md_clean-architecture_img000",
-      "local_path": "images/md_clean-architecture_img000.png",
+      "id": "md_clean-architecture_a21c5176d6",
+      "local_path": "images/md_clean-architecture_a21c5176d6.png",
       "mime_type": "image/png",
       "size_bytes": 682352,
       "width": 0,
@@ -1681,8 +1681,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img001",
-      "local_path": "images/md_clean-architecture_img001.png",
+      "id": "md_clean-architecture_2f8b8b7b7b",
+      "local_path": "images/md_clean-architecture_2f8b8b7b7b.png",
       "mime_type": "image/png",
       "size_bytes": 107943,
       "width": 0,
@@ -1691,8 +1691,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img002",
-      "local_path": "images/md_clean-architecture_img002.png",
+      "id": "md_clean-architecture_cb5b7a574d",
+      "local_path": "images/md_clean-architecture_cb5b7a574d.png",
       "mime_type": "image/png",
       "size_bytes": 255606,
       "width": 0,
@@ -1701,8 +1701,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img003",
-      "local_path": "images/md_clean-architecture_img003.png",
+      "id": "md_clean-architecture_e5237f5be7",
+      "local_path": "images/md_clean-architecture_e5237f5be7.png",
       "mime_type": "image/png",
       "size_bytes": 400619,
       "width": 0,
@@ -1711,8 +1711,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img004",
-      "local_path": "images/md_clean-architecture_img004.png",
+      "id": "md_clean-architecture_abcfc5dd48",
+      "local_path": "images/md_clean-architecture_abcfc5dd48.png",
       "mime_type": "image/png",
       "size_bytes": 428637,
       "width": 0,
@@ -1721,8 +1721,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img005",
-      "local_path": "images/md_clean-architecture_img005.png",
+      "id": "md_clean-architecture_e9a931044b",
+      "local_path": "images/md_clean-architecture_e9a931044b.png",
       "mime_type": "image/png",
       "size_bytes": 1002947,
       "width": 0,
@@ -1731,8 +1731,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img006",
-      "local_path": "images/md_clean-architecture_img006.png",
+      "id": "md_clean-architecture_6ea1084fa9",
+      "local_path": "images/md_clean-architecture_6ea1084fa9.png",
       "mime_type": "image/png",
       "size_bytes": 514679,
       "width": 0,
@@ -1741,8 +1741,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img007",
-      "local_path": "images/md_clean-architecture_img007.png",
+      "id": "md_clean-architecture_ce6b64b829",
+      "local_path": "images/md_clean-architecture_ce6b64b829.png",
       "mime_type": "image/png",
       "size_bytes": 536937,
       "width": 0,
@@ -1751,8 +1751,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img008",
-      "local_path": "images/md_clean-architecture_img008.png",
+      "id": "md_clean-architecture_33c8ef5210",
+      "local_path": "images/md_clean-architecture_33c8ef5210.png",
       "mime_type": "image/png",
       "size_bytes": 905998,
       "width": 0,
@@ -1761,8 +1761,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img009",
-      "local_path": "images/md_clean-architecture_img009.png",
+      "id": "md_clean-architecture_4ba89edfa2",
+      "local_path": "images/md_clean-architecture_4ba89edfa2.png",
       "mime_type": "image/png",
       "size_bytes": 808615,
       "width": 0,
@@ -1771,8 +1771,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img010",
-      "local_path": "images/md_clean-architecture_img010.png",
+      "id": "md_clean-architecture_e71befafda",
+      "local_path": "images/md_clean-architecture_e71befafda.png",
       "mime_type": "image/png",
       "size_bytes": 64648,
       "width": 0,
@@ -1781,8 +1781,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img011",
-      "local_path": "images/md_clean-architecture_img011.png",
+      "id": "md_clean-architecture_58659564d7",
+      "local_path": "images/md_clean-architecture_58659564d7.png",
       "mime_type": "image/png",
       "size_bytes": 406134,
       "width": 0,
@@ -1791,8 +1791,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img012",
-      "local_path": "images/md_clean-architecture_img012.png",
+      "id": "md_clean-architecture_8ff0e2b340",
+      "local_path": "images/md_clean-architecture_8ff0e2b340.png",
       "mime_type": "image/png",
       "size_bytes": 309781,
       "width": 0,
@@ -1801,8 +1801,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img013",
-      "local_path": "images/md_clean-architecture_img013.png",
+      "id": "md_clean-architecture_a50406710d",
+      "local_path": "images/md_clean-architecture_a50406710d.png",
       "mime_type": "image/png",
       "size_bytes": 358706,
       "width": 0,
@@ -1811,8 +1811,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img014",
-      "local_path": "images/md_clean-architecture_img014.png",
+      "id": "md_clean-architecture_702dd41670",
+      "local_path": "images/md_clean-architecture_702dd41670.png",
       "mime_type": "image/png",
       "size_bytes": 1647537,
       "width": 0,
@@ -1821,8 +1821,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img015",
-      "local_path": "images/md_clean-architecture_img015.png",
+      "id": "md_clean-architecture_4c27e5d9c1",
+      "local_path": "images/md_clean-architecture_4c27e5d9c1.png",
       "mime_type": "image/png",
       "size_bytes": 2426011,
       "width": 0,
@@ -1831,8 +1831,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img016",
-      "local_path": "images/md_clean-architecture_img016.png",
+      "id": "md_clean-architecture_5f4f17f5bb",
+      "local_path": "images/md_clean-architecture_5f4f17f5bb.png",
       "mime_type": "image/png",
       "size_bytes": 885172,
       "width": 0,
@@ -1841,8 +1841,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img017",
-      "local_path": "images/md_clean-architecture_img017.png",
+      "id": "md_clean-architecture_bef09df545",
+      "local_path": "images/md_clean-architecture_bef09df545.png",
       "mime_type": "image/png",
       "size_bytes": 309385,
       "width": 0,
@@ -1851,8 +1851,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img018",
-      "local_path": "images/md_clean-architecture_img018.png",
+      "id": "md_clean-architecture_63503ad2cd",
+      "local_path": "images/md_clean-architecture_63503ad2cd.png",
       "mime_type": "image/png",
       "size_bytes": 162993,
       "width": 0,
@@ -1861,8 +1861,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img019",
-      "local_path": "images/md_clean-architecture_img019.png",
+      "id": "md_clean-architecture_617d60f610",
+      "local_path": "images/md_clean-architecture_617d60f610.png",
       "mime_type": "image/png",
       "size_bytes": 1197434,
       "width": 0,
@@ -1871,8 +1871,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img020",
-      "local_path": "images/md_clean-architecture_img020.png",
+      "id": "md_clean-architecture_6a25650534",
+      "local_path": "images/md_clean-architecture_6a25650534.png",
       "mime_type": "image/png",
       "size_bytes": 1091044,
       "width": 0,
@@ -1881,8 +1881,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img021",
-      "local_path": "images/md_clean-architecture_img021.png",
+      "id": "md_clean-architecture_c58cd43b14",
+      "local_path": "images/md_clean-architecture_c58cd43b14.png",
       "mime_type": "image/png",
       "size_bytes": 928033,
       "width": 0,
@@ -1891,8 +1891,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img022",
-      "local_path": "images/md_clean-architecture_img022.png",
+      "id": "md_clean-architecture_b6d8167d29",
+      "local_path": "images/md_clean-architecture_b6d8167d29.png",
       "mime_type": "image/png",
       "size_bytes": 337445,
       "width": 0,
@@ -1901,8 +1901,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img023",
-      "local_path": "images/md_clean-architecture_img023.png",
+      "id": "md_clean-architecture_c5e015e20b",
+      "local_path": "images/md_clean-architecture_c5e015e20b.png",
       "mime_type": "image/png",
       "size_bytes": 432520,
       "width": 0,
@@ -1911,8 +1911,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img024",
-      "local_path": "images/md_clean-architecture_img024.png",
+      "id": "md_clean-architecture_9509ee0754",
+      "local_path": "images/md_clean-architecture_9509ee0754.png",
       "mime_type": "image/png",
       "size_bytes": 708052,
       "width": 0,
@@ -1921,8 +1921,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img025",
-      "local_path": "images/md_clean-architecture_img025.png",
+      "id": "md_clean-architecture_09abdfa689",
+      "local_path": "images/md_clean-architecture_09abdfa689.png",
       "mime_type": "image/png",
       "size_bytes": 1016027,
       "width": 0,

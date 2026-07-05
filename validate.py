@@ -446,14 +446,68 @@ def check_structure(input_dir: Path) -> list[Finding]:
 
     # Coverage: extracted sections referenced by no topic (title fallback counts)
     if has_extracted:
+        # Deliberate exclusions acknowledged in the manifest:
+        #   "excluded_sections": [{"match": "<fnmatch pattern>", "reason": "..."}]
+        # Acknowledged orphans are skipped so real coverage misses stand out.
+        import fnmatch
+        exclusions: list[dict] = []
+        try:
+            manifest = _load_json(input_dir / "manifest.json")
+            for entry in manifest.get("excluded_sections", []):
+                if isinstance(entry, str):
+                    entry = {"match": entry}
+                if entry.get("match"):
+                    exclusions.append({**entry, "_hits": 0})
+        except (OSError, json.JSONDecodeError):
+            pass
+
+        def _exc_matches(exc: dict, fname: str, title: str) -> bool:
+            # A pattern may be file-scoped: "file.json::pattern"
+            pattern = exc["match"]
+            if "::" in pattern:
+                exc_file, pattern = pattern.split("::", 1)
+                if exc_file != fname:
+                    return False
+            return fnmatch.fnmatch(title.lower(), pattern.lower())
+
+        def _matches_any(fname: str, title: str) -> bool:
+            return any(_exc_matches(e, fname, title) for e in exclusions)
+
+        def _acknowledge(fname: str, title: str) -> bool:
+            hit = False
+            for exc in exclusions:
+                if _exc_matches(exc, fname, title):
+                    exc["_hits"] += 1
+                    hit = True
+            return hit
+
         covered = referenced_keys | leaf_title_keys
         for fname, titles in by_file.items():
-            orphans = [t for t in titles if t and _key(t) not in covered]
-            for t in orphans:
+            for t in titles:
+                if not t:
+                    continue
+                if _key(t) in covered:
+                    if exclusions and _matches_any(fname, t):
+                        findings.append(Finding(
+                            "structure.excluded_but_referenced", "warning",
+                            f"extracted/{fname}",
+                            f"Section {t!r} matches an excluded_sections pattern "
+                            f"but is referenced by a topic — remove one or the other",
+                        ))
+                    continue
+                if _acknowledge(fname, t):
+                    continue
                 findings.append(Finding(
                     "structure.orphan_section", "warning", f"extracted/{fname}",
                     f"Section {t!r} is referenced by no topic — its content "
                     f"will be silently dropped at chunking",
+                ))
+        for exc in exclusions:
+            if exc["_hits"] == 0:
+                findings.append(Finding(
+                    "structure.stale_exclusion", "warning", "manifest.json",
+                    f"excluded_sections pattern {exc['match']!r} matches no "
+                    f"orphan section — remove it or fix the pattern",
                 ))
 
     # Prerequisite graph checks

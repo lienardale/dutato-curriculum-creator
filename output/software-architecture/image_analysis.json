@@ -1,10 +1,10 @@
 {
-  "total_images": 121,
-  "analyzed": 121,
+  "total_images": 115,
+  "analyzed": 115,
   "images": [
     {
-      "id": "md_best-practices_img000",
-      "local_path": "images/md_best-practices_img000.png",
+      "id": "md_best-practices_3fdc00d63a",
+      "local_path": "images/md_best-practices_3fdc00d63a.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 33020,
@@ -17,8 +17,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_best-practices_img001",
-      "local_path": "images/md_best-practices_img001.png",
+      "id": "md_best-practices_f67f73f0c0",
+      "local_path": "images/md_best-practices_f67f73f0c0.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 16049,
@@ -31,8 +31,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_best-practices_img002",
-      "local_path": "images/md_best-practices_img002.png",
+      "id": "md_best-practices_c143c8e91d",
+      "local_path": "images/md_best-practices_c143c8e91d.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 53701,
@@ -45,8 +45,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_best-practices_img003",
-      "local_path": "images/md_best-practices_img003.png",
+      "id": "md_best-practices_9ecedc5d57",
+      "local_path": "images/md_best-practices_9ecedc5d57.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 7538,
@@ -59,8 +59,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_best-practices_img004",
-      "local_path": "images/md_best-practices_img004.png",
+      "id": "md_best-practices_43199a7168",
+      "local_path": "images/md_best-practices_43199a7168.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 22027,
@@ -73,8 +73,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_best-practices_img005",
-      "local_path": "images/md_best-practices_img005.png",
+      "id": "md_best-practices_d282a60180",
+      "local_path": "images/md_best-practices_d282a60180.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 20300,
@@ -87,8 +87,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_best-practices_img006",
-      "local_path": "images/md_best-practices_img006.png",
+      "id": "md_best-practices_8cab9b450c",
+      "local_path": "images/md_best-practices_8cab9b450c.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 36736,
@@ -101,8 +101,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_best-practices_img007",
-      "local_path": "images/md_best-practices_img007.png",
+      "id": "md_best-practices_9f67c35c4b",
+      "local_path": "images/md_best-practices_9f67c35c4b.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 166324,
@@ -115,8 +115,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_best-practices_img008",
-      "local_path": "images/md_best-practices_img008.png",
+      "id": "md_best-practices_7f1eb71af9",
+      "local_path": "images/md_best-practices_7f1eb71af9.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 236702,
@@ -129,8 +129,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_best-practices_img009",
-      "local_path": "images/md_best-practices_img009.png",
+      "id": "md_best-practices_9e20e32db2",
+      "local_path": "images/md_best-practices_9e20e32db2.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 115111,
@@ -143,8 +143,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_best-practices_img010",
-      "local_path": "images/md_best-practices_img010.png",
+      "id": "md_best-practices_5c154fd150",
+      "local_path": "images/md_best-practices_5c154fd150.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 54616,
@@ -157,8 +157,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_best-practices_img011",
-      "local_path": "images/md_best-practices_img011.png",
+      "id": "md_best-practices_e72faa51a6",
+      "local_path": "images/md_best-practices_e72faa51a6.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 166283,
@@ -171,8 +171,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_best-practices_img012",
-      "local_path": "images/md_best-practices_img012.png",
+      "id": "md_best-practices_1c2a09f904",
+      "local_path": "images/md_best-practices_1c2a09f904.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 91505,
@@ -185,8 +185,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_architecture-styles_img000",
-      "local_path": "images/md_architecture-styles_img000.png",
+      "id": "md_architecture-styles_d87be13239",
+      "local_path": "images/md_architecture-styles_d87be13239.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 14768,
@@ -199,8 +199,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_architecture-styles_img001",
-      "local_path": "images/md_architecture-styles_img001.png",
+      "id": "md_architecture-styles_0d95d67762",
+      "local_path": "images/md_architecture-styles_0d95d67762.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 6985,
@@ -213,8 +213,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_architecture-styles_img002",
-      "local_path": "images/md_architecture-styles_img002.png",
+      "id": "md_architecture-styles_07975d3f55",
+      "local_path": "images/md_architecture-styles_07975d3f55.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 9725,
@@ -227,8 +227,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_architecture-styles_img003",
-      "local_path": "images/md_architecture-styles_img003.png",
+      "id": "md_architecture-styles_acbb43ff70",
+      "local_path": "images/md_architecture-styles_acbb43ff70.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 13956,
@@ -241,8 +241,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_architecture-styles_img004",
-      "local_path": "images/md_architecture-styles_img004.svg",
+      "id": "md_architecture-styles_5a2d9b1304",
+      "local_path": "images/md_architecture-styles_5a2d9b1304.svg",
       "file_exists": true,
       "mime_type": "image/svg+xml",
       "size_bytes": 3664,
@@ -255,8 +255,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_architecture-styles_img005",
-      "local_path": "images/md_architecture-styles_img005.svg",
+      "id": "md_architecture-styles_1781d5a349",
+      "local_path": "images/md_architecture-styles_1781d5a349.svg",
       "file_exists": true,
       "mime_type": "image/svg+xml",
       "size_bytes": 22100,
@@ -269,8 +269,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_architecture-styles_img006",
-      "local_path": "images/md_architecture-styles_img006.svg",
+      "id": "md_architecture-styles_941a489f7c",
+      "local_path": "images/md_architecture-styles_941a489f7c.svg",
       "file_exists": true,
       "mime_type": "image/svg+xml",
       "size_bytes": 2156,
@@ -283,8 +283,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_architecture-styles_img007",
-      "local_path": "images/md_architecture-styles_img007.svg",
+      "id": "md_architecture-styles_13a40cb667",
+      "local_path": "images/md_architecture-styles_13a40cb667.svg",
       "file_exists": true,
       "mime_type": "image/svg+xml",
       "size_bytes": 7635,
@@ -297,8 +297,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_architecture-styles_img008",
-      "local_path": "images/md_architecture-styles_img008.svg",
+      "id": "md_architecture-styles_ccc691405b",
+      "local_path": "images/md_architecture-styles_ccc691405b.svg",
       "file_exists": true,
       "mime_type": "image/svg+xml",
       "size_bytes": 16313,
@@ -311,8 +311,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_architecture-styles_img009",
-      "local_path": "images/md_architecture-styles_img009.svg",
+      "id": "md_architecture-styles_25dc2eaefc",
+      "local_path": "images/md_architecture-styles_25dc2eaefc.svg",
       "file_exists": true,
       "mime_type": "image/svg+xml",
       "size_bytes": 59793,
@@ -325,78 +325,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_architecture-styles_img010",
-      "local_path": "images/md_architecture-styles_img010.svg",
-      "file_exists": true,
-      "mime_type": "image/svg+xml",
-      "size_bytes": 2156,
-      "source": "Architecture Styles (Azure Architecture Center)",
-      "description": "Diagram of the event-driven architecture style: event producers send events through an event ingestion component that fans them out to multiple independent event consumers.",
-      "ocr_text": "",
-      "contains_text": true,
-      "contains_diagram": true,
-      "contains_code": false,
-      "educational_value": "high"
-    },
-    {
-      "id": "md_architecture-styles_img011",
-      "local_path": "images/md_architecture-styles_img011.svg",
-      "file_exists": true,
-      "mime_type": "image/svg+xml",
-      "size_bytes": 3664,
-      "source": "Architecture Styles (Azure Architecture Center)",
-      "description": "Logical component diagram of the big data architecture style: data sources flow through real-time message ingestion and stream processing on one path and batch processing on another, both feeding an analytical data store for analytics and reporting, coordinated by an orchestration component.",
-      "ocr_text": "",
-      "contains_text": true,
-      "contains_diagram": true,
-      "contains_code": false,
-      "educational_value": "high"
-    },
-    {
-      "id": "md_architecture-styles_img012",
-      "local_path": "images/md_architecture-styles_img012.png",
-      "file_exists": true,
-      "mime_type": "image/png",
-      "size_bytes": 14768,
-      "source": "Architecture Styles (Azure Architecture Center)",
-      "description": "Diagram of the Big Compute architecture style: a client submits work to a job queue handled by a scheduler/coordinator, which dispatches it either as independent parallel tasks or as tightly coupled tasks that communicate with each other.",
-      "ocr_text": "",
-      "contains_text": true,
-      "contains_diagram": true,
-      "contains_code": false,
-      "educational_value": "high"
-    },
-    {
-      "id": "md_architecture-styles_img013",
-      "local_path": "images/md_architecture-styles_img013.svg",
-      "file_exists": true,
-      "mime_type": "image/svg+xml",
-      "size_bytes": 59793,
-      "source": "Architecture Styles (Azure Architecture Center)",
-      "description": "Diagram of the microservices architecture style: clients call an API gateway in front of multiple microservices (domain services, a composition service) that communicate via publish/subscribe message-oriented middleware, each owning domain databases (SQL and NoSQL), supported by management/orchestration, observability, and DevOps capabilities.",
-      "ocr_text": "",
-      "contains_text": true,
-      "contains_diagram": true,
-      "contains_code": false,
-      "educational_value": "high"
-    },
-    {
-      "id": "md_architecture-styles_img014",
-      "local_path": "images/md_architecture-styles_img014.svg",
-      "file_exists": true,
-      "mime_type": "image/svg+xml",
-      "size_bytes": 7635,
-      "source": "Architecture Styles (Azure Architecture Center)",
-      "description": "Diagram of the N-tier architecture style: a client passes through a web application framework (WAF) to a web tier, then to two middle tiers connected by messaging, with a cache, a data tier, and a remote service.",
-      "ocr_text": "",
-      "contains_text": true,
-      "contains_diagram": true,
-      "contains_code": false,
-      "educational_value": "high"
-    },
-    {
-      "id": "md_architecture-styles_img015",
-      "local_path": "images/md_architecture-styles_img015.png",
+      "id": "md_architecture-styles_f2644040b5",
+      "local_path": "images/md_architecture-styles_f2644040b5.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 1065671,
@@ -409,22 +339,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_architecture-styles_img016",
-      "local_path": "images/md_architecture-styles_img016.svg",
-      "file_exists": true,
-      "mime_type": "image/svg+xml",
-      "size_bytes": 16313,
-      "source": "Architecture Styles (Azure Architecture Center)",
-      "description": "Diagram of the Web-Queue-Worker architecture style: a client served by a CDN and identity provider hits a web front end that communicates with a worker via a queue, with both sharing a database, cache, static content, and an optional remote service.",
-      "ocr_text": "",
-      "contains_text": true,
-      "contains_diagram": true,
-      "contains_code": false,
-      "educational_value": "high"
-    },
-    {
-      "id": "md_architecture-styles_img017",
-      "local_path": "images/md_architecture-styles_img017.svg",
+      "id": "md_architecture-styles_6757e7aab7",
+      "local_path": "images/md_architecture-styles_6757e7aab7.svg",
       "file_exists": true,
       "mime_type": "image/svg+xml",
       "size_bytes": 115648,
@@ -437,8 +353,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_clean-architecture_img000",
-      "local_path": "images/md_clean-architecture_img000.png",
+      "id": "md_clean-architecture_a21c5176d6",
+      "local_path": "images/md_clean-architecture_a21c5176d6.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 682352,
@@ -451,8 +367,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img001",
-      "local_path": "images/md_clean-architecture_img001.png",
+      "id": "md_clean-architecture_2f8b8b7b7b",
+      "local_path": "images/md_clean-architecture_2f8b8b7b7b.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 107943,
@@ -465,8 +381,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img002",
-      "local_path": "images/md_clean-architecture_img002.png",
+      "id": "md_clean-architecture_cb5b7a574d",
+      "local_path": "images/md_clean-architecture_cb5b7a574d.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 255606,
@@ -479,8 +395,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img003",
-      "local_path": "images/md_clean-architecture_img003.png",
+      "id": "md_clean-architecture_e5237f5be7",
+      "local_path": "images/md_clean-architecture_e5237f5be7.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 400619,
@@ -493,8 +409,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img004",
-      "local_path": "images/md_clean-architecture_img004.png",
+      "id": "md_clean-architecture_abcfc5dd48",
+      "local_path": "images/md_clean-architecture_abcfc5dd48.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 428637,
@@ -507,8 +423,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img005",
-      "local_path": "images/md_clean-architecture_img005.png",
+      "id": "md_clean-architecture_e9a931044b",
+      "local_path": "images/md_clean-architecture_e9a931044b.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 1002947,
@@ -521,8 +437,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img006",
-      "local_path": "images/md_clean-architecture_img006.png",
+      "id": "md_clean-architecture_6ea1084fa9",
+      "local_path": "images/md_clean-architecture_6ea1084fa9.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 514679,
@@ -535,8 +451,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img007",
-      "local_path": "images/md_clean-architecture_img007.png",
+      "id": "md_clean-architecture_ce6b64b829",
+      "local_path": "images/md_clean-architecture_ce6b64b829.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 536937,
@@ -549,8 +465,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img008",
-      "local_path": "images/md_clean-architecture_img008.png",
+      "id": "md_clean-architecture_33c8ef5210",
+      "local_path": "images/md_clean-architecture_33c8ef5210.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 905998,
@@ -563,8 +479,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img009",
-      "local_path": "images/md_clean-architecture_img009.png",
+      "id": "md_clean-architecture_4ba89edfa2",
+      "local_path": "images/md_clean-architecture_4ba89edfa2.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 808615,
@@ -577,8 +493,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img010",
-      "local_path": "images/md_clean-architecture_img010.png",
+      "id": "md_clean-architecture_e71befafda",
+      "local_path": "images/md_clean-architecture_e71befafda.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 64648,
@@ -591,8 +507,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img011",
-      "local_path": "images/md_clean-architecture_img011.png",
+      "id": "md_clean-architecture_58659564d7",
+      "local_path": "images/md_clean-architecture_58659564d7.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 406134,
@@ -605,8 +521,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img012",
-      "local_path": "images/md_clean-architecture_img012.png",
+      "id": "md_clean-architecture_8ff0e2b340",
+      "local_path": "images/md_clean-architecture_8ff0e2b340.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 309781,
@@ -619,8 +535,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img013",
-      "local_path": "images/md_clean-architecture_img013.png",
+      "id": "md_clean-architecture_a50406710d",
+      "local_path": "images/md_clean-architecture_a50406710d.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 358706,
@@ -633,8 +549,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img014",
-      "local_path": "images/md_clean-architecture_img014.png",
+      "id": "md_clean-architecture_702dd41670",
+      "local_path": "images/md_clean-architecture_702dd41670.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 1647537,
@@ -647,8 +563,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img015",
-      "local_path": "images/md_clean-architecture_img015.png",
+      "id": "md_clean-architecture_4c27e5d9c1",
+      "local_path": "images/md_clean-architecture_4c27e5d9c1.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 2426011,
@@ -661,8 +577,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img016",
-      "local_path": "images/md_clean-architecture_img016.png",
+      "id": "md_clean-architecture_5f4f17f5bb",
+      "local_path": "images/md_clean-architecture_5f4f17f5bb.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 885172,
@@ -675,8 +591,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img017",
-      "local_path": "images/md_clean-architecture_img017.png",
+      "id": "md_clean-architecture_bef09df545",
+      "local_path": "images/md_clean-architecture_bef09df545.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 309385,
@@ -689,8 +605,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img018",
-      "local_path": "images/md_clean-architecture_img018.png",
+      "id": "md_clean-architecture_63503ad2cd",
+      "local_path": "images/md_clean-architecture_63503ad2cd.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 162993,
@@ -703,8 +619,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img019",
-      "local_path": "images/md_clean-architecture_img019.png",
+      "id": "md_clean-architecture_617d60f610",
+      "local_path": "images/md_clean-architecture_617d60f610.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 1197434,
@@ -717,8 +633,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img020",
-      "local_path": "images/md_clean-architecture_img020.png",
+      "id": "md_clean-architecture_6a25650534",
+      "local_path": "images/md_clean-architecture_6a25650534.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 1091044,
@@ -731,8 +647,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img021",
-      "local_path": "images/md_clean-architecture_img021.png",
+      "id": "md_clean-architecture_c58cd43b14",
+      "local_path": "images/md_clean-architecture_c58cd43b14.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 928033,
@@ -745,8 +661,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img022",
-      "local_path": "images/md_clean-architecture_img022.png",
+      "id": "md_clean-architecture_b6d8167d29",
+      "local_path": "images/md_clean-architecture_b6d8167d29.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 337445,
@@ -759,8 +675,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img023",
-      "local_path": "images/md_clean-architecture_img023.png",
+      "id": "md_clean-architecture_c5e015e20b",
+      "local_path": "images/md_clean-architecture_c5e015e20b.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 432520,
@@ -773,8 +689,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img024",
-      "local_path": "images/md_clean-architecture_img024.png",
+      "id": "md_clean-architecture_9509ee0754",
+      "local_path": "images/md_clean-architecture_9509ee0754.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 708052,
@@ -787,8 +703,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_clean-architecture_img025",
-      "local_path": "images/md_clean-architecture_img025.png",
+      "id": "md_clean-architecture_09abdfa689",
+      "local_path": "images/md_clean-architecture_09abdfa689.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 1016027,
@@ -801,8 +717,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_microservices_img000",
-      "local_path": "images/md_microservices_img000.png",
+      "id": "md_microservices_745b439bf0",
+      "local_path": "images/md_microservices_745b439bf0.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 35435,
@@ -815,8 +731,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_microservices_img001",
-      "local_path": "images/md_microservices_img001.png",
+      "id": "md_microservices_c6cfcf9feb",
+      "local_path": "images/md_microservices_c6cfcf9feb.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 34394,
@@ -829,8 +745,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_microservices_img002",
-      "local_path": "images/md_microservices_img002.png",
+      "id": "md_microservices_835ee2eaf1",
+      "local_path": "images/md_microservices_835ee2eaf1.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 8812,
@@ -843,8 +759,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_microservices_img003",
-      "local_path": "images/md_microservices_img003.png",
+      "id": "md_microservices_39d943ec9b",
+      "local_path": "images/md_microservices_39d943ec9b.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 23192,
@@ -857,8 +773,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_microservices_img004",
-      "local_path": "images/md_microservices_img004.png",
+      "id": "md_microservices_162d1a745b",
+      "local_path": "images/md_microservices_162d1a745b.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 13483,
@@ -871,8 +787,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_microservices_img005",
-      "local_path": "images/md_microservices_img005.png",
+      "id": "md_microservices_59d2a52e9c",
+      "local_path": "images/md_microservices_59d2a52e9c.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 4291,
@@ -885,8 +801,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_microservices_img006",
-      "local_path": "images/md_microservices_img006.svg",
+      "id": "md_microservices_94dcbcb2e0",
+      "local_path": "images/md_microservices_94dcbcb2e0.svg",
       "file_exists": true,
       "mime_type": "image/svg+xml",
       "size_bytes": 88563,
@@ -899,8 +815,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_microservices_img007",
-      "local_path": "images/md_microservices_img007.png",
+      "id": "md_microservices_c449ae395c",
+      "local_path": "images/md_microservices_c449ae395c.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 83621,
@@ -913,8 +829,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_microservices_img008",
-      "local_path": "images/md_microservices_img008.png",
+      "id": "md_microservices_466062e680",
+      "local_path": "images/md_microservices_466062e680.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 14290,
@@ -927,8 +843,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_microservices_img009",
-      "local_path": "images/md_microservices_img009.png",
+      "id": "md_microservices_693c81615d",
+      "local_path": "images/md_microservices_693c81615d.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 20723,
@@ -941,8 +857,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_microservices_img010",
-      "local_path": "images/md_microservices_img010.png",
+      "id": "md_microservices_1eb3f1cd88",
+      "local_path": "images/md_microservices_1eb3f1cd88.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 29740,
@@ -955,8 +871,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_microservices_img011",
-      "local_path": "images/md_microservices_img011.png",
+      "id": "md_microservices_759b0c1cb0",
+      "local_path": "images/md_microservices_759b0c1cb0.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 86766,
@@ -969,8 +885,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_microservices_img012",
-      "local_path": "images/md_microservices_img012.png",
+      "id": "md_microservices_310d9a1223",
+      "local_path": "images/md_microservices_310d9a1223.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 436621,
@@ -983,8 +899,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_microservices_img013",
-      "local_path": "images/md_microservices_img013.png",
+      "id": "md_microservices_9ec0952f19",
+      "local_path": "images/md_microservices_9ec0952f19.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 13618,
@@ -997,8 +913,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_microservices_img014",
-      "local_path": "images/md_microservices_img014.svg",
+      "id": "md_microservices_02e4cab941",
+      "local_path": "images/md_microservices_02e4cab941.svg",
       "file_exists": true,
       "mime_type": "image/svg+xml",
       "size_bytes": 202782,
@@ -1011,8 +927,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_microservices_img015",
-      "local_path": "images/md_microservices_img015.svg",
+      "id": "md_microservices_3daacadd03",
+      "local_path": "images/md_microservices_3daacadd03.svg",
       "file_exists": true,
       "mime_type": "image/svg+xml",
       "size_bytes": 42940,
@@ -1025,8 +941,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_microservices_img016",
-      "local_path": "images/md_microservices_img016.png",
+      "id": "md_microservices_1490ab22fd",
+      "local_path": "images/md_microservices_1490ab22fd.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 25091,
@@ -1039,8 +955,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_microservices_img017",
-      "local_path": "images/md_microservices_img017.png",
+      "id": "md_microservices_e4c910c127",
+      "local_path": "images/md_microservices_e4c910c127.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 115853,
@@ -1053,8 +969,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_microservices_img018",
-      "local_path": "images/md_microservices_img018.png",
+      "id": "md_microservices_0ae076ba7a",
+      "local_path": "images/md_microservices_0ae076ba7a.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 6864,
@@ -1067,8 +983,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_microservices_img019",
-      "local_path": "images/md_microservices_img019.png",
+      "id": "md_microservices_c90a838c76",
+      "local_path": "images/md_microservices_c90a838c76.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 6561,
@@ -1081,8 +997,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_microservices_img020",
-      "local_path": "images/md_microservices_img020.png",
+      "id": "md_microservices_153f0938f3",
+      "local_path": "images/md_microservices_153f0938f3.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 31021,
@@ -1095,8 +1011,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img000",
-      "local_path": "images/md_modern-web-apps-azure_img000.png",
+      "id": "md_modern-web-apps-azure_d3eecac937",
+      "local_path": "images/md_modern-web-apps-azure_d3eecac937.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 43320,
@@ -1109,8 +1025,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img001",
-      "local_path": "images/md_modern-web-apps-azure_img001.png",
+      "id": "md_modern-web-apps-azure_307c44779a",
+      "local_path": "images/md_modern-web-apps-azure_307c44779a.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 78453,
@@ -1123,8 +1039,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img002",
-      "local_path": "images/md_modern-web-apps-azure_img002.png",
+      "id": "md_modern-web-apps-azure_c2fd5a1eca",
+      "local_path": "images/md_modern-web-apps-azure_c2fd5a1eca.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 66353,
@@ -1137,8 +1053,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img003",
-      "local_path": "images/md_modern-web-apps-azure_img003.png",
+      "id": "md_modern-web-apps-azure_6d7265d893",
+      "local_path": "images/md_modern-web-apps-azure_6d7265d893.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 127721,
@@ -1151,8 +1067,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img004",
-      "local_path": "images/md_modern-web-apps-azure_img004.png",
+      "id": "md_modern-web-apps-azure_ba12f44db4",
+      "local_path": "images/md_modern-web-apps-azure_ba12f44db4.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 52846,
@@ -1165,8 +1081,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img005",
-      "local_path": "images/md_modern-web-apps-azure_img005.png",
+      "id": "md_modern-web-apps-azure_18eb17065a",
+      "local_path": "images/md_modern-web-apps-azure_18eb17065a.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 123935,
@@ -1179,8 +1095,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img006",
-      "local_path": "images/md_modern-web-apps-azure_img006.png",
+      "id": "md_modern-web-apps-azure_c08be77e17",
+      "local_path": "images/md_modern-web-apps-azure_c08be77e17.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 17025,
@@ -1193,8 +1109,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_modern-web-apps-azure_img007",
-      "local_path": "images/md_modern-web-apps-azure_img007.png",
+      "id": "md_modern-web-apps-azure_be21d93bc5",
+      "local_path": "images/md_modern-web-apps-azure_be21d93bc5.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 31333,
@@ -1207,8 +1123,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img008",
-      "local_path": "images/md_modern-web-apps-azure_img008.png",
+      "id": "md_modern-web-apps-azure_7b35b2c24a",
+      "local_path": "images/md_modern-web-apps-azure_7b35b2c24a.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 96029,
@@ -1221,8 +1137,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_modern-web-apps-azure_img009",
-      "local_path": "images/md_modern-web-apps-azure_img009.png",
+      "id": "md_modern-web-apps-azure_4fc3e4df40",
+      "local_path": "images/md_modern-web-apps-azure_4fc3e4df40.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 133428,
@@ -1235,8 +1151,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img010",
-      "local_path": "images/md_modern-web-apps-azure_img010.png",
+      "id": "md_modern-web-apps-azure_4fd2f38894",
+      "local_path": "images/md_modern-web-apps-azure_4fd2f38894.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 33455,
@@ -1249,8 +1165,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img011",
-      "local_path": "images/md_modern-web-apps-azure_img011.png",
+      "id": "md_modern-web-apps-azure_36824a8dde",
+      "local_path": "images/md_modern-web-apps-azure_36824a8dde.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 225283,
@@ -1263,8 +1179,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img012",
-      "local_path": "images/md_modern-web-apps-azure_img012.png",
+      "id": "md_modern-web-apps-azure_e8e142542b",
+      "local_path": "images/md_modern-web-apps-azure_e8e142542b.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 120795,
@@ -1277,8 +1193,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img013",
-      "local_path": "images/md_modern-web-apps-azure_img013.png",
+      "id": "md_modern-web-apps-azure_0c44fd18b4",
+      "local_path": "images/md_modern-web-apps-azure_0c44fd18b4.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 117282,
@@ -1291,8 +1207,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img014",
-      "local_path": "images/md_modern-web-apps-azure_img014.png",
+      "id": "md_modern-web-apps-azure_2c20694c56",
+      "local_path": "images/md_modern-web-apps-azure_2c20694c56.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 215322,
@@ -1305,8 +1221,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img015",
-      "local_path": "images/md_modern-web-apps-azure_img015.png",
+      "id": "md_modern-web-apps-azure_ac483b4c57",
+      "local_path": "images/md_modern-web-apps-azure_ac483b4c57.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 80419,
@@ -1319,8 +1235,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img016",
-      "local_path": "images/md_modern-web-apps-azure_img016.png",
+      "id": "md_modern-web-apps-azure_60c1908294",
+      "local_path": "images/md_modern-web-apps-azure_60c1908294.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 87020,
@@ -1333,8 +1249,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img017",
-      "local_path": "images/md_modern-web-apps-azure_img017.png",
+      "id": "md_modern-web-apps-azure_ba063cf523",
+      "local_path": "images/md_modern-web-apps-azure_ba063cf523.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 12715,
@@ -1347,8 +1263,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_modern-web-apps-azure_img018",
-      "local_path": "images/md_modern-web-apps-azure_img018.png",
+      "id": "md_modern-web-apps-azure_c2361963a1",
+      "local_path": "images/md_modern-web-apps-azure_c2361963a1.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 10220,
@@ -1361,8 +1277,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img019",
-      "local_path": "images/md_modern-web-apps-azure_img019.png",
+      "id": "md_modern-web-apps-azure_512330c2e9",
+      "local_path": "images/md_modern-web-apps-azure_512330c2e9.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 24113,
@@ -1375,8 +1291,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_modern-web-apps-azure_img020",
-      "local_path": "images/md_modern-web-apps-azure_img020.png",
+      "id": "md_modern-web-apps-azure_47c2a39fa1",
+      "local_path": "images/md_modern-web-apps-azure_47c2a39fa1.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 71750,
@@ -1389,8 +1305,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img021",
-      "local_path": "images/md_modern-web-apps-azure_img021.png",
+      "id": "md_modern-web-apps-azure_92c5b81011",
+      "local_path": "images/md_modern-web-apps-azure_92c5b81011.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 8468,
@@ -1403,8 +1319,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img022",
-      "local_path": "images/md_modern-web-apps-azure_img022.png",
+      "id": "md_modern-web-apps-azure_dc48f72b17",
+      "local_path": "images/md_modern-web-apps-azure_dc48f72b17.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 9267,
@@ -1417,8 +1333,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_modern-web-apps-azure_img023",
-      "local_path": "images/md_modern-web-apps-azure_img023.png",
+      "id": "md_modern-web-apps-azure_133d4c47de",
+      "local_path": "images/md_modern-web-apps-azure_133d4c47de.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 844923,
@@ -1431,8 +1347,8 @@
       "educational_value": "low"
     },
     {
-      "id": "md_modern-web-apps-azure_img024",
-      "local_path": "images/md_modern-web-apps-azure_img024.png",
+      "id": "md_modern-web-apps-azure_0eb9cadf27",
+      "local_path": "images/md_modern-web-apps-azure_0eb9cadf27.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 44814,
@@ -1445,8 +1361,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img025",
-      "local_path": "images/md_modern-web-apps-azure_img025.png",
+      "id": "md_modern-web-apps-azure_0ea303694c",
+      "local_path": "images/md_modern-web-apps-azure_0ea303694c.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 17374,
@@ -1459,8 +1375,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_modern-web-apps-azure_img026",
-      "local_path": "images/md_modern-web-apps-azure_img026.png",
+      "id": "md_modern-web-apps-azure_c905cf9d65",
+      "local_path": "images/md_modern-web-apps-azure_c905cf9d65.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 62360,
@@ -1473,8 +1389,8 @@
       "educational_value": "low"
     },
     {
-      "id": "md_modern-web-apps-azure_img027",
-      "local_path": "images/md_modern-web-apps-azure_img027.png",
+      "id": "md_modern-web-apps-azure_881091692c",
+      "local_path": "images/md_modern-web-apps-azure_881091692c.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 24404,
@@ -1487,8 +1403,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_modern-web-apps-azure_img028",
-      "local_path": "images/md_modern-web-apps-azure_img028.png",
+      "id": "md_modern-web-apps-azure_ff6c819ca8",
+      "local_path": "images/md_modern-web-apps-azure_ff6c819ca8.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 58213,
@@ -1501,8 +1417,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_modern-web-apps-azure_img029",
-      "local_path": "images/md_modern-web-apps-azure_img029.png",
+      "id": "md_modern-web-apps-azure_3abf4dc919",
+      "local_path": "images/md_modern-web-apps-azure_3abf4dc919.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 51778,
@@ -1515,8 +1431,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_modern-web-apps-azure_img030",
-      "local_path": "images/md_modern-web-apps-azure_img030.jpg",
+      "id": "md_modern-web-apps-azure_0b56ac7498",
+      "local_path": "images/md_modern-web-apps-azure_0b56ac7498.jpg",
       "file_exists": true,
       "mime_type": "image/jpeg",
       "size_bytes": 177012,
@@ -1529,8 +1445,8 @@
       "educational_value": "low"
     },
     {
-      "id": "md_readme_img000",
-      "local_path": "images/md_readme_img000.png",
+      "id": "md_readme_62798075ab",
+      "local_path": "images/md_readme_62798075ab.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 170685,
@@ -1543,8 +1459,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_readme_img001",
-      "local_path": "images/md_readme_img001.png",
+      "id": "md_readme_ef63a00275",
+      "local_path": "images/md_readme_ef63a00275.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 215313,
@@ -1557,8 +1473,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_readme_img002",
-      "local_path": "images/md_readme_img002.png",
+      "id": "md_readme_899218ae18",
+      "local_path": "images/md_readme_899218ae18.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 342123,
@@ -1571,8 +1487,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_readme_img003",
-      "local_path": "images/md_readme_img003.png",
+      "id": "md_readme_1daf7aef06",
+      "local_path": "images/md_readme_1daf7aef06.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 198105,
@@ -1585,8 +1501,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_readme_img004",
-      "local_path": "images/md_readme_img004.png",
+      "id": "md_readme_2e4a455f1c",
+      "local_path": "images/md_readme_2e4a455f1c.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 296637,
@@ -1599,8 +1515,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_readme_img005",
-      "local_path": "images/md_readme_img005.png",
+      "id": "md_readme_6b0494f9d1",
+      "local_path": "images/md_readme_6b0494f9d1.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 130386,
@@ -1613,8 +1529,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_readme_img006",
-      "local_path": "images/md_readme_img006.png",
+      "id": "md_readme_d405517e52",
+      "local_path": "images/md_readme_d405517e52.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 110567,
@@ -1627,8 +1543,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_readme_img007",
-      "local_path": "images/md_readme_img007.png",
+      "id": "md_readme_7a17f4afa7",
+      "local_path": "images/md_readme_7a17f4afa7.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 217417,
@@ -1641,8 +1557,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_readme_img008",
-      "local_path": "images/md_readme_img008.png",
+      "id": "md_readme_bfd50b6b3f",
+      "local_path": "images/md_readme_bfd50b6b3f.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 322689,
@@ -1655,8 +1571,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_en_img000",
-      "local_path": "images/md_en_img000.png",
+      "id": "md_en_e410262847",
+      "local_path": "images/md_en_e410262847.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 14583,
@@ -1669,8 +1585,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_en_img001",
-      "local_path": "images/md_en_img001.png",
+      "id": "md_en_e2de21a6da",
+      "local_path": "images/md_en_e2de21a6da.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 25403,
@@ -1683,8 +1599,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_en_img002",
-      "local_path": "images/md_en_img002.png",
+      "id": "md_en_601dfaf7a0",
+      "local_path": "images/md_en_601dfaf7a0.png",
       "file_exists": true,
       "mime_type": "image/png",
       "size_bytes": 21116,

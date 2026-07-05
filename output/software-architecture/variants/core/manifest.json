@@ -82,7 +82,7 @@
   "condensation_stats": {
     "original_topics": 125,
     "condensed_topics": 2,
-    "original_chunks": 152,
+    "original_chunks": 164,
     "condensed_chunks": 2,
     "original_tokens": 166301,
     "condensed_tokens": 432,

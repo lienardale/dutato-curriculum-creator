@@ -6,7 +6,7 @@
   "sections": [
     {
       "title": "Introduction",
-      "content": "*[English](README.md) ∙ [日本語](README-ja.md) ∙ [简体中文](README-zh-Hans.md) ∙ [繁體中文](README-zh-TW.md) | [العَرَبِيَّة‎](https://github.com/donnemartin/system-design-primer/issues/170) ∙ [বাংলা](https://github.com/donnemartin/system-design-primer/issues/220) ∙ [Português do Brasil](https://github.com/donnemartin/system-design-primer/issues/40) ∙ [Deutsch](https://github.com/donnemartin/system-design-primer/issues/186) ∙ [ελληνικά](https://github.com/donnemartin/system-design-primer/issues/130) ∙ [עברית](https://github.com/donnemartin/system-design-primer/issues/272) ∙ [Italiano](https://github.com/donnemartin/system-design-primer/issues/104) ∙ [한국어](https://github.com/donnemartin/system-design-primer/issues/102) ∙ [فارسی](https://github.com/donnemartin/system-design-primer/issues/110) ∙ [Polski](https://github.com/donnemartin/system-design-primer/issues/68) ∙ [русский язык](https://github.com/donnemartin/system-design-primer/issues/87) ∙ [Español](https://github.com/donnemartin/system-design-primer/issues/136) ∙ [ภาษาไทย](https://github.com/donnemartin/system-design-primer/issues/187) ∙ [Türkçe](https://github.com/donnemartin/system-design-primer/issues/39) ∙ [tiếng Việt](https://github.com/donnemartin/system-design-primer/issues/127) ∙ [Français](https://github.com/donnemartin/system-design-primer/issues/250) | [Add Translation](https://github.com/donnemartin/system-design-primer/issues/28)*\n\n**Help [translate](TRANSLATIONS.md) this guide!**",
+      "content": "*English ∙ 日本語 ∙ 简体中文 ∙ 繁體中文 | [العَرَبِيَّة‎](https://github.com/donnemartin/system-design-primer/issues/170) ∙ [বাংলা](https://github.com/donnemartin/system-design-primer/issues/220) ∙ [Português do Brasil](https://github.com/donnemartin/system-design-primer/issues/40) ∙ [Deutsch](https://github.com/donnemartin/system-design-primer/issues/186) ∙ [ελληνικά](https://github.com/donnemartin/system-design-primer/issues/130) ∙ [עברית](https://github.com/donnemartin/system-design-primer/issues/272) ∙ [Italiano](https://github.com/donnemartin/system-design-primer/issues/104) ∙ [한국어](https://github.com/donnemartin/system-design-primer/issues/102) ∙ [فارسی](https://github.com/donnemartin/system-design-primer/issues/110) ∙ [Polski](https://github.com/donnemartin/system-design-primer/issues/68) ∙ [русский язык](https://github.com/donnemartin/system-design-primer/issues/87) ∙ [Español](https://github.com/donnemartin/system-design-primer/issues/136) ∙ [ภาษาไทย](https://github.com/donnemartin/system-design-primer/issues/187) ∙ [Türkçe](https://github.com/donnemartin/system-design-primer/issues/39) ∙ [tiếng Việt](https://github.com/donnemartin/system-design-primer/issues/127) ∙ [Français](https://github.com/donnemartin/system-design-primer/issues/250) | [Add Translation](https://github.com/donnemartin/system-design-primer/issues/28)*\n\n**Help translate this guide!**",
       "depth": 0,
       "metadata": {
         "file_path": "README.md"
@@ -40,7 +40,7 @@
     },
     {
       "title": "Learn from the open source community",
-      "content": "This is a continually updated, open source project.\n\n[Contributions](#contributing) are welcome!",
+      "content": "This is a continually updated, open source project.\n\nContributions are welcome!",
       "depth": 2,
       "metadata": {
         "file_path": "README.md",
@@ -49,7 +49,7 @@
     },
     {
       "title": "Prep for the system design interview",
-      "content": "In addition to coding interviews, system design is a **required component** of the **technical interview process** at many tech companies.\n\n**Practice common system design interview questions** and **compare** your results with **sample solutions**: discussions, code, and diagrams.\n\nAdditional topics for interview prep:\n\n* [Study guide](#study-guide)\n* [How to approach a system design interview question](#how-to-approach-a-system-design-interview-question)\n* [System design interview questions, **with solutions**](#system-design-interview-questions-with-solutions)\n* [Object-oriented design interview questions, **with solutions**](#object-oriented-design-interview-questions-with-solutions)\n* [Additional system design interview questions](#additional-system-design-interview-questions)",
+      "content": "In addition to coding interviews, system design is a **required component** of the **technical interview process** at many tech companies.\n\n**Practice common system design interview questions** and **compare** your results with **sample solutions**: discussions, code, and diagrams.\n\nAdditional topics for interview prep:\n\n* Study guide\n* How to approach a system design interview question\n* System design interview questions, **with solutions**\n* Object-oriented design interview questions, **with solutions**\n* Additional system design interview questions",
       "depth": 2,
       "metadata": {
         "file_path": "README.md",
@@ -76,7 +76,7 @@
     },
     {
       "title": "Index of system design topics",
-      "content": "> Summaries of various system design topics, including pros and cons.  **Everything is a trade-off**.\n>\n> Each section contains links to more in-depth resources.\n\n<p align=\"center\">\n  <img src=\"images/jrUBAF7.png\">\n  <br/>\n</p>\n\n* [System design topics: start here](#system-design-topics-start-here)\n    * [Step 1: Review the scalability video lecture](#step-1-review-the-scalability-video-lecture)\n    * [Step 2: Review the scalability article](#step-2-review-the-scalability-article)\n    * [Next steps](#next-steps)\n* [Performance vs scalability](#performance-vs-scalability)\n* [Latency vs throughput](#latency-vs-throughput)\n* [Availability vs consistency](#availability-vs-consistency)\n    * [CAP theorem](#cap-theorem)\n        * [CP - consistency and partition tolerance](#cp---consistency-and-partition-tolerance)\n        * [AP - availability and partition tolerance](#ap---availability-and-partition-tolerance)\n* [Consistency patterns](#consistency-patterns)\n    * [Weak consistency](#weak-consistency)\n    * [Eventual consistency](#eventual-consistency)\n    * [Strong consistency](#strong-consistency)\n* [Availability patterns](#availability-patterns)\n    * [Fail-over](#fail-over)\n    * [Replication](#replication)\n    * [Availability in numbers](#availability-in-numbers)\n* [Domain name system](#domain-name-system)\n* [Content delivery network](#content-delivery-network)\n    * [Push CDNs](#push-cdns)\n    * [Pull CDNs](#pull-cdns)\n* [Load balancer](#load-balancer)\n    * [Active-passive](#active-passive)\n    * [Active-active](#active-active)\n    * [Layer 4 load balancing](#layer-4-load-balancing)\n    * [Layer 7 load balancing](#layer-7-load-balancing)\n    * [Horizontal scaling](#horizontal-scaling)\n* [Reverse proxy (web server)](#reverse-proxy-web-server)\n    * [Load balancer vs reverse proxy](#load-balancer-vs-reverse-proxy)\n* [Application layer](#application-layer)\n    * [Microservices](#microservices)\n    * [Service discovery](#service-discovery)\n* [Database](#database)\n    * [Relational database management system (RDBMS)](#relational-database-management-system-rdbms)\n        * [Master-slave replication](#master-slave-replication)\n        * [Master-master replication](#master-master-replication)\n        * [Federation](#federation)\n        * [Sharding](#sharding)\n        * [Denormalization](#denormalization)\n        * [SQL tuning](#sql-tuning)\n    * [NoSQL](#nosql)\n        * [Key-value store](#key-value-store)\n        * [Document store](#document-store)\n        * [Wide column store](#wide-column-store)\n        * [Graph Database](#graph-database)\n    * [SQL or NoSQL](#sql-or-nosql)\n* [Cache](#cache)\n    * [Client caching](#client-caching)\n    * [CDN caching](#cdn-caching)\n    * [Web server caching](#web-server-caching)\n    * [Database caching](#database-caching)\n    * [Application caching](#application-caching)\n    * [Caching at the database query level](#caching-at-the-database-query-level)\n    * [Caching at the object level](#caching-at-the-object-level)\n    * [When to update the cache](#when-to-update-the-cache)\n        * [Cache-aside](#cache-aside)\n        * [Write-through](#write-through)\n        * [Write-behind (write-back)](#write-behind-write-back)\n        * [Refresh-ahead](#refresh-ahead)\n* [Asynchronism](#asynchronism)\n    * [Message queues](#message-queues)\n    * [Task queues](#task-queues)\n    * [Back pressure](#back-pressure)\n* [Communication](#communication)\n    * [Transmission control protocol (TCP)](#transmission-control-protocol-tcp)\n    * [User datagram protocol (UDP)](#user-datagram-protocol-udp)\n    * [Remote procedure call (RPC)](#remote-procedure-call-rpc)\n    * [Representational state transfer (REST)](#representational-state-transfer-rest)\n* [Security](#security)\n* [Appendix](#appendix)\n    * [Powers of two table](#powers-of-two-table)\n    * [Latency numbers every programmer should know](#latency-numbers-every-programmer-should-know)\n    * [Additional system design interview questions](#additional-system-design-interview-questions)\n    * [Real world architectures](#real-world-architectures)\n    * [Company architectures](#company-architectures)\n    * [Company engineering blogs](#company-engineering-blogs)\n* [Under development](#under-development)\n* [Credits](#credits)\n* [Contact info](#contact-info)\n* [License](#license)",
+      "content": "> Summaries of various system design topics, including pros and cons.  **Everything is a trade-off**.\n>\n> Each section contains links to more in-depth resources.\n\n<p align=\"center\">\n  <img src=\"images/jrUBAF7.png\">\n  <br/>\n</p>\n\n* System design topics: start here\n    * Step 1: Review the scalability video lecture\n    * Step 2: Review the scalability article\n    * Next steps\n* Performance vs scalability\n* Latency vs throughput\n* Availability vs consistency\n    * CAP theorem\n        * CP - consistency and partition tolerance\n        * AP - availability and partition tolerance\n* Consistency patterns\n    * Weak consistency\n    * Eventual consistency\n    * Strong consistency\n* Availability patterns\n    * Fail-over\n    * Replication\n    * Availability in numbers\n* Domain name system\n* Content delivery network\n    * Push CDNs\n    * Pull CDNs\n* Load balancer\n    * Active-passive\n    * Active-active\n    * Layer 4 load balancing\n    * Layer 7 load balancing\n    * Horizontal scaling\n* Reverse proxy (web server)\n    * Load balancer vs reverse proxy\n* Application layer\n    * Microservices\n    * Service discovery\n* Database\n    * Relational database management system (RDBMS)\n        * Master-slave replication\n        * Master-master replication\n        * Federation\n        * Sharding\n        * Denormalization\n        * SQL tuning\n    * NoSQL\n        * Key-value store\n        * Document store\n        * Wide column store\n        * Graph Database\n    * SQL or NoSQL\n* Cache\n    * Client caching\n    * CDN caching\n    * Web server caching\n    * Database caching\n    * Application caching\n    * Caching at the database query level\n    * Caching at the object level\n    * When to update the cache\n        * Cache-aside\n        * Write-through\n        * Write-behind (write-back)\n        * Refresh-ahead\n* Asynchronism\n    * Message queues\n    * Task queues\n    * Back pressure\n* Communication\n    * Transmission control protocol (TCP)\n    * User datagram protocol (UDP)\n    * Remote procedure call (RPC)\n    * Representational state transfer (REST)\n* Security\n* Appendix\n    * Powers of two table\n    * Latency numbers every programmer should know\n    * Additional system design interview questions\n    * Real world architectures\n    * Company architectures\n    * Company engineering blogs\n* Under development\n* Credits\n* Contact info\n* License",
       "depth": 1,
       "metadata": {
         "file_path": "README.md",
@@ -85,7 +85,7 @@
     },
     {
       "title": "Study guide",
-      "content": "> Suggested topics to review based on your interview timeline (short, medium, long).\n\n[IMAGE: md_readme_img000]\n\n**Q: For interviews, do I need to know everything here?**\n\n**A: No, you don't need to know everything here to prepare for the interview**.\n\nWhat you are asked in an interview depends on variables such as:\n\n* How much experience you have\n* What your technical background is\n* What positions you are interviewing for\n* Which companies you are interviewing with\n* Luck\n\nMore experienced candidates are generally expected to know more about system design.  Architects or team leads might be expected to know more than individual contributors.  Top tech companies are likely to have one or more design interview rounds.\n\nStart broad and go deeper in a few areas.  It helps to know a little about various key system design topics.  Adjust the following guide based on your timeline, experience, what positions you are interviewing for, and which companies you are interviewing with.\n\n* **Short timeline** - Aim for **breadth** with system design topics.  Practice by solving **some** interview questions.\n* **Medium timeline** - Aim for **breadth** and **some depth** with system design topics.  Practice by solving **many** interview questions.\n* **Long timeline** - Aim for **breadth** and **more depth** with system design topics.  Practice by solving **most** interview questions.\n\n| | Short | Medium | Long |\n|---|---|---|---|\n| Read through the [System design topics](#index-of-system-design-topics) to get a broad understanding of how systems work | :+1: | :+1: | :+1: |\n| Read through a few articles in the [Company engineering blogs](#company-engineering-blogs) for the companies you are interviewing with | :+1: | :+1: | :+1: |\n| Read through a few [Real world architectures](#real-world-architectures) | :+1: | :+1: | :+1: |\n| Review [How to approach a system design interview question](#how-to-approach-a-system-design-interview-question) | :+1: | :+1: | :+1: |\n| Work through [System design interview questions with solutions](#system-design-interview-questions-with-solutions) | Some | Many | Most |\n| Work through [Object-oriented design interview questions with solutions](#object-oriented-design-interview-questions-with-solutions) | Some | Many | Most |\n| Review [Additional system design interview questions](#additional-system-design-interview-questions) | Some | Many | Most |",
+      "content": "> Suggested topics to review based on your interview timeline (short, medium, long).\n\n[IMAGE: md_readme_62798075ab]\n\n**Q: For interviews, do I need to know everything here?**\n\n**A: No, you don't need to know everything here to prepare for the interview**.\n\nWhat you are asked in an interview depends on variables such as:\n\n* How much experience you have\n* What your technical background is\n* What positions you are interviewing for\n* Which companies you are interviewing with\n* Luck\n\nMore experienced candidates are generally expected to know more about system design.  Architects or team leads might be expected to know more than individual contributors.  Top tech companies are likely to have one or more design interview rounds.\n\nStart broad and go deeper in a few areas.  It helps to know a little about various key system design topics.  Adjust the following guide based on your timeline, experience, what positions you are interviewing for, and which companies you are interviewing with.\n\n* **Short timeline** - Aim for **breadth** with system design topics.  Practice by solving **some** interview questions.\n* **Medium timeline** - Aim for **breadth** and **some depth** with system design topics.  Practice by solving **many** interview questions.\n* **Long timeline** - Aim for **breadth** and **more depth** with system design topics.  Practice by solving **most** interview questions.\n\n| | Short | Medium | Long |\n|---|---|---|---|\n| Read through the System design topics to get a broad understanding of how systems work | :+1: | :+1: | :+1: |\n| Read through a few articles in the Company engineering blogs for the companies you are interviewing with | :+1: | :+1: | :+1: |\n| Read through a few Real world architectures | :+1: | :+1: | :+1: |\n| Review How to approach a system design interview question | :+1: | :+1: | :+1: |\n| Work through System design interview questions with solutions | Some | Many | Most |\n| Work through Object-oriented design interview questions with solutions | Some | Many | Most |\n| Review Additional system design interview questions | Some | Many | Most |",
       "depth": 1,
       "metadata": {
         "file_path": "README.md",
@@ -93,8 +93,8 @@
       },
       "images": [
         {
-          "id": "md_readme_img000",
-          "local_path": "images/md_readme_img000.png",
+          "id": "md_readme_62798075ab",
+          "local_path": "images/md_readme_62798075ab.png",
           "alt_text": "Study-plan flow chart for system design interview prep: from 'System Design Topics' choose a short, medium, or long timeline (breadth vs. depth), work through interview questions with solutions and object-oriented design questions, and review supporting material like real-world architectures and company engineering blogs.",
           "context": "markdown_ref:images/OfVllex.png"
         }
@@ -102,7 +102,7 @@
     },
     {
       "title": "How to approach a system design interview question",
-      "content": "> How to tackle a system design interview question.\n\nThe system design interview is an **open-ended conversation**.  You are expected to lead it.\n\nYou can use the following steps to guide the discussion.  To help solidify this process, work through the [System design interview questions with solutions](#system-design-interview-questions-with-solutions) section using the following steps.",
+      "content": "> How to tackle a system design interview question.\n\nThe system design interview is an **open-ended conversation**.  You are expected to lead it.\n\nYou can use the following steps to guide the discussion.  To help solidify this process, work through the System design interview questions with solutions section using the following steps.",
       "depth": 1,
       "metadata": {
         "file_path": "README.md",
@@ -129,7 +129,7 @@
     },
     {
       "title": "Step 3: Design core components",
-      "content": "Dive into details for each core component.  For example, if you were asked to [design a url shortening service](solutions/system_design/pastebin/README.md), discuss:\n\n* Generating and storing a hash of the full url\n    * [MD5](solutions/system_design/pastebin/README.md) and [Base62](solutions/system_design/pastebin/README.md)\n    * Hash collisions\n    * SQL or NoSQL\n    * Database schema\n* Translating a hashed url to the full url\n    * Database lookup\n* API and object-oriented design",
+      "content": "Dive into details for each core component.  For example, if you were asked to design a url shortening service, discuss:\n\n* Generating and storing a hash of the full url\n    * MD5 and Base62\n    * Hash collisions\n    * SQL or NoSQL\n    * Database schema\n* Translating a hashed url to the full url\n    * Database lookup\n* API and object-oriented design",
       "depth": 2,
       "metadata": {
         "file_path": "README.md",
@@ -138,7 +138,7 @@
     },
     {
       "title": "Step 4: Scale the design",
-      "content": "Identify and address bottlenecks, given the constraints.  For example, do you need the following to address scalability issues?\n\n* Load balancer\n* Horizontal scaling\n* Caching\n* Database sharding\n\nDiscuss potential solutions and trade-offs.  Everything is a trade-off.  Address bottlenecks using [principles of scalable system design](#index-of-system-design-topics).",
+      "content": "Identify and address bottlenecks, given the constraints.  For example, do you need the following to address scalability issues?\n\n* Load balancer\n* Horizontal scaling\n* Caching\n* Database sharding\n\nDiscuss potential solutions and trade-offs.  Everything is a trade-off.  Address bottlenecks using principles of scalable system design.",
       "depth": 2,
       "metadata": {
         "file_path": "README.md",
@@ -147,7 +147,7 @@
     },
     {
       "title": "Back-of-the-envelope calculations",
-      "content": "You might be asked to do some estimates by hand.  Refer to the [Appendix](#appendix) for the following resources:\n\n* [Use back of the envelope calculations](http://highscalability.com/blog/2011/1/26/google-pro-tip-use-back-of-the-envelope-calculations-to-choo.html)\n* [Powers of two table](#powers-of-two-table)\n* [Latency numbers every programmer should know](#latency-numbers-every-programmer-should-know)",
+      "content": "You might be asked to do some estimates by hand.  Refer to the Appendix for the following resources:\n\n* [Use back of the envelope calculations](http://highscalability.com/blog/2011/1/26/google-pro-tip-use-back-of-the-envelope-calculations-to-choo.html)\n* Powers of two table\n* Latency numbers every programmer should know",
       "depth": 2,
       "metadata": {
         "file_path": "README.md",
@@ -156,7 +156,7 @@
     },
     {
       "title": "System design interview questions with solutions",
-      "content": "> Common system design interview questions with sample discussions, code, and diagrams.\n>\n> Solutions linked to content in the `solutions/` folder.\n\n| Question | |\n|---|---|\n| Design Pastebin.com (or Bit.ly) | [Solution](solutions/system_design/pastebin/README.md) |\n| Design the Twitter timeline and search (or Facebook feed and search) | [Solution](solutions/system_design/twitter/README.md) |\n| Design a web crawler | [Solution](solutions/system_design/web_crawler/README.md) |\n| Design Mint.com | [Solution](solutions/system_design/mint/README.md) |\n| Design the data structures for a social network | [Solution](solutions/system_design/social_graph/README.md) |\n| Design a key-value store for a search engine | [Solution](solutions/system_design/query_cache/README.md) |\n| Design Amazon's sales ranking by category feature | [Solution](solutions/system_design/sales_rank/README.md) |\n| Design a system that scales to millions of users on AWS | [Solution](solutions/system_design/scaling_aws/README.md) |\n| Add a system design question | [Contribute](#contributing) |",
+      "content": "> Common system design interview questions with sample discussions, code, and diagrams.\n>\n> Solutions linked to content in the `solutions/` folder.\n\n| Question | |\n|---|---|\n| Design Pastebin.com (or Bit.ly) | Solution |\n| Design the Twitter timeline and search (or Facebook feed and search) | Solution |\n| Design a web crawler | Solution |\n| Design Mint.com | Solution |\n| Design the data structures for a social network | Solution |\n| Design a key-value store for a search engine | Solution |\n| Design Amazon's sales ranking by category feature | Solution |\n| Design a system that scales to millions of users on AWS | Solution |\n| Add a system design question | Contribute |",
       "depth": 1,
       "metadata": {
         "file_path": "README.md",
@@ -165,7 +165,7 @@
     },
     {
       "title": "Design Pastebin.com (or Bit.ly)",
-      "content": "[View exercise and solution](solutions/system_design/pastebin/README.md)\n\n[IMAGE: md_readme_img001]",
+      "content": "View exercise and solution\n\n[IMAGE: md_readme_ef63a00275]",
       "depth": 2,
       "metadata": {
         "file_path": "README.md",
@@ -173,8 +173,8 @@
       },
       "images": [
         {
-          "id": "md_readme_img001",
-          "local_path": "images/md_readme_img001.png",
+          "id": "md_readme_ef63a00275",
+          "local_path": "images/md_readme_ef63a00275.png",
           "alt_text": "Hand-drawn-style system design diagram of a scaled web architecture: a client resolves DNS and fetches from a CDN, while requests flow through load balancers to web servers that split into Write and Read APIs, backed by a memory cache, SQL write master-slave with read replicas, an analytics service, SQL analytics store, and an object store.",
           "context": "markdown_ref:images/4edXG0T.png"
         }
@@ -182,7 +182,7 @@
     },
     {
       "title": "Design the Twitter timeline and search (or Facebook feed and search)",
-      "content": "[View exercise and solution](solutions/system_design/twitter/README.md)\n\n[IMAGE: md_readme_img002]",
+      "content": "View exercise and solution\n\n[IMAGE: md_readme_899218ae18]",
       "depth": 2,
       "metadata": {
         "file_path": "README.md",
@@ -190,8 +190,8 @@
       },
       "images": [
         {
-          "id": "md_readme_img002",
-          "local_path": "images/md_readme_img002.png",
+          "id": "md_readme_899218ae18",
+          "local_path": "images/md_readme_899218ae18.png",
           "alt_text": "System design diagram of a Twitter-like timeline service: web servers route to Read, Write, and Search APIs, with a fan-out service feeding tweet info, user info, timeline, user graph, search, and notification services, all backed by a memory cache, SQL read replicas with a write master-slave, and an object store.",
           "context": "markdown_ref:images/jrUBAF7.png"
         }
@@ -199,7 +199,7 @@
     },
     {
       "title": "Design a web crawler",
-      "content": "[View exercise and solution](solutions/system_design/web_crawler/README.md)\n\n[IMAGE: md_readme_img003]",
+      "content": "View exercise and solution\n\n[IMAGE: md_readme_1daf7aef06]",
       "depth": 2,
       "metadata": {
         "file_path": "README.md",
@@ -207,8 +207,8 @@
       },
       "images": [
         {
-          "id": "md_readme_img003",
-          "local_path": "images/md_readme_img003.png",
+          "id": "md_readme_1daf7aef06",
+          "local_path": "images/md_readme_1daf7aef06.png",
           "alt_text": "System design diagram of a web crawler / search system distinguishing user search data flow from crawler data flow: a Query API hits reverse index and document services fed through queues by a crawler service writing to NoSQL, with a memory cache for query results.",
           "context": "markdown_ref:images/bWxPtQA.png"
         }
@@ -216,7 +216,7 @@
     },
     {
       "title": "Design Mint.com",
-      "content": "[View exercise and solution](solutions/system_design/mint/README.md)\n\n[IMAGE: md_readme_img004]",
+      "content": "View exercise and solution\n\n[IMAGE: md_readme_2e4a455f1c]",
       "depth": 2,
       "metadata": {
         "file_path": "README.md",
@@ -224,8 +224,8 @@
       },
       "images": [
         {
-          "id": "md_readme_img004",
-          "local_path": "images/md_readme_img004.png",
+          "id": "md_readme_2e4a455f1c",
+          "local_path": "images/md_readme_2e4a455f1c.png",
           "alt_text": "System design diagram of a Mint.com-style budgeting service: an Accounts API places tasks on a queue for a transaction extraction service that fans out to category, budget, and notification services, alongside a Read API, memory cache, SQL write master-slave with read replicas, and an object store.",
           "context": "markdown_ref:images/V5q57vU.png"
         }
@@ -233,7 +233,7 @@
     },
     {
       "title": "Design the data structures for a social network",
-      "content": "[View exercise and solution](solutions/system_design/social_graph/README.md)\n\n[IMAGE: md_readme_img005]",
+      "content": "View exercise and solution\n\n[IMAGE: md_readme_6b0494f9d1]",
       "depth": 2,
       "metadata": {
         "file_path": "README.md",
@@ -241,8 +241,8 @@
       },
       "images": [
         {
-          "id": "md_readme_img005",
-          "local_path": "images/md_readme_img005.png",
+          "id": "md_readme_6b0494f9d1",
+          "local_path": "images/md_readme_6b0494f9d1.png",
           "alt_text": "System design diagram for a social-graph query service: client traffic flows through DNS, load balancers, and web servers to a Query API that calls a User Graph Service, which delegates to lookup services and person servers, with results stored in a memory cache.",
           "context": "markdown_ref:images/cdCv5g7.png"
         }
@@ -250,7 +250,7 @@
     },
     {
       "title": "Design a key-value store for a search engine",
-      "content": "[View exercise and solution](solutions/system_design/query_cache/README.md)\n\n[IMAGE: md_readme_img006]",
+      "content": "View exercise and solution\n\n[IMAGE: md_readme_d405517e52]",
       "depth": 2,
       "metadata": {
         "file_path": "README.md",
@@ -258,8 +258,8 @@
       },
       "images": [
         {
-          "id": "md_readme_img006",
-          "local_path": "images/md_readme_img006.png",
+          "id": "md_readme_d405517e52",
+          "local_path": "images/md_readme_d405517e52.png",
           "alt_text": "System design diagram for a key-value search backend: clients reach a Query API via DNS, load balancers, and web servers; the Query API fans out to reverse index and document services and caches results in a memory cache.",
           "context": "markdown_ref:images/4j99mhe.png"
         }
@@ -267,7 +267,7 @@
     },
     {
       "title": "Design Amazon's sales ranking by category feature",
-      "content": "[View exercise and solution](solutions/system_design/sales_rank/README.md)\n\n[IMAGE: md_readme_img007]",
+      "content": "View exercise and solution\n\n[IMAGE: md_readme_7a17f4afa7]",
       "depth": 2,
       "metadata": {
         "file_path": "README.md",
@@ -275,8 +275,8 @@
       },
       "images": [
         {
-          "id": "md_readme_img007",
-          "local_path": "images/md_readme_img007.png",
+          "id": "md_readme_7a17f4afa7",
+          "local_path": "images/md_readme_7a17f4afa7.png",
           "alt_text": "System design diagram of an Amazon-style sales ranking system: web servers expose Sales and Read APIs while a Sales Rank Service computes rankings from an object store, with a CDN, memory cache, and SQL write master-slave plus read replicas completing the architecture.",
           "context": "markdown_ref:images/MzExP06.png"
         }
@@ -284,7 +284,7 @@
     },
     {
       "title": "Design a system that scales to millions of users on AWS",
-      "content": "[View exercise and solution](solutions/system_design/scaling_aws/README.md)\n\n[IMAGE: md_readme_img008]",
+      "content": "View exercise and solution\n\n[IMAGE: md_readme_bfd50b6b3f]",
       "depth": 2,
       "metadata": {
         "file_path": "README.md",
@@ -292,8 +292,8 @@
       },
       "images": [
         {
-          "id": "md_readme_img008",
-          "local_path": "images/md_readme_img008.png",
+          "id": "md_readme_bfd50b6b3f",
+          "local_path": "images/md_readme_bfd50b6b3f.png",
           "alt_text": "System design diagram of a large-scale AWS-style architecture combining a worker service and queue with asynchronous Write APIs, a synchronous Write API and Read API, memory cache, NoSQL store, SQL write master-slave with read replicas, an object store, and SQL scaling patterns called out as sharding (customers A-M / N-Z) and federation (customers vs. products databases).",
           "context": "markdown_ref:images/jj3A5N8.png"
         }
@@ -301,7 +301,7 @@
     },
     {
       "title": "Object-oriented design interview questions with solutions",
-      "content": "> Common object-oriented design interview questions with sample discussions, code, and diagrams.\n>\n> Solutions linked to content in the `solutions/` folder.\n\n>**Note: This section is under development**\n\n| Question | |\n|---|---|\n| Design a hash map | [Solution](solutions/object_oriented_design/hash_table/hash_map.ipynb)  |\n| Design a least recently used cache | [Solution](solutions/object_oriented_design/lru_cache/lru_cache.ipynb)  |\n| Design a call center | [Solution](solutions/object_oriented_design/call_center/call_center.ipynb)  |\n| Design a deck of cards | [Solution](solutions/object_oriented_design/deck_of_cards/deck_of_cards.ipynb)  |\n| Design a parking lot | [Solution](solutions/object_oriented_design/parking_lot/parking_lot.ipynb)  |\n| Design a chat server | [Solution](solutions/object_oriented_design/online_chat/online_chat.ipynb)  |\n| Design a circular array | [Contribute](#contributing)  |\n| Add an object-oriented design question | [Contribute](#contributing) |",
+      "content": "> Common object-oriented design interview questions with sample discussions, code, and diagrams.\n>\n> Solutions linked to content in the `solutions/` folder.\n\n>**Note: This section is under development**\n\n| Question | |\n|---|---|\n| Design a hash map | [Solution](solutions/object_oriented_design/hash_table/hash_map.ipynb)  |\n| Design a least recently used cache | [Solution](solutions/object_oriented_design/lru_cache/lru_cache.ipynb)  |\n| Design a call center | [Solution](solutions/object_oriented_design/call_center/call_center.ipynb)  |\n| Design a deck of cards | [Solution](solutions/object_oriented_design/deck_of_cards/deck_of_cards.ipynb)  |\n| Design a parking lot | [Solution](solutions/object_oriented_design/parking_lot/parking_lot.ipynb)  |\n| Design a chat server | [Solution](solutions/object_oriented_design/online_chat/online_chat.ipynb)  |\n| Design a circular array | Contribute  |\n| Add an object-oriented design question | Contribute |",
       "depth": 1,
       "metadata": {
         "file_path": "README.md",
@@ -373,7 +373,7 @@
     },
     {
       "title": "AP - availability and partition tolerance",
-      "content": "Responses return the most readily available version of the data available on any node, which might not be the latest.  Writes might take some time to propagate when the partition is resolved.\n\nAP is a good choice if the business needs to allow for [eventual consistency](#eventual-consistency) or when the system needs to continue working despite external errors.",
+      "content": "Responses return the most readily available version of the data available on any node, which might not be the latest.  Writes might take some time to propagate when the partition is resolved.\n\nAP is a good choice if the business needs to allow for eventual consistency or when the system needs to continue working despite external errors.",
       "depth": 3,
       "metadata": {
         "file_path": "README.md",
@@ -382,7 +382,7 @@
     },
     {
       "title": "Consistency patterns",
-      "content": "With multiple copies of the same data, we are faced with options on how to synchronize them so clients have a consistent view of the data.  Recall the definition of consistency from the [CAP theorem](#cap-theorem) - Every read receives the most recent write or an error.",
+      "content": "With multiple copies of the same data, we are faced with options on how to synchronize them so clients have a consistent view of the data.  Recall the definition of consistency from the CAP theorem - Every read receives the most recent write or an error.",
       "depth": 1,
       "metadata": {
         "file_path": "README.md",
@@ -454,7 +454,7 @@
     },
     {
       "title": "Master-slave and master-master",
-      "content": "This topic is further discussed in the [Database](#database) section:\n\n* [Master-slave replication](#master-slave-replication)\n* [Master-master replication](#master-master-replication)",
+      "content": "This topic is further discussed in the Database section:\n\n* Master-slave replication\n* Master-master replication",
       "depth": 3,
       "metadata": {
         "file_path": "README.md",
@@ -571,7 +571,7 @@
     },
     {
       "title": "Load balancer",
-      "content": "<p align=\"center\">\n  <img src=\"images/h81n9iK.png\">\n  <br/>\n  <i><a href=http://horicky.blogspot.com/2010/10/scalable-system-design-patterns.html>Source: Scalable system design patterns</a></i>\n</p>\n\nLoad balancers distribute incoming client requests to computing resources such as application servers and databases.  In each case, the load balancer returns the response from the computing resource to the appropriate client.  Load balancers are effective at:\n\n* Preventing requests from going to unhealthy servers\n* Preventing overloading resources\n* Helping to eliminate a single point of failure\n\nLoad balancers can be implemented with hardware (expensive) or with software such as HAProxy.\n\nAdditional benefits include:\n\n* **SSL termination** - Decrypt incoming requests and encrypt server responses so backend servers do not have to perform these potentially expensive operations\n    * Removes the need to install [X.509 certificates](https://en.wikipedia.org/wiki/X.509) on each server\n* **Session persistence** - Issue cookies and route a specific client's requests to same instance if the web apps do not keep track of sessions\n\nTo protect against failures, it's common to set up multiple load balancers, either in [active-passive](#active-passive) or [active-active](#active-active) mode.\n\nLoad balancers can route traffic based on various metrics, including:\n\n* Random\n* Least loaded\n* Session/cookies\n* [Round robin or weighted round robin](https://www.g33kinfo.com/info/round-robin-vs-weighted-round-robin-lb)\n* [Layer 4](#layer-4-load-balancing)\n* [Layer 7](#layer-7-load-balancing)",
+      "content": "<p align=\"center\">\n  <img src=\"images/h81n9iK.png\">\n  <br/>\n  <i><a href=http://horicky.blogspot.com/2010/10/scalable-system-design-patterns.html>Source: Scalable system design patterns</a></i>\n</p>\n\nLoad balancers distribute incoming client requests to computing resources such as application servers and databases.  In each case, the load balancer returns the response from the computing resource to the appropriate client.  Load balancers are effective at:\n\n* Preventing requests from going to unhealthy servers\n* Preventing overloading resources\n* Helping to eliminate a single point of failure\n\nLoad balancers can be implemented with hardware (expensive) or with software such as HAProxy.\n\nAdditional benefits include:\n\n* **SSL termination** - Decrypt incoming requests and encrypt server responses so backend servers do not have to perform these potentially expensive operations\n    * Removes the need to install [X.509 certificates](https://en.wikipedia.org/wiki/X.509) on each server\n* **Session persistence** - Issue cookies and route a specific client's requests to same instance if the web apps do not keep track of sessions\n\nTo protect against failures, it's common to set up multiple load balancers, either in active-passive or active-active mode.\n\nLoad balancers can route traffic based on various metrics, including:\n\n* Random\n* Least loaded\n* Session/cookies\n* [Round robin or weighted round robin](https://www.g33kinfo.com/info/round-robin-vs-weighted-round-robin-lb)\n* Layer 4\n* Layer 7",
       "depth": 1,
       "metadata": {
         "file_path": "README.md",
@@ -580,7 +580,7 @@
     },
     {
       "title": "Layer 4 load balancing",
-      "content": "Layer 4 load balancers look at info at the [transport layer](#communication) to decide how to distribute requests.  Generally, this involves the source, destination IP addresses, and ports in the header, but not the contents of the packet.  Layer 4 load balancers forward network packets to and from the upstream server, performing [Network Address Translation (NAT)](https://web.archive.org/web/20240117134735/https://www.nginx.com/resources/glossary/layer-4-load-balancing/).",
+      "content": "Layer 4 load balancers look at info at the transport layer to decide how to distribute requests.  Generally, this involves the source, destination IP addresses, and ports in the header, but not the contents of the packet.  Layer 4 load balancers forward network packets to and from the upstream server, performing [Network Address Translation (NAT)](https://web.archive.org/web/20240117134735/https://www.nginx.com/resources/glossary/layer-4-load-balancing/).",
       "depth": 2,
       "metadata": {
         "file_path": "README.md",
@@ -589,7 +589,7 @@
     },
     {
       "title": "Layer 7 load balancing",
-      "content": "Layer 7 load balancers look at the [application layer](#communication) to decide how to distribute requests.  This can involve contents of the header, message, and cookies.  Layer 7 load balancers terminate network traffic, reads the message, makes a load-balancing decision, then opens a connection to the selected server.  For example, a layer 7 load balancer can direct video traffic to servers that host videos while directing more sensitive user billing traffic to security-hardened servers.\n\nAt the cost of flexibility, layer 4 load balancing requires less time and computing resources than Layer 7, although the performance impact can be minimal on modern commodity hardware.",
+      "content": "Layer 7 load balancers look at the application layer to decide how to distribute requests.  This can involve contents of the header, message, and cookies.  Layer 7 load balancers terminate network traffic, reads the message, makes a load-balancing decision, then opens a connection to the selected server.  For example, a layer 7 load balancer can direct video traffic to servers that host videos while directing more sensitive user billing traffic to security-hardened servers.\n\nAt the cost of flexibility, layer 4 load balancing requires less time and computing resources than Layer 7, although the performance impact can be minimal on modern commodity hardware.",
       "depth": 2,
       "metadata": {
         "file_path": "README.md",
@@ -607,7 +607,7 @@
     },
     {
       "title": "Disadvantage(s): horizontal scaling",
-      "content": "* Scaling horizontally introduces complexity and involves cloning servers\n    * Servers should be stateless: they should not contain any user-related data like sessions or profile pictures\n    * Sessions can be stored in a centralized data store such as a [database](#database) (SQL, NoSQL) or a persistent [cache](#cache) (Redis, Memcached)\n* Downstream servers such as caches and databases need to handle more simultaneous connections as upstream servers scale out",
+      "content": "* Scaling horizontally introduces complexity and involves cloning servers\n    * Servers should be stateless: they should not contain any user-related data like sessions or profile pictures\n    * Sessions can be stored in a centralized data store such as a database (SQL, NoSQL) or a persistent cache (Redis, Memcached)\n* Downstream servers such as caches and databases need to handle more simultaneous connections as upstream servers scale out",
       "depth": 3,
       "metadata": {
         "file_path": "README.md",
@@ -652,7 +652,7 @@
     },
     {
       "title": "Application layer",
-      "content": "<p align=\"center\">\n  <img src=\"images/yB5SYwm.png\">\n  <br/>\n  <i><a href=http://lethain.com/introduction-to-architecting-systems-for-scale/#platform_layer>Source: Intro to architecting systems for scale</a></i>\n</p>\n\nSeparating out the web layer from the application layer (also known as platform layer) allows you to scale and configure both layers independently.  Adding a new API results in adding application servers without necessarily adding additional web servers.  The **single responsibility principle** advocates for small and autonomous services that work together.  Small teams with small services can plan more aggressively for rapid growth.\n\nWorkers in the application layer also help enable [asynchronism](#asynchronism).",
+      "content": "<p align=\"center\">\n  <img src=\"images/yB5SYwm.png\">\n  <br/>\n  <i><a href=http://lethain.com/introduction-to-architecting-systems-for-scale/#platform_layer>Source: Intro to architecting systems for scale</a></i>\n</p>\n\nSeparating out the web layer from the application layer (also known as platform layer) allows you to scale and configure both layers independently.  Adding a new API results in adding application servers without necessarily adding additional web servers.  The **single responsibility principle** advocates for small and autonomous services that work together.  Small teams with small services can plan more aggressively for rapid growth.\n\nWorkers in the application layer also help enable asynchronism.",
       "depth": 1,
       "metadata": {
         "file_path": "README.md",
@@ -670,7 +670,7 @@
     },
     {
       "title": "Service Discovery",
-      "content": "Systems such as [Consul](https://www.consul.io/docs/index.html), [Etcd](https://coreos.com/etcd/docs/latest), and [Zookeeper](http://www.slideshare.net/sauravhaloi/introduction-to-apache-zookeeper) can help services find each other by keeping track of registered names, addresses, and ports.  [Health checks](https://www.consul.io/intro/getting-started/checks.html) help verify service integrity and are often done using an [HTTP](#hypertext-transfer-protocol-http) endpoint.  Both Consul and Etcd have a built in [key-value store](#key-value-store) that can be useful for storing config values and other shared data.",
+      "content": "Systems such as [Consul](https://www.consul.io/docs/index.html), [Etcd](https://coreos.com/etcd/docs/latest), and [Zookeeper](http://www.slideshare.net/sauravhaloi/introduction-to-apache-zookeeper) can help services find each other by keeping track of registered names, addresses, and ports.  [Health checks](https://www.consul.io/intro/getting-started/checks.html) help verify service integrity and are often done using an HTTP endpoint.  Both Consul and Etcd have a built in key-value store that can be useful for storing config values and other shared data.",
       "depth": 2,
       "metadata": {
         "file_path": "README.md",
@@ -715,7 +715,7 @@
     },
     {
       "title": "Disadvantage(s): master-slave replication",
-      "content": "* Additional logic is needed to promote a slave to a master.\n* See [Disadvantage(s): replication](#disadvantages-replication) for points related to **both** master-slave and master-master.",
+      "content": "* Additional logic is needed to promote a slave to a master.\n* See Disadvantage(s): replication for points related to **both** master-slave and master-master.",
       "depth": 4,
       "metadata": {
         "file_path": "README.md",
@@ -733,7 +733,7 @@
     },
     {
       "title": "Disadvantage(s): master-master replication",
-      "content": "* You'll need a load balancer or you'll need to make changes to your application logic to determine where to write.\n* Most master-master systems are either loosely consistent (violating ACID) or have increased write latency due to synchronization.\n* Conflict resolution comes more into play as more write nodes are added and as latency increases.\n* See [Disadvantage(s): replication](#disadvantages-replication) for points related to **both** master-slave and master-master.",
+      "content": "* You'll need a load balancer or you'll need to make changes to your application logic to determine where to write.\n* Most master-master systems are either loosely consistent (violating ACID) or have increased write latency due to synchronization.\n* Conflict resolution comes more into play as more write nodes are added and as latency increases.\n* See Disadvantage(s): replication for points related to **both** master-slave and master-master.",
       "depth": 4,
       "metadata": {
         "file_path": "README.md",
@@ -769,7 +769,7 @@
     },
     {
       "title": "Sharding",
-      "content": "<p align=\"center\">\n  <img src=\"images/wU8x5Id.png\">\n  <br/>\n  <i><a href=http://www.slideshare.net/jboner/scalability-availability-stability-patterns/>Source: Scalability, availability, stability, patterns</a></i>\n</p>\n\nSharding distributes data across different databases such that each database can only manage a subset of the data.  Taking a users database as an example, as the number of users increases, more shards are added to the cluster.\n\nSimilar to the advantages of [federation](#federation), sharding results in less read and write traffic, less replication, and more cache hits.  Index size is also reduced, which generally improves performance with faster queries.  If one shard goes down, the other shards are still operational, although you'll want to add some form of replication to avoid data loss.  Like federation, there is no single central master serializing writes, allowing you to write in parallel with increased throughput.\n\nCommon ways to shard a table of users is either through the user's last name initial or the user's geographic location.",
+      "content": "<p align=\"center\">\n  <img src=\"images/wU8x5Id.png\">\n  <br/>\n  <i><a href=http://www.slideshare.net/jboner/scalability-availability-stability-patterns/>Source: Scalability, availability, stability, patterns</a></i>\n</p>\n\nSharding distributes data across different databases such that each database can only manage a subset of the data.  Taking a users database as an example, as the number of users increases, more shards are added to the cluster.\n\nSimilar to the advantages of federation, sharding results in less read and write traffic, less replication, and more cache hits.  Index size is also reduced, which generally improves performance with faster queries.  If one shard goes down, the other shards are still operational, although you'll want to add some form of replication to avoid data loss.  Like federation, there is no single central master serializing writes, allowing you to write in parallel with increased throughput.\n\nCommon ways to shard a table of users is either through the user's last name initial or the user's geographic location.",
       "depth": 3,
       "metadata": {
         "file_path": "README.md",
@@ -787,7 +787,7 @@
     },
     {
       "title": "Denormalization",
-      "content": "Denormalization attempts to improve read performance at the expense of some write performance.  Redundant copies of the data are written in multiple tables to avoid expensive joins.  Some RDBMS such as [PostgreSQL](https://en.wikipedia.org/wiki/PostgreSQL) and Oracle support [materialized views](https://en.wikipedia.org/wiki/Materialized_view) which handle the work of storing redundant information and keeping redundant copies consistent.\n\nOnce data becomes distributed with techniques such as [federation](#federation) and [sharding](#sharding), managing joins across data centers further increases complexity.  Denormalization might circumvent the need for such complex joins.\n\nIn most systems, reads can heavily outnumber writes 100:1 or even 1000:1.  A read resulting in a complex database join can be very expensive, spending a significant amount of time on disk operations.",
+      "content": "Denormalization attempts to improve read performance at the expense of some write performance.  Redundant copies of the data are written in multiple tables to avoid expensive joins.  Some RDBMS such as [PostgreSQL](https://en.wikipedia.org/wiki/PostgreSQL) and Oracle support [materialized views](https://en.wikipedia.org/wiki/Materialized_view) which handle the work of storing redundant information and keeping redundant copies consistent.\n\nOnce data becomes distributed with techniques such as federation and sharding, managing joins across data centers further increases complexity.  Denormalization might circumvent the need for such complex joins.\n\nIn most systems, reads can heavily outnumber writes 100:1 or even 1000:1.  A read resulting in a complex database join can be very expensive, spending a significant amount of time on disk operations.",
       "depth": 3,
       "metadata": {
         "file_path": "README.md",
@@ -832,7 +832,7 @@
     },
     {
       "title": "Avoid expensive joins",
-      "content": "* [Denormalize](#denormalization) where performance demands it.",
+      "content": "* Denormalize where performance demands it.",
       "depth": 4,
       "metadata": {
         "file_path": "README.md",
@@ -859,7 +859,7 @@
     },
     {
       "title": "NoSQL",
-      "content": "NoSQL is a collection of data items represented in a **key-value store**, **document store**, **wide column store**, or a **graph database**.  Data is denormalized, and joins are generally done in the application code.  Most NoSQL stores lack true ACID transactions and favor [eventual consistency](#eventual-consistency).\n\n**BASE** is often used to describe the properties of NoSQL databases.  In comparison with the [CAP Theorem](#cap-theorem), BASE chooses availability over consistency.\n\n* **Basically available** - the system guarantees availability.\n* **Soft state** - the state of the system may change over time, even without input.\n* **Eventual consistency** - the system will become consistent over a period of time, given that the system doesn't receive input during that period.\n\nIn addition to choosing between [SQL or NoSQL](#sql-or-nosql), it is helpful to understand which type of NoSQL database best fits your use case(s).  We'll review **key-value stores**, **document stores**, **wide column stores**, and **graph databases** in the next section.",
+      "content": "NoSQL is a collection of data items represented in a **key-value store**, **document store**, **wide column store**, or a **graph database**.  Data is denormalized, and joins are generally done in the application code.  Most NoSQL stores lack true ACID transactions and favor eventual consistency.\n\n**BASE** is often used to describe the properties of NoSQL databases.  In comparison with the CAP Theorem, BASE chooses availability over consistency.\n\n* **Basically available** - the system guarantees availability.\n* **Soft state** - the state of the system may change over time, even without input.\n* **Eventual consistency** - the system will become consistent over a period of time, given that the system doesn't receive input during that period.\n\nIn addition to choosing between SQL or NoSQL, it is helpful to understand which type of NoSQL database best fits your use case(s).  We'll review **key-value stores**, **document stores**, **wide column stores**, and **graph databases** in the next section.",
       "depth": 2,
       "metadata": {
         "file_path": "README.md",
@@ -895,7 +895,7 @@
     },
     {
       "title": "Graph database",
-      "content": "<p align=\"center\">\n  <img src=\"images/fNcl65g.png\">\n  <br/>\n  <i><a href=https://en.wikipedia.org/wiki/File:GraphDatabase_PropertyGraph.png>Source: Graph database</a></i>\n</p>\n\n> Abstraction: graph\n\nIn a graph database, each node is a record and each arc is a relationship between two nodes.  Graph databases are optimized to represent complex relationships with many foreign keys or many-to-many relationships.\n\nGraphs databases offer high performance for data models with complex relationships, such as a social network.  They are relatively new and are not yet widely-used; it might be more difficult to find development tools and resources.  Many graphs can only be accessed with [REST APIs](#representational-state-transfer-rest).",
+      "content": "<p align=\"center\">\n  <img src=\"images/fNcl65g.png\">\n  <br/>\n  <i><a href=https://en.wikipedia.org/wiki/File:GraphDatabase_PropertyGraph.png>Source: Graph database</a></i>\n</p>\n\n> Abstraction: graph\n\nIn a graph database, each node is a record and each arc is a relationship between two nodes.  Graph databases are optimized to represent complex relationships with many foreign keys or many-to-many relationships.\n\nGraphs databases offer high performance for data models with complex relationships, such as a social network.  They are relatively new and are not yet widely-used; it might be more difficult to find development tools and resources.  Many graphs can only be accessed with REST APIs.",
       "depth": 3,
       "metadata": {
         "file_path": "README.md",
@@ -922,7 +922,7 @@
     },
     {
       "title": "Client caching",
-      "content": "Caches can be located on the client side (OS or browser), [server side](#reverse-proxy-web-server), or in a distinct cache layer.",
+      "content": "Caches can be located on the client side (OS or browser), server side, or in a distinct cache layer.",
       "depth": 2,
       "metadata": {
         "file_path": "README.md",
@@ -931,7 +931,7 @@
     },
     {
       "title": "CDN caching",
-      "content": "[CDNs](#content-delivery-network) are considered a type of cache.",
+      "content": "CDNs are considered a type of cache.",
       "depth": 2,
       "metadata": {
         "file_path": "README.md",
@@ -940,7 +940,7 @@
     },
     {
       "title": "Web server caching",
-      "content": "[Reverse proxies](#reverse-proxy-web-server) and caches such as [Varnish](https://www.varnish-cache.org/) can serve static and dynamic content directly.  Web servers can also cache requests, returning responses without having to contact application servers.",
+      "content": "Reverse proxies and caches such as [Varnish](https://www.varnish-cache.org/) can serve static and dynamic content directly.  Web servers can also cache requests, returning responses without having to contact application servers.",
       "depth": 2,
       "metadata": {
         "file_path": "README.md",
@@ -1201,7 +1201,7 @@
     },
     {
       "title": "Security",
-      "content": "This section could use some updates.  Consider [contributing](#contributing)!\n\nSecurity is a broad topic.  Unless you have considerable experience, a security background, or are applying for a position that requires knowledge of security, you probably won't need to know more than the basics:\n\n* Encrypt in transit and at rest.\n* Sanitize all user inputs or any input parameters exposed to user to prevent [XSS](https://en.wikipedia.org/wiki/Cross-site_scripting) and [SQL injection](https://en.wikipedia.org/wiki/SQL_injection).\n* Use parameterized queries to prevent SQL injection.\n* Use the principle of [least privilege](https://en.wikipedia.org/wiki/Principle_of_least_privilege).",
+      "content": "This section could use some updates.  Consider contributing!\n\nSecurity is a broad topic.  Unless you have considerable experience, a security background, or are applying for a position that requires knowledge of security, you probably won't need to know more than the basics:\n\n* Encrypt in transit and at rest.\n* Sanitize all user inputs or any input parameters exposed to user to prevent [XSS](https://en.wikipedia.org/wiki/Cross-site_scripting) and [SQL injection](https://en.wikipedia.org/wiki/SQL_injection).\n* Use parameterized queries to prevent SQL injection.\n* Use the principle of [least privilege](https://en.wikipedia.org/wiki/Principle_of_least_privilege).",
       "depth": 1,
       "metadata": {
         "file_path": "README.md",
@@ -1273,7 +1273,7 @@
     },
     {
       "title": "Additional system design interview questions",
-      "content": "> Common system design interview questions, with links to resources on how to solve each.\n\n| Question | Reference(s) |\n|---|---|\n| Design a file sync service like Dropbox | [youtube.com](https://www.youtube.com/watch?v=PE4gwstWhmc) |\n| Design a search engine like Google | [queue.acm.org](http://queue.acm.org/detail.cfm?id=988407)<br/>[stackexchange.com](http://programmers.stackexchange.com/questions/38324/interview-question-how-would-you-implement-google-search)<br/>[ardendertat.com](http://www.ardendertat.com/2012/01/11/implementing-search-engines/)<br/>[stanford.edu](http://infolab.stanford.edu/~backrub/google.html) |\n| Design a scalable web crawler like Google | [quora.com](https://www.quora.com/How-can-I-build-a-web-crawler-from-scratch) |\n| Design Google docs | [code.google.com](https://code.google.com/p/google-mobwrite/)<br/>[neil.fraser.name](https://neil.fraser.name/writing/sync/) |\n| Design a key-value store like Redis | [codecapsule.com](http://codecapsule.com/2012/11/07/ikvs-implementing-a-key-value-store-table-of-contents/)<br/>[allthingsdistributed.com](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf) |\n| Design a cache system like Memcached | [slideshare.net](http://www.slideshare.net/oemebamo/introduction-to-memcached) |\n| Design a recommendation system like Amazon's | [hulu.com](https://web.archive.org/web/20170406065247/http://tech.hulu.com/blog/2011/09/19/recommendation-system.html)<br/>[ijcai13.org](http://ijcai13.org/files/tutorial_slides/td3.pdf) |\n| Design a tinyurl system like Bitly | [n00tc0d3r.blogspot.com](http://n00tc0d3r.blogspot.com/) |\n| Design a chat app like WhatsApp | [highscalability.com](http://highscalability.com/blog/2014/2/26/the-whatsapp-architecture-facebook-bought-for-19-billion.html)\n| Design a picture sharing system like Instagram | [highscalability.com](http://highscalability.com/flickr-architecture)<br/>[highscalability.com](http://highscalability.com/blog/2011/12/6/instagram-architecture-14-million-users-terabytes-of-photos.html) |\n| Design the Facebook news feed function | [quora.com](http://www.quora.com/What-are-best-practices-for-building-something-like-a-News-Feed)<br/>[quora.com](http://www.quora.com/Activity-Streams/What-are-the-scaling-issues-to-keep-in-mind-while-developing-a-social-network-feed)<br/>[slideshare.net](http://www.slideshare.net/danmckinley/etsy-activity-feeds-architecture) |\n| Design the Facebook timeline function | [facebook.com](https://www.facebook.com/note.php?note_id=10150468255628920)<br/>[highscalability.com](http://highscalability.com/blog/2012/1/23/facebook-timeline-brought-to-you-by-the-power-of-denormaliza.html) |\n| Design the Facebook chat function | [erlang-factory.com](http://www.erlang-factory.com/upload/presentations/31/EugeneLetuchy-ErlangatFacebook.pdf)<br/>[facebook.com](https://www.facebook.com/note.php?note_id=14218138919&id=9445547199&index=0) |\n| Design a graph search function like Facebook's | [facebook.com](https://www.facebook.com/notes/facebook-engineering/under-the-hood-building-out-the-infrastructure-for-graph-search/10151347573598920)<br/>[facebook.com](https://www.facebook.com/notes/facebook-engineering/under-the-hood-indexing-and-ranking-in-graph-search/10151361720763920)<br/>[facebook.com](https://www.facebook.com/notes/facebook-engineering/under-the-hood-the-natural-language-interface-of-graph-search/10151432733048920) |\n| Design a content delivery network like CloudFlare | [figshare.com](https://figshare.com/articles/Globally_distributed_content_delivery/6605972) |\n| Design a trending topic system like Twitter's | [michael-noll.com](http://www.michael-noll.com/blog/2013/01/18/implementing-real-time-trending-topics-in-storm/)<br/>[snikolov .wordpress.com](http://snikolov.wordpress.com/2012/11/14/early-detection-of-twitter-trends/) |\n| Design a random ID generation system | [blog.twitter.com](https://blog.twitter.com/2010/announcing-snowflake)<br/>[github.com](https://github.com/twitter/snowflake/) |\n| Return the top k requests during a time interval | [cs.ucsb.edu](https://www.cs.ucsb.edu/sites/default/files/documents/2005-23.pdf)<br/>[wpi.edu](http://davis.wpi.edu/xmdv/docs/EDBT11-diyang.pdf) |\n| Design a system that serves data from multiple data centers | [highscalability.com](http://highscalability.com/blog/2009/8/24/how-google-serves-data-from-multiple-datacenters.html) |\n| Design an online multiplayer card game | [indieflashblog.com](https://web.archive.org/web/20180929181117/http://www.indieflashblog.com/how-to-create-an-asynchronous-multiplayer-game.html)<br/>[buildnewgames.com](http://buildnewgames.com/real-time-multiplayer/) |\n| Design a garbage collection system | [stuffwithstuff.com](http://journal.stuffwithstuff.com/2013/12/08/babys-first-garbage-collector/)<br/>[washington.edu](http://courses.cs.washington.edu/courses/csep521/07wi/prj/rick.pdf) |\n| Design an API rate limiter | [https://stripe.com/blog/](https://stripe.com/blog/rate-limiters) |\n| Design a Stock Exchange (like NASDAQ or Binance) | [Jane Street](https://youtu.be/b1e4t2k2KJY)<br/>[Golang Implementation](https://around25.com/blog/building-a-trading-engine-for-a-crypto-exchange/)<br/>[Go Implementation](http://bhomnick.net/building-a-simple-limit-order-in-go/) |\n| Add a system design question | [Contribute](#contributing) |",
+      "content": "> Common system design interview questions, with links to resources on how to solve each.\n\n| Question | Reference(s) |\n|---|---|\n| Design a file sync service like Dropbox | [youtube.com](https://www.youtube.com/watch?v=PE4gwstWhmc) |\n| Design a search engine like Google | [queue.acm.org](http://queue.acm.org/detail.cfm?id=988407)<br/>[stackexchange.com](http://programmers.stackexchange.com/questions/38324/interview-question-how-would-you-implement-google-search)<br/>[ardendertat.com](http://www.ardendertat.com/2012/01/11/implementing-search-engines/)<br/>[stanford.edu](http://infolab.stanford.edu/~backrub/google.html) |\n| Design a scalable web crawler like Google | [quora.com](https://www.quora.com/How-can-I-build-a-web-crawler-from-scratch) |\n| Design Google docs | [code.google.com](https://code.google.com/p/google-mobwrite/)<br/>[neil.fraser.name](https://neil.fraser.name/writing/sync/) |\n| Design a key-value store like Redis | [codecapsule.com](http://codecapsule.com/2012/11/07/ikvs-implementing-a-key-value-store-table-of-contents/)<br/>[allthingsdistributed.com](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf) |\n| Design a cache system like Memcached | [slideshare.net](http://www.slideshare.net/oemebamo/introduction-to-memcached) |\n| Design a recommendation system like Amazon's | [hulu.com](https://web.archive.org/web/20170406065247/http://tech.hulu.com/blog/2011/09/19/recommendation-system.html)<br/>[ijcai13.org](http://ijcai13.org/files/tutorial_slides/td3.pdf) |\n| Design a tinyurl system like Bitly | [n00tc0d3r.blogspot.com](http://n00tc0d3r.blogspot.com/) |\n| Design a chat app like WhatsApp | [highscalability.com](http://highscalability.com/blog/2014/2/26/the-whatsapp-architecture-facebook-bought-for-19-billion.html)\n| Design a picture sharing system like Instagram | [highscalability.com](http://highscalability.com/flickr-architecture)<br/>[highscalability.com](http://highscalability.com/blog/2011/12/6/instagram-architecture-14-million-users-terabytes-of-photos.html) |\n| Design the Facebook news feed function | [quora.com](http://www.quora.com/What-are-best-practices-for-building-something-like-a-News-Feed)<br/>[quora.com](http://www.quora.com/Activity-Streams/What-are-the-scaling-issues-to-keep-in-mind-while-developing-a-social-network-feed)<br/>[slideshare.net](http://www.slideshare.net/danmckinley/etsy-activity-feeds-architecture) |\n| Design the Facebook timeline function | [facebook.com](https://www.facebook.com/note.php?note_id=10150468255628920)<br/>[highscalability.com](http://highscalability.com/blog/2012/1/23/facebook-timeline-brought-to-you-by-the-power-of-denormaliza.html) |\n| Design the Facebook chat function | [erlang-factory.com](http://www.erlang-factory.com/upload/presentations/31/EugeneLetuchy-ErlangatFacebook.pdf)<br/>[facebook.com](https://www.facebook.com/note.php?note_id=14218138919&id=9445547199&index=0) |\n| Design a graph search function like Facebook's | [facebook.com](https://www.facebook.com/notes/facebook-engineering/under-the-hood-building-out-the-infrastructure-for-graph-search/10151347573598920)<br/>[facebook.com](https://www.facebook.com/notes/facebook-engineering/under-the-hood-indexing-and-ranking-in-graph-search/10151361720763920)<br/>[facebook.com](https://www.facebook.com/notes/facebook-engineering/under-the-hood-the-natural-language-interface-of-graph-search/10151432733048920) |\n| Design a content delivery network like CloudFlare | [figshare.com](https://figshare.com/articles/Globally_distributed_content_delivery/6605972) |\n| Design a trending topic system like Twitter's | [michael-noll.com](http://www.michael-noll.com/blog/2013/01/18/implementing-real-time-trending-topics-in-storm/)<br/>[snikolov .wordpress.com](http://snikolov.wordpress.com/2012/11/14/early-detection-of-twitter-trends/) |\n| Design a random ID generation system | [blog.twitter.com](https://blog.twitter.com/2010/announcing-snowflake)<br/>[github.com](https://github.com/twitter/snowflake/) |\n| Return the top k requests during a time interval | [cs.ucsb.edu](https://www.cs.ucsb.edu/sites/default/files/documents/2005-23.pdf)<br/>[wpi.edu](http://davis.wpi.edu/xmdv/docs/EDBT11-diyang.pdf) |\n| Design a system that serves data from multiple data centers | [highscalability.com](http://highscalability.com/blog/2009/8/24/how-google-serves-data-from-multiple-datacenters.html) |\n| Design an online multiplayer card game | [indieflashblog.com](https://web.archive.org/web/20180929181117/http://www.indieflashblog.com/how-to-create-an-asynchronous-multiplayer-game.html)<br/>[buildnewgames.com](http://buildnewgames.com/real-time-multiplayer/) |\n| Design a garbage collection system | [stuffwithstuff.com](http://journal.stuffwithstuff.com/2013/12/08/babys-first-garbage-collector/)<br/>[washington.edu](http://courses.cs.washington.edu/courses/csep521/07wi/prj/rick.pdf) |\n| Design an API rate limiter | [https://stripe.com/blog/](https://stripe.com/blog/rate-limiters) |\n| Design a Stock Exchange (like NASDAQ or Binance) | [Jane Street](https://youtu.be/b1e4t2k2KJY)<br/>[Golang Implementation](https://around25.com/blog/building-a-trading-engine-for-a-crypto-exchange/)<br/>[Go Implementation](http://bhomnick.net/building-a-simple-limit-order-in-go/) |\n| Add a system design question | Contribute |",
       "depth": 2,
       "metadata": {
         "file_path": "README.md",
@@ -1282,7 +1282,7 @@
     },
     {
       "title": "Real world architectures",
-      "content": "> Articles on how real world systems are designed.\n\n<p align=\"center\">\n  <img src=\"images/TcUo2fw.png\">\n  <br/>\n  <i><a href=https://www.infoq.com/presentations/Twitter-Timeline-Scalability>Source: Twitter timelines at scale</a></i>\n</p>\n\n**Don't focus on nitty gritty details for the following articles, instead:**\n\n* Identify shared principles, common technologies, and patterns within these articles\n* Study what problems are solved by each component, where it works, where it doesn't\n* Review the lessons learned\n\n|Type | System | Reference(s) |\n|---|---|---|\n| Data processing | **MapReduce** - Distributed data processing from Google | [research.google.com](http://static.googleusercontent.com/media/research.google.com/zh-CN/us/archive/mapreduce-osdi04.pdf) |\n| Data processing | **Spark** - Distributed data processing from Databricks | [slideshare.net](http://www.slideshare.net/AGrishchenko/apache-spark-architecture) |\n| Data processing | **Storm** - Distributed data processing from Twitter | [slideshare.net](http://www.slideshare.net/previa/storm-16094009) |\n| | | |\n| Data store | **Bigtable** - Distributed column-oriented database from Google | [harvard.edu](http://www.read.seas.harvard.edu/~kohler/class/cs239-w08/chang06bigtable.pdf) |\n| Data store | **HBase** - Open source implementation of Bigtable | [slideshare.net](http://www.slideshare.net/alexbaranau/intro-to-hbase) |\n| Data store | **Cassandra** - Distributed column-oriented database from Facebook | [slideshare.net](http://www.slideshare.net/planetcassandra/cassandra-introduction-features-30103666)\n| Data store | **DynamoDB** - Document-oriented database from Amazon | [harvard.edu](http://www.read.seas.harvard.edu/~kohler/class/cs239-w08/decandia07dynamo.pdf) |\n| Data store | **MongoDB** - Document-oriented database | [slideshare.net](http://www.slideshare.net/mdirolf/introduction-to-mongodb) |\n| Data store | **Spanner** - Globally-distributed database from Google | [research.google.com](http://research.google.com/archive/spanner-osdi2012.pdf) |\n| Data store | **Memcached** - Distributed memory caching system | [slideshare.net](http://www.slideshare.net/oemebamo/introduction-to-memcached) |\n| Data store | **Redis** - Distributed memory caching system with persistence and value types | [slideshare.net](http://www.slideshare.net/dvirsky/introduction-to-redis) |\n| | | |\n| File system | **Google File System (GFS)** - Distributed file system | [research.google.com](http://static.googleusercontent.com/media/research.google.com/zh-CN/us/archive/gfs-sosp2003.pdf) |\n| File system | **Hadoop File System (HDFS)** - Open source implementation of GFS | [apache.org](http://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/HdfsDesign.html) |\n| | | |\n| Misc | **Chubby** - Lock service for loosely-coupled distributed systems from Google | [research.google.com](http://static.googleusercontent.com/external_content/untrusted_dlcp/research.google.com/en/us/archive/chubby-osdi06.pdf) |\n| Misc | **Dapper** - Distributed systems tracing infrastructure | [research.google.com](http://static.googleusercontent.com/media/research.google.com/en//pubs/archive/36356.pdf)\n| Misc | **Kafka** - Pub/sub message queue from LinkedIn | [slideshare.net](http://www.slideshare.net/mumrah/kafka-talk-tri-hug) |\n| Misc | **Zookeeper** - Centralized infrastructure and services enabling synchronization | [slideshare.net](http://www.slideshare.net/sauravhaloi/introduction-to-apache-zookeeper) |\n| | Add an architecture | [Contribute](#contributing) |",
+      "content": "> Articles on how real world systems are designed.\n\n<p align=\"center\">\n  <img src=\"images/TcUo2fw.png\">\n  <br/>\n  <i><a href=https://www.infoq.com/presentations/Twitter-Timeline-Scalability>Source: Twitter timelines at scale</a></i>\n</p>\n\n**Don't focus on nitty gritty details for the following articles, instead:**\n\n* Identify shared principles, common technologies, and patterns within these articles\n* Study what problems are solved by each component, where it works, where it doesn't\n* Review the lessons learned\n\n|Type | System | Reference(s) |\n|---|---|---|\n| Data processing | **MapReduce** - Distributed data processing from Google | [research.google.com](http://static.googleusercontent.com/media/research.google.com/zh-CN/us/archive/mapreduce-osdi04.pdf) |\n| Data processing | **Spark** - Distributed data processing from Databricks | [slideshare.net](http://www.slideshare.net/AGrishchenko/apache-spark-architecture) |\n| Data processing | **Storm** - Distributed data processing from Twitter | [slideshare.net](http://www.slideshare.net/previa/storm-16094009) |\n| | | |\n| Data store | **Bigtable** - Distributed column-oriented database from Google | [harvard.edu](http://www.read.seas.harvard.edu/~kohler/class/cs239-w08/chang06bigtable.pdf) |\n| Data store | **HBase** - Open source implementation of Bigtable | [slideshare.net](http://www.slideshare.net/alexbaranau/intro-to-hbase) |\n| Data store | **Cassandra** - Distributed column-oriented database from Facebook | [slideshare.net](http://www.slideshare.net/planetcassandra/cassandra-introduction-features-30103666)\n| Data store | **DynamoDB** - Document-oriented database from Amazon | [harvard.edu](http://www.read.seas.harvard.edu/~kohler/class/cs239-w08/decandia07dynamo.pdf) |\n| Data store | **MongoDB** - Document-oriented database | [slideshare.net](http://www.slideshare.net/mdirolf/introduction-to-mongodb) |\n| Data store | **Spanner** - Globally-distributed database from Google | [research.google.com](http://research.google.com/archive/spanner-osdi2012.pdf) |\n| Data store | **Memcached** - Distributed memory caching system | [slideshare.net](http://www.slideshare.net/oemebamo/introduction-to-memcached) |\n| Data store | **Redis** - Distributed memory caching system with persistence and value types | [slideshare.net](http://www.slideshare.net/dvirsky/introduction-to-redis) |\n| | | |\n| File system | **Google File System (GFS)** - Distributed file system | [research.google.com](http://static.googleusercontent.com/media/research.google.com/zh-CN/us/archive/gfs-sosp2003.pdf) |\n| File system | **Hadoop File System (HDFS)** - Open source implementation of GFS | [apache.org](http://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/HdfsDesign.html) |\n| | | |\n| Misc | **Chubby** - Lock service for loosely-coupled distributed systems from Google | [research.google.com](http://static.googleusercontent.com/external_content/untrusted_dlcp/research.google.com/en/us/archive/chubby-osdi06.pdf) |\n| Misc | **Dapper** - Distributed systems tracing infrastructure | [research.google.com](http://static.googleusercontent.com/media/research.google.com/en//pubs/archive/36356.pdf)\n| Misc | **Kafka** - Pub/sub message queue from LinkedIn | [slideshare.net](http://www.slideshare.net/mumrah/kafka-talk-tri-hug) |\n| Misc | **Zookeeper** - Centralized infrastructure and services enabling synchronization | [slideshare.net](http://www.slideshare.net/sauravhaloi/introduction-to-apache-zookeeper) |\n| | Add an architecture | Contribute |",
       "depth": 2,
       "metadata": {
         "file_path": "README.md",
@@ -1309,7 +1309,7 @@
     },
     {
       "title": "Under development",
-      "content": "Interested in adding a section or helping complete one in-progress?  [Contribute](#contributing)!\n\n* Distributed computing with MapReduce\n* Consistent hashing\n* Scatter gather\n* [Contribute](#contributing)",
+      "content": "Interested in adding a section or helping complete one in-progress?  Contribute!\n\n* Distributed computing with MapReduce\n* Consistent hashing\n* Scatter gather\n* Contribute",
       "depth": 1,
       "metadata": {
         "file_path": "README.md",
@@ -1340,12 +1340,12 @@
     "total_tokens": 11256,
     "total_images": 9,
     "file_count": 1,
-    "extracted_at": "2026-06-10T18:42:09.142923+00:00"
+    "extracted_at": "2026-07-05T22:15:31.359746+00:00"
   },
   "images": [
     {
-      "id": "md_readme_img000",
-      "local_path": "images/md_readme_img000.png",
+      "id": "md_readme_62798075ab",
+      "local_path": "images/md_readme_62798075ab.png",
       "mime_type": "image/png",
       "size_bytes": 170685,
       "width": 0,
@@ -1354,8 +1354,8 @@
       "educational_value": "medium"
     },
     {
-      "id": "md_readme_img001",
-      "local_path": "images/md_readme_img001.png",
+      "id": "md_readme_ef63a00275",
+      "local_path": "images/md_readme_ef63a00275.png",
       "mime_type": "image/png",
       "size_bytes": 215313,
       "width": 0,
@@ -1364,8 +1364,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_readme_img002",
-      "local_path": "images/md_readme_img002.png",
+      "id": "md_readme_899218ae18",
+      "local_path": "images/md_readme_899218ae18.png",
       "mime_type": "image/png",
       "size_bytes": 342123,
       "width": 0,
@@ -1374,8 +1374,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_readme_img003",
-      "local_path": "images/md_readme_img003.png",
+      "id": "md_readme_1daf7aef06",
+      "local_path": "images/md_readme_1daf7aef06.png",
       "mime_type": "image/png",
       "size_bytes": 198105,
       "width": 0,
@@ -1384,8 +1384,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_readme_img004",
-      "local_path": "images/md_readme_img004.png",
+      "id": "md_readme_2e4a455f1c",
+      "local_path": "images/md_readme_2e4a455f1c.png",
       "mime_type": "image/png",
       "size_bytes": 296637,
       "width": 0,
@@ -1394,8 +1394,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_readme_img005",
-      "local_path": "images/md_readme_img005.png",
+      "id": "md_readme_6b0494f9d1",
+      "local_path": "images/md_readme_6b0494f9d1.png",
       "mime_type": "image/png",
       "size_bytes": 130386,
       "width": 0,
@@ -1404,8 +1404,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_readme_img006",
-      "local_path": "images/md_readme_img006.png",
+      "id": "md_readme_d405517e52",
+      "local_path": "images/md_readme_d405517e52.png",
       "mime_type": "image/png",
       "size_bytes": 110567,
       "width": 0,
@@ -1414,8 +1414,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_readme_img007",
-      "local_path": "images/md_readme_img007.png",
+      "id": "md_readme_7a17f4afa7",
+      "local_path": "images/md_readme_7a17f4afa7.png",
       "mime_type": "image/png",
       "size_bytes": 217417,
       "width": 0,
@@ -1424,8 +1424,8 @@
       "educational_value": "high"
     },
     {
-      "id": "md_readme_img008",
-      "local_path": "images/md_readme_img008.png",
+      "id": "md_readme_bfd50b6b3f",
+      "local_path": "images/md_readme_bfd50b6b3f.png",
       "mime_type": "image/png",
       "size_bytes": 322689,
       "width": 0,
