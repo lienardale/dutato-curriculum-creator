@@ -1,14 +1,13 @@
 {
   "summary": {
-    "checked_at": "2026-07-05T22:16:41+00:00",
+    "checked_at": "2026-07-05T22:20:03+00:00",
     "stage": "all",
     "errors": 0,
-    "warnings": 29,
+    "warnings": 27,
     "by_check": {
       "chunks.token_range": 14,
       "extracted.duplicate_title": 12,
-      "structure.giant_topic": 1,
-      "structure.stale_exclusion": 2
+      "structure.giant_topic": 1
     }
   },
   "findings": [
@@ -89,18 +88,6 @@
       "severity": "warning",
       "location": "Cloud-Native Operations > Monitoring and Observability > SLA, Usage, and Audit Monitoring",
       "message": "Leaf maps 11 source sections (max 10 recommended)"
-    },
-    {
-      "check_id": "structure.stale_exclusion",
-      "severity": "warning",
-      "location": "manifest.json",
-      "message": "excluded_sections pattern '1 - Architecture' matches no orphan section — remove it or fix the pattern"
-    },
-    {
-      "check_id": "structure.stale_exclusion",
-      "severity": "warning",
-      "location": "manifest.json",
-      "message": "excluded_sections pattern '2 - Architecture' matches no orphan section — remove it or fix the pattern"
     },
     {
       "check_id": "chunks.token_range",
