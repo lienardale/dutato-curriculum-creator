@@ -39,15 +39,17 @@ from pathlib import Path
 # -- Prefix strippers ---------------------------------------------------------
 # Run in order; only one pattern strips per title (longest/most-specific first).
 PREFIX_PATTERNS: list[re.Pattern[str]] = [
-    re.compile(r"^Chapter\s+\d+(\.\d+)?[:.]?\s+", re.I),  # "Chapter 4: X" / "Chapter 4. X"
+    re.compile(r"^Chapter\s+\d+(\.\d+)?\s*[-–—:.]?\s+", re.I),  # "Chapter 4: X" / "Chapter 4 - X"
     re.compile(r"^Ch\.\s*\d+\s+"),                         # "Ch. 4 X"
     re.compile(r"^\d+\.\d+\.\d+\s+"),                      # "1.1.1 X"
     re.compile(r"^\d+\.\d+\s+"),                           # "1.1 X"
     re.compile(r"^\d+\.\s+(?=[A-Z])"),                     # "1. Meet Kafka" -> "Meet Kafka"
     re.compile(r"^\d+:\s+(?=[A-Z])"),                      # "5: The Docker Engine" -> "The Docker Engine"
     re.compile(r"^\d+\s+(?=[A-Z])"),                       # "3 Pods: ..." -> "Pods: ..."
-    re.compile(r"^Part\s+[IVX0-9]+[:.]?\s*", re.I),        # "Part I. Setting the Stage" -> "Setting the Stage"
-    re.compile(r"^Section\s+\d+[:.]?\s*", re.I),           # "Section 1: X" -> "X"
+    # "Part I. Setting the Stage" / "Part V.1 - X" / "Part V - 1 - X" / "Part 5.1 - X" -> "X"
+    re.compile(r"^Part\s+[IVX]+(\.\d+|\s*[-–—]\s*\d+)?\s*[-–—:.]?\s*(?=\S)", re.I),
+    re.compile(r"^Part\s+\d+(\.\d+|\s*[-–—]\s*\d+)?\s*[-–—:.]?\s*(?=\S)", re.I),
+    re.compile(r"^Section\s+\d+\s*[-–—:.]?\s*(?=\S)", re.I),     # "Section 1: X" -> "X"
 ]
 
 # -- Book-meta matcher --------------------------------------------------------
@@ -67,6 +69,10 @@ EXACT_META: set[str] = {
     "book forum", "back of the book",
     "preface", "copyright", "about the reviewers",
     "other books you may enjoy",
+    # Doc-site navigation/end-matter (web and markdown sources)
+    "next step", "next steps", "related resource", "related resources",
+    "see also", "additional resources", "learn more", "feedback",
+    "contributing", "contribute",
     # NOTE: "appendix" and "glossary" are deliberately NOT here — they often
     # contain real teaching content. The validator flags them for review.
 }

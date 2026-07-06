@@ -1,0 +1,30 @@
+[
+  {
+    "title": "Software Architecture in a Nutshell",
+    "depth": 0,
+    "sort_order": 0,
+    "description": "The minimum viable mental model: structure over behaviour, dependencies point inward, details stay swappable.",
+    "suggested_level": 1,
+    "children": [],
+    "learning_objectives": [
+      {
+        "text": "State the Dependency Rule and why structure is software's greater value.",
+        "bloom_level": "remember"
+      }
+    ]
+  },
+  {
+    "title": "Scaling Web Systems in a Nutshell",
+    "depth": 0,
+    "sort_order": 1,
+    "description": "The standard scaling toolkit and the cost of distribution.",
+    "suggested_level": 2,
+    "children": [],
+    "learning_objectives": [
+      {
+        "text": "Recall the standard web scaling toolkit and the rule that keeps services from becoming a distributed monolith.",
+        "bloom_level": "remember"
+      }
+    ]
+  }
+]

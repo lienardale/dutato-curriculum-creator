@@ -45,6 +45,7 @@ def _load_extracted_sections(extracted_dir: Path) -> list[dict]:
         source_path = data.get("source_path", str(json_file))
         for section in data.get("sections", []):
             section["_source"] = source_path
+            section["_file"] = json_file.name
             # images list is preserved as-is (may be absent)
             all_sections.append(section)
     return all_sections
@@ -62,18 +63,22 @@ def _build_section_index(
         title = section.get("title", "")
         if title:
             norm = _normalize(title)
-            content_index[norm] = section.get("content", "")
-            content_index[norm.lower()] = section.get("content", "")
-            source_index[norm] = section.get("_source", "")
-            source_index[norm.lower()] = section.get("_source", "")
-            imgs = section.get("images", [])
-            if imgs:
-                images_index[norm] = imgs
-                images_index[norm.lower()] = imgs
-            meta = section.get("metadata") or {}
-            if meta:
-                meta_index[norm] = meta
-                meta_index[norm.lower()] = meta
+            # Also index a file-qualified key ("file.json::Title") so
+            # source_sections can disambiguate titles that repeat across
+            # sources
+            keys = [norm, norm.lower()]
+            src_file = section.get("_file", "")
+            if src_file:
+                keys += [f"{src_file}::{norm}", f"{src_file}::{norm}".lower()]
+            for key in keys:
+                content_index[key] = section.get("content", "")
+                source_index[key] = section.get("_source", "")
+                imgs = section.get("images", [])
+                if imgs:
+                    images_index[key] = imgs
+                meta = section.get("metadata") or {}
+                if meta:
+                    meta_index[key] = meta
     return content_index, source_index, images_index, meta_index
 
 
@@ -312,6 +317,10 @@ def _chunk_by_source_sections(
             return None
         if report is not None:
             report["_used_keys"].add(norm.lower())
+            if "::" in norm:
+                # Qualified ref — mark the bare title as used too so the
+                # orphan check (which is title-keyed) sees it
+                report["_used_keys"].add(norm.split("::", 1)[1].strip().lower())
         return (
             content,
             source_index.get(norm) or source_index.get(norm.lower(), ""),

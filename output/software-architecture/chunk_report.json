@@ -1,0 +1,640 @@
+{
+  "unmatched_source_sections": [],
+  "empty_topics": [],
+  "orphan_sections": [
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Api Implementation: Introduction"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Using Azure API Management"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Monitoring a web API directly"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Monitoring a web API through the API Management Service"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Configure autoscaling for an Azure solution"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Use the Azure Monitor autoscale feature"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Background Jobs: Introduction"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Hosting environment"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Functions"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Functions considerations"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Container Apps"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Container Apps considerations"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "AKS"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "AKS considerations"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Batch"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Batch considerations"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Virtual Machines"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Virtual Machines considerations"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "App Service WebJobs"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "App Service WebJobs considerations"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Implement caching with Azure Managed Redis"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Connect and configure client applications"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Choose a .NET client library"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Implement caching patterns"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Implement the cache-aside pattern"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Perform atomic and batch operations"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Perform fire and forget cache operations"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Specify automatically expiring keys"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Cross-correlate cached items"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Find recently accessed items"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Implement a leaderboard"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Add items to a leaderboard"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Retrieve ranked items"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Retrieve top-N items"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Retrieve items by score range"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Caching session state and HTML output"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "ASP.NET Core"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": ".NET Aspire integration"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "High availability, scalability, and partitioning"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Active geo-replication"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Data persistence"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Protect cached data in Azure Managed Redis"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Serialization considerations"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Message Encode: Introduction"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Monitoring: Introduction"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Issue tracking"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Requirements for issue tracking"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Collect issue-tracking data"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Analyze issue-tracking data"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Tracing operations and debugging software releases"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Requirements for tracing and debugging"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/best-practices",
+      "title": "Collect tracing and debugging data"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/guide/architecture-styles",
+      "title": "Big compute architecture style"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/guide/architecture-styles",
+      "title": "Big compute architecture style: When to use this architecture"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/guide/architecture-styles",
+      "title": "Big compute architecture style: Benefits"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/guide/architecture-styles",
+      "title": "Big compute architecture style: Challenges"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/guide/architecture-styles",
+      "title": "Big compute by using Azure Batch"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/guide/architecture-styles",
+      "title": "Big compute that runs on VMs"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/guide/architecture-styles",
+      "title": "HPC Pack deployed to Azure"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/guide/architecture-styles",
+      "title": "Burst an HPC cluster to Azure"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/guide/architecture-styles",
+      "title": "Big data architecture style"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/guide/architecture-styles",
+      "title": "Big data architecture style: When to use this architecture"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/guide/architecture-styles",
+      "title": "Big data architecture style: Benefits"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/guide/architecture-styles",
+      "title": "Big data architecture style: Challenges"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/guide/architecture-styles",
+      "title": "Big data architecture style: Best practices"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/guide/architecture-styles",
+      "title": "IoT architecture"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/clean-architecture",
+      "title": "Starting with the Bricks: Programming Paradigms"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/clean-architecture",
+      "title": "A note about dynamic languages"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/clean-architecture",
+      "title": "Clean Embedded Architecture"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/clean-architecture",
+      "title": "App-titude Test: The problem with just making it work"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/clean-architecture",
+      "title": "The Target-Hardware Bottleneck Problem"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/clean-architecture",
+      "title": "Building clean embedded architectures"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/microservices",
+      "title": "Choose an Azure compute option for microservices"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/microservices",
+      "title": "Azure compute platforms for microservices"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/microservices",
+      "title": "Azure Kubernetes Service (AKS)"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/microservices",
+      "title": "Azure Container Apps"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/microservices",
+      "title": "Azure Functions"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/microservices",
+      "title": "Azure App Service"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/microservices",
+      "title": "Azure Red Hat OpenShift"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/microservices",
+      "title": "Compare platforms for microservices"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/microservices",
+      "title": "Choose your platform"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/microservices",
+      "title": "Choose an Azure compute option for microservices: Considerations"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/microservices",
+      "title": "Reliability"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/microservices",
+      "title": "Cost Optimization"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/architecture-center/docs/microservices",
+      "title": "Reference architectures"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/dotnet-docs/docs/architecture/modern-web-apps-azure",
+      "title": "References – Common web architectures"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "The System Design Primer"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Motivation"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Learn how to design large-scale systems"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Learn from the open source community"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Prep for the system design interview"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Anki flashcards"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Coding Resource: Interactive Coding Challenges"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Index of system design topics"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Study guide"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "How to approach a system design interview question"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Step 1: Outline use cases, constraints, and assumptions"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Step 2: Create a high level design"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Step 3: Design core components"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Step 4: Scale the design"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Back-of-the-envelope calculations"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "System design interview questions with solutions"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Design Pastebin.com (or Bit.ly)"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Design the Twitter timeline and search (or Facebook feed and search)"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Design a web crawler"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Design Mint.com"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Design the data structures for a social network"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Design a key-value store for a search engine"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Design Amazon's sales ranking by category feature"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Design a system that scales to millions of users on AWS"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Object-oriented design interview questions with solutions"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "System design topics: start here"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Step 1: Review the scalability video lecture"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Step 2: Review the scalability article"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Master-slave and master-master"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Appendix"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Powers of two table"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Power      Exact Value     Approx Value    Bytes"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Latency numbers every programmer should know"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Latency Comparison Numbers"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Notes"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Latency numbers visualized"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Additional system design interview questions"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Real world architectures"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Company architectures"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Company engineering blogs"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Under development"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "Contact info"
+    },
+    {
+      "source": "/home/user/dutato-curriculum-creator/input/system-design-primer/README.md",
+      "title": "License"
+    }
+  ],
+  "out_of_range_chunks": [
+    {
+      "topic_path": [
+        "Foundations of Software Architecture",
+        "Design, Architecture, and the Two Values"
+      ],
+      "chunk_index": 0,
+      "token_count": 408
+    },
+    {
+      "topic_path": [
+        "Foundations of Software Architecture",
+        "Programming Paradigms",
+        "Functional Programming and Immutability"
+      ],
+      "chunk_index": 0,
+      "token_count": 377
+    },
+    {
+      "topic_path": [
+        "Foundations of Software Architecture",
+        "A Tour of Architecture Styles"
+      ],
+      "chunk_index": 3,
+      "token_count": 207
+    },
+    {
+      "topic_path": [
+        "Design Principles",
+        "The SOLID Principles at a Glance"
+      ],
+      "chunk_index": 0,
+      "token_count": 453
+    },
+    {
+      "topic_path": [
+        "Design Principles",
+        "The Single Responsibility Principle"
+      ],
+      "chunk_index": 0,
+      "token_count": 370
+    },
+    {
+      "topic_path": [
+        "Design Principles",
+        "Liskov Substitution and Interface Segregation"
+      ],
+      "chunk_index": 0,
+      "token_count": 484
+    },
+    {
+      "topic_path": [
+        "Design Principles",
+        "The Dependency Inversion Principle"
+      ],
+      "chunk_index": 0,
+      "token_count": 393
+    },
+    {
+      "topic_path": [
+        "Clean Architecture",
+        "The Clean Architecture Pattern",
+        "A Clean Web Application Example"
+      ],
+      "chunk_index": 2,
+      "token_count": 262
+    },
+    {
+      "topic_path": [
+        "Clean Architecture",
+        "Organizing Code",
+        "Case Study: Video Sales"
+      ],
+      "chunk_index": 0,
+      "token_count": 202
+    },
+    {
+      "topic_path": [
+        "API Design and Integration",
+        "Web API Implementation",
+        "Exceptions, Caching, and Concurrency"
+      ],
+      "chunk_index": 3,
+      "token_count": 332
+    },
+    {
+      "topic_path": [
+        "Scalability and Distributed Systems",
+        "Asynchronous Work",
+        "Message and Task Queues"
+      ],
+      "chunk_index": 0,
+      "token_count": 474
+    },
+    {
+      "topic_path": [
+        "Microservices",
+        "Microservices Architecture Style"
+      ],
+      "chunk_index": 1,
+      "token_count": 1523
+    },
+    {
+      "topic_path": [
+        "Cloud-Native Operations",
+        "Monitoring and Observability",
+        "Instrumentation"
+      ],
+      "chunk_index": 2,
+      "token_count": 1523
+    }
+  ],
+  "totals": {
+    "sections": 803,
+    "sections_used": 690,
+    "chunks": 164,
+    "tokens": 166301
+  }
+}

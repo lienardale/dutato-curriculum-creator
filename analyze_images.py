@@ -32,11 +32,30 @@ def prepare_analysis(output_dir: Path) -> dict:
 
     Returns a dict ready to be saved as image_analysis.json with empty
     description fields for the agent to fill in.
+
+    If image_analysis.json already exists, analysis fields (description,
+    ocr_text, contains_*, educational_value) are preserved for images whose
+    id and size_bytes still match — re-running prepare after re-extraction
+    only queues new or changed images instead of wiping authored work.
     """
     extracted_dir = output_dir / "extracted"
     images_dir = extracted_dir / "images"
 
+    previous: dict[str, dict] = {}
+    analysis_path = output_dir / "image_analysis.json"
+    if analysis_path.exists():
+        try:
+            with open(analysis_path, encoding="utf-8") as f:
+                for entry in json.load(f).get("images", []):
+                    previous[entry.get("id", "")] = entry
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    _CARRIED_FIELDS = ("description", "ocr_text", "contains_text",
+                       "contains_diagram", "contains_code", "educational_value")
+
     images: list[dict] = []
+    preserved = 0
 
     # Scan all extracted JSONs for image references
     if extracted_dir.is_dir():
@@ -51,7 +70,7 @@ def prepare_analysis(output_dir: Path) -> dict:
                 if not file_path.exists():
                     file_path = output_dir / local_path
 
-                images.append({
+                entry = {
                     "id": img["id"],
                     "local_path": img.get("local_path", ""),
                     "file_exists": file_path.exists(),
@@ -64,11 +83,19 @@ def prepare_analysis(output_dir: Path) -> dict:
                     "contains_diagram": None,
                     "contains_code": None,
                     "educational_value": None,  # Agent sets: "high", "medium", "low", "decorative"
-                })
+                }
+                prev = previous.get(img["id"])
+                if prev and prev.get("size_bytes") == entry["size_bytes"]:
+                    for field in _CARRIED_FIELDS:
+                        if field in prev:
+                            entry[field] = prev[field]
+                    if entry["description"]:
+                        preserved += 1
+                images.append(entry)
 
     return {
         "total_images": len(images),
-        "analyzed": 0,
+        "analyzed": preserved,
         "images": images,
     }
 

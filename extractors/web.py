@@ -16,6 +16,33 @@ from urllib.request import urlopen, Request
 
 
 # ---------------------------------------------------------------------------
+# Fetching
+# ---------------------------------------------------------------------------
+
+_FETCH_USER_AGENT = (
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+)
+
+
+def _fetch_url(url: str) -> str | None:
+    """Fetch a URL's HTML, falling back to urllib when trafilatura's
+    built-in fetcher fails (some hosts reject its default user agent)."""
+    import trafilatura
+
+    downloaded = trafilatura.fetch_url(url)
+    if downloaded:
+        return downloaded
+    try:
+        req = Request(url, headers={"User-Agent": _FETCH_USER_AGENT})
+        with urlopen(req, timeout=30) as resp:
+            charset = resp.headers.get_content_charset() or "utf-8"
+            return resp.read().decode(charset, errors="replace")
+    except Exception:
+        return None
+
+
+# ---------------------------------------------------------------------------
 # Path-prefix computation
 # ---------------------------------------------------------------------------
 
@@ -150,7 +177,7 @@ def _crawl_subpages(
             break
 
         # Fetch & extract
-        downloaded = trafilatura.fetch_url(url)
+        downloaded = _fetch_url(url)
         if not downloaded:
             continue
 
@@ -342,7 +369,7 @@ def extract_web(
     import trafilatura
 
     # Fetch the page
-    downloaded = trafilatura.fetch_url(source)
+    downloaded = _fetch_url(source)
     if not downloaded:
         raise RuntimeError(f"Failed to fetch URL: {source}")
 

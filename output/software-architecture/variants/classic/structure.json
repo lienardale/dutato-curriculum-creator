@@ -1,0 +1,84 @@
+[
+  {
+    "title": "What Software Architecture Is",
+    "depth": 0,
+    "sort_order": 0,
+    "description": "Architecture's purpose, the two values of software, and keeping options open.",
+    "suggested_level": 1,
+    "children": [],
+    "learning_objectives": [
+      {
+        "text": "Explain what software architecture is for and why structure outvalues behaviour over time.",
+        "bloom_level": "understand"
+      }
+    ]
+  },
+  {
+    "title": "Principles and Clean Architecture",
+    "depth": 0,
+    "sort_order": 1,
+    "description": "SOLID in brief and the Dependency Rule.",
+    "suggested_level": 2,
+    "children": [],
+    "learning_objectives": [
+      {
+        "text": "Summarize the five SOLID principles in one sentence each.",
+        "bloom_level": "remember"
+      },
+      {
+        "text": "Apply the Dependency Rule to keep business rules independent of frameworks, UI, and the database.",
+        "bloom_level": "apply"
+      }
+    ]
+  },
+  {
+    "title": "Architecture Styles: Monolith to Microservices",
+    "depth": 0,
+    "sort_order": 2,
+    "description": "Monoliths, layers, queues, events, and when to go micro.",
+    "suggested_level": 2,
+    "children": [],
+    "learning_objectives": [
+      {
+        "text": "Place monolith, N-tier, Web-Queue-Worker, event-driven, and microservices on a complexity/payoff spectrum.",
+        "bloom_level": "analyze"
+      },
+      {
+        "text": "State the two rules that keep microservices from becoming a distributed monolith.",
+        "bloom_level": "remember"
+      }
+    ]
+  },
+  {
+    "title": "Web APIs in Brief",
+    "depth": 0,
+    "sort_order": 3,
+    "description": "Resources, HTTP semantics, versioning, and robustness.",
+    "suggested_level": 2,
+    "children": [],
+    "learning_objectives": [
+      {
+        "text": "Design a small REST API with correct methods, status codes, and a versioning strategy.",
+        "bloom_level": "apply"
+      }
+    ]
+  },
+  {
+    "title": "Scaling and Running Web Systems",
+    "depth": 0,
+    "sort_order": 4,
+    "description": "CAP, availability, caching, queues, twelve-factor operations.",
+    "suggested_level": 3,
+    "children": [],
+    "learning_objectives": [
+      {
+        "text": "Combine load balancing, caching, replication, and queues to scale a web system.",
+        "bloom_level": "create"
+      },
+      {
+        "text": "Apply twelve-factor operational discipline: config in environment, stateless processes, logs as streams.",
+        "bloom_level": "apply"
+      }
+    ]
+  }
+]

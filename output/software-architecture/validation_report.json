@@ -1,0 +1,177 @@
+{
+  "summary": {
+    "checked_at": "2026-07-05T22:20:03+00:00",
+    "stage": "all",
+    "errors": 0,
+    "warnings": 27,
+    "by_check": {
+      "chunks.token_range": 14,
+      "extracted.duplicate_title": 12,
+      "structure.giant_topic": 1
+    }
+  },
+  "findings": [
+    {
+      "check_id": "extracted.duplicate_title",
+      "severity": "warning",
+      "location": "extracted/clean-architecture.json sections[57]",
+      "message": "Title 'Architecture' also appears in architecture-styles.json — title-keyed matching (chunker, condense) is ambiguous"
+    },
+    {
+      "check_id": "extracted.duplicate_title",
+      "severity": "warning",
+      "location": "extracted/clean-architecture.json sections[95]",
+      "message": "Title 'Architecture' also appears in architecture-styles.json — title-keyed matching (chunker, condense) is ambiguous"
+    },
+    {
+      "check_id": "extracted.duplicate_title",
+      "severity": "warning",
+      "location": "extracted/microservices-design.json sections[35]",
+      "message": "Title 'Security' also appears in api-best-practices.json — title-keyed matching (chunker, condense) is ambiguous"
+    },
+    {
+      "check_id": "extracted.duplicate_title",
+      "severity": "warning",
+      "location": "extracted/microservices-design.json sections[52]",
+      "message": "Title 'Introduction: Challenges' also appears in api-best-practices.json — title-keyed matching (chunker, condense) is ambiguous"
+    },
+    {
+      "check_id": "extracted.duplicate_title",
+      "severity": "warning",
+      "location": "extracted/microservices-design.json sections[75]",
+      "message": "Title 'Entities' also appears in clean-architecture.json — title-keyed matching (chunker, condense) is ambiguous"
+    },
+    {
+      "check_id": "extracted.duplicate_title",
+      "severity": "warning",
+      "location": "extracted/modern-web-apps.json sections[15]",
+      "message": "Title 'Other considerations' also appears in api-best-practices.json — title-keyed matching (chunker, condense) is ambiguous"
+    },
+    {
+      "check_id": "extracted.duplicate_title",
+      "severity": "warning",
+      "location": "extracted/modern-web-apps.json sections[61]",
+      "message": "Title 'Security' also appears in api-best-practices.json — title-keyed matching (chunker, condense) is ambiguous"
+    },
+    {
+      "check_id": "extracted.duplicate_title",
+      "severity": "warning",
+      "location": "extracted/modern-web-apps.json sections[75]",
+      "message": "Title 'Deployment' also appears in api-best-practices.json — title-keyed matching (chunker, condense) is ambiguous"
+    },
+    {
+      "check_id": "extracted.duplicate_title",
+      "severity": "warning",
+      "location": "extracted/system-design-primer.json sections[65]",
+      "message": "Title 'Microservices' also appears in architecture-styles.json — title-keyed matching (chunker, condense) is ambiguous"
+    },
+    {
+      "check_id": "extracted.duplicate_title",
+      "severity": "warning",
+      "location": "extracted/system-design-primer.json sections[92]",
+      "message": "Title 'SQL or NoSQL' also appears in modern-web-apps.json — title-keyed matching (chunker, condense) is ambiguous"
+    },
+    {
+      "check_id": "extracted.duplicate_title",
+      "severity": "warning",
+      "location": "extracted/system-design-primer.json sections[125]",
+      "message": "Title 'Security' also appears in api-best-practices.json — title-keyed matching (chunker, condense) is ambiguous"
+    },
+    {
+      "check_id": "extracted.duplicate_title",
+      "severity": "warning",
+      "location": "extracted/twelve-factor-app.json sections[9]",
+      "message": "Title 'Introduction' also appears in system-design-primer.json — title-keyed matching (chunker, condense) is ambiguous"
+    },
+    {
+      "check_id": "structure.giant_topic",
+      "severity": "warning",
+      "location": "Cloud-Native Operations > Monitoring and Observability > SLA, Usage, and Audit Monitoring",
+      "message": "Leaf maps 11 source sections (max 10 recommended)"
+    },
+    {
+      "check_id": "chunks.token_range",
+      "severity": "warning",
+      "location": "chunks.json[0] (Foundations of Software Architecture > Design, Architecture, and the Two Values)",
+      "message": "408 tokens — outside target range [500, 1500]"
+    },
+    {
+      "check_id": "chunks.token_range",
+      "severity": "warning",
+      "location": "chunks.json[3] (Foundations of Software Architecture > Programming Paradigms > Functional Programming and Immutability)",
+      "message": "377 tokens — outside target range [500, 1500]"
+    },
+    {
+      "check_id": "chunks.token_range",
+      "severity": "warning",
+      "location": "chunks.json[7] (Foundations of Software Architecture > A Tour of Architecture Styles)",
+      "message": "210 tokens — outside target range [500, 1500]"
+    },
+    {
+      "check_id": "chunks.token_range",
+      "severity": "warning",
+      "location": "chunks.json[10] (Design Principles > The SOLID Principles at a Glance)",
+      "message": "453 tokens — outside target range [500, 1500]"
+    },
+    {
+      "check_id": "chunks.token_range",
+      "severity": "warning",
+      "location": "chunks.json[11] (Design Principles > The Single Responsibility Principle)",
+      "message": "370 tokens — outside target range [500, 1500]"
+    },
+    {
+      "check_id": "chunks.token_range",
+      "severity": "warning",
+      "location": "chunks.json[13] (Design Principles > Liskov Substitution and Interface Segregation)",
+      "message": "484 tokens — outside target range [500, 1500]"
+    },
+    {
+      "check_id": "chunks.token_range",
+      "severity": "warning",
+      "location": "chunks.json[14] (Design Principles > The Dependency Inversion Principle)",
+      "message": "393 tokens — outside target range [500, 1500]"
+    },
+    {
+      "check_id": "chunks.token_range",
+      "severity": "warning",
+      "location": "chunks.json[27] (Clean Architecture > The Clean Architecture Pattern > A Clean Web Application Example)",
+      "message": "265 tokens — outside target range [500, 1500]"
+    },
+    {
+      "check_id": "chunks.token_range",
+      "severity": "warning",
+      "location": "chunks.json[31] (Clean Architecture > Organizing Code > Case Study: Video Sales)",
+      "message": "202 tokens — outside target range [500, 1500]"
+    },
+    {
+      "check_id": "chunks.token_range",
+      "severity": "warning",
+      "location": "chunks.json[59] (Web Application Architecture > Data Access > Entity Framework Core Patterns)",
+      "message": "1504 tokens — outside target range [500, 1500]"
+    },
+    {
+      "check_id": "chunks.token_range",
+      "severity": "warning",
+      "location": "chunks.json[84] (API Design and Integration > Web API Implementation > Exceptions, Caching, and Concurrency)",
+      "message": "332 tokens — outside target range [500, 1500]"
+    },
+    {
+      "check_id": "chunks.token_range",
+      "severity": "warning",
+      "location": "chunks.json[107] (Scalability and Distributed Systems > Asynchronous Work > Message and Task Queues)",
+      "message": "474 tokens — outside target range [500, 1500]"
+    },
+    {
+      "check_id": "chunks.token_range",
+      "severity": "warning",
+      "location": "chunks.json[115] (Microservices > Microservices Architecture Style)",
+      "message": "1539 tokens — outside target range [500, 1500]"
+    },
+    {
+      "check_id": "chunks.token_range",
+      "severity": "warning",
+      "location": "chunks.json[158] (Cloud-Native Operations > Monitoring and Observability > Instrumentation)",
+      "message": "1536 tokens — outside target range [500, 1500]"
+    }
+  ]
+}

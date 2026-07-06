@@ -1,0 +1,62 @@
+[
+  {
+    "content": "Software architecture is the shape of a system: how it is divided into components, how those components depend on each other, and which decisions are deferred. Architecture and low-level design are not different activities — they form one continuous fabric of decisions from the highest structure to the smallest detail.\n\nEvery system delivers two values. *Behaviour* — the features working today — is urgent and visible. *Structure* — the ease of changing the system tomorrow — is neither, yet it is the greater value: a system that works but cannot be changed dies the moment requirements move, while a well-structured system that doesn't yet work can always be made to work. Teams that spend every iteration on features and none on structure are trading the future for the present, and the trade compounds.\n\nGood architecture serves four activities: it makes the system easy to *develop* (teams can work independently in well-separated components), easy to *deploy* (ideally with one action), easy to *operate* (the structure reveals how the system runs and scales), and easy to *maintain* (a change lands in one obvious place). The strategy underneath all four is the same: keep options open by deferring decisions about details — which database, which framework, which delivery mechanism — for as long as possible. A good architect maximizes the number of decisions *not* made, so that when the decision finally must be taken, it is taken with the most information and the least lock-in.",
+    "token_count": 314,
+    "topic_path": [
+      "What Software Architecture Is"
+    ],
+    "chunk_index": 0,
+    "page_number": 1,
+    "metadata": {
+      "has_code": false
+    }
+  },
+  {
+    "content": "Five principles — SOLID — govern how code is arranged into modules. *Single Responsibility*: a module answers to one actor; mixing actors causes accidental duplication and merge conflicts. *Open-Closed*: extend behaviour without modifying existing code, by separating things that change for different reasons and protecting high-level policy. *Liskov Substitution*: subtypes must honour their base type's contract — if callers must check the concrete type, the hierarchy is wrong. *Interface Segregation*: don't force clients to depend on things they don't use. *Dependency Inversion*: depend on abstractions, not volatile concretions — this is the principle that makes the others enforceable, because it lets a dependency arrow point against the flow of control.\n\nThe Clean Architecture turns these principles into a system shape: concentric circles with *entities* (enterprise-wide business rules) at the centre, then *use cases* (application-specific rules), then *interface adapters* (controllers, presenters, gateways translating between the core and the outside), then *frameworks and drivers* (web, database, UI) at the rim. One rule binds it: the **Dependency Rule** — source-code dependencies point only inward. Nothing in an inner circle knows anything about an outer circle; data crossing inward is plain structures, never framework types or database rows.\n\nThe consequence is that the database, the web, and the framework become *details* — plugins to the business rules, chosen late and swappable. Tests reach the use cases without a server or a database, the schema can change without touching policy, and the system's top-level structure screams its domain rather than the name of a framework. The discipline costs design effort at every boundary; it pays wherever the system must live long and change often.",
+    "token_count": 349,
+    "topic_path": [
+      "Principles and Clean Architecture"
+    ],
+    "chunk_index": 0,
+    "page_number": 1,
+    "metadata": {
+      "has_code": false
+    }
+  },
+  {
+    "content": "Most systems should start as a **monolith**: one deployable unit, logically layered (UI, business logic, data access). Layers organize code but beware the classic N-layer trap where business logic depends on data access; inverting that dependency keeps the core testable. Containers give a monolith cloud superpowers — repeatable deploys and horizontal scale-out — without distributed-system costs.\n\nWhen one part of the workload is slow or bursty, **Web-Queue-Worker** splits the system in two: a stateless web front end enqueues work, a background worker processes it. **Event-driven architecture** generalizes the idea: producers publish events, many consumers react independently — pub/sub for fan-out delivery, event streaming for an ordered, replayable log. Both styles buy responsiveness and decoupling at the price of eventual consistency and at-least-once delivery (consumers must be idempotent).\n\n**Microservices** decompose the application into small autonomous services, each owning one business capability *and its own data*, independently deployable, talking only through APIs — preferably asynchronous messages, with sagas instead of distributed transactions. The benefits are real: independent releases, fault isolation, per-service scaling, small teams. So are the costs: network latency and partial failure everywhere, eventual consistency between services, and a hard dependency on automation (CI/CD, orchestration, monitoring). Decompose along domain boundaries (bounded contexts), not org charts or technical layers — services split by function that must all change together are a *distributed monolith*, the signature failure mode. The honest decision rule: microservices pay when independent deployment and scaling of parts is worth a distributed system's complexity — and not before.",
+    "token_count": 322,
+    "topic_path": [
+      "Architecture Styles: Monolith to Microservices"
+    ],
+    "chunk_index": 0,
+    "page_number": 1,
+    "metadata": {
+      "has_code": false
+    }
+  },
+  {
+    "content": "A web API models the domain as *resources* addressed by noun URIs (`/orders`, `/orders/5`) and manipulated with standard HTTP methods: GET reads (safe), PUT replaces (idempotent), PATCH partially updates, POST creates or triggers (the only method allowed side effects), DELETE removes. Status codes carry the contract: 201+Location for creation, 204 for bodiless success, 400 for bad requests, 404 for missing resources, 409 for conflicts. Clients retry, so idempotency is not optional politeness — a retried PUT is harmless, an unguarded retried POST duplicates an order.\n\nCollections need server-side pagination and filtering; long-running operations return 202 Accepted plus a status endpoint instead of holding the connection; ETags enable cache validation and optimistic concurrency (If-Match prevents lost updates). Describe the contract with an OpenAPI definition — documentation, SDKs, and tests all generate from it.\n\nAPIs evolve, so choose a versioning strategy before the first breaking change: URI versioning (`/v2/orders`, simple and cache-friendly but churns URIs), query-string versioning (less intrusive, easy to default), header versioning (clean URIs, invisible to caches and casual callers), or media-type versioning (the most RESTful, embedded in content negotiation). Whichever you choose, the real rules are: never break existing clients silently, and make the unversioned default stable.\n\nFinally, protect the API: authenticate callers with tokens, authorize per operation, throttle clients so one consumer can't exhaust the service, and return errors that are informative without leaking internals.",
+    "token_count": 295,
+    "topic_path": [
+      "Web APIs in Brief"
+    ],
+    "chunk_index": 0,
+    "page_number": 1,
+    "metadata": {
+      "has_code": false
+    }
+  },
+  {
+    "content": "Scaling a web system is the art of adding capacity without adding coordination. *Performance* means the system is fast for one user; *scalability* means it stays fast as users multiply. In any distributed store, CAP applies: during a network partition you choose consistency (refuse some requests) or availability (serve possibly-stale data); eventual consistency is the workhorse compromise.\n\nThe standard toolkit, outside in: a **CDN** serves static content from the edge; a **load balancer** spreads requests across stateless web servers (statelessness is what makes horizontal scaling and autoscaling safe); **caches** absorb reads at every level — client, CDN, application, database — with cache-aside as the default update pattern and explicit expiration/invalidation policies; the **database** scales by replication (read replicas; mind the lag), then federation by function, then sharding by key (choose keys that avoid hot partitions, denormalize to avoid cross-shard joins); **message queues** decouple slow or bursty work from the request path, with idempotent workers and back pressure when depth grows. Availability is arithmetic: components in sequence multiply their failure budgets (two 99.9% services in series ≈ 99.8%), components in parallel shrink them — design accordingly and know what 99.9% means: about 8.7 hours of downtime a year.\n\nRunning it well is twelve-factor discipline: config in environment variables, all dependencies declared, backing services attached by config, immutable build→release→run, stateless disposable processes that start fast and shut down gracefully, dev/prod parity, logs as event streams, and one-off admin tasks run in the same environment. Deploy with rolling, blue-green, or canary strategies; retry transient faults with exponential backoff and circuit-break what keeps failing; and instrument everything with correlation IDs so one user action can be traced across the whole system.",
+    "token_count": 360,
+    "topic_path": [
+      "Scaling and Running Web Systems"
+    ],
+    "chunk_index": 0,
+    "page_number": 1,
+    "metadata": {
+      "has_code": false
+    }
+  }
+]
