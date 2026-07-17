@@ -106,6 +106,39 @@ def split_into_paragraphs(text: str) -> list[str]:
     return paragraphs
 
 
+def _split_oversized_prose(text: str, max_tokens: int, min_tokens: int) -> list[str]:
+    """Split a prose block that exceeds *max_tokens* at line boundaries,
+    falling back to sentence boundaries for single overlong lines.
+    Greedy-packs pieces so results stay within max and (where possible)
+    above min."""
+    import re
+
+    units: list[str] = []
+    for line in text.split("\n"):
+        if count_tokens(line) > max_tokens:
+            units.extend(s for s in re.split(r"(?<=[.!?])\s+", line) if s.strip())
+        else:
+            units.append(line)
+
+    pieces: list[str] = []
+    buf: list[str] = []
+    buf_tokens = 0
+    for u in units:
+        ut = count_tokens(u)
+        if buf and buf_tokens + ut > max_tokens:
+            pieces.append("\n".join(buf).strip())
+            buf, buf_tokens = [], 0
+        buf.append(u)
+        buf_tokens += ut
+    if buf:
+        tail = "\n".join(buf).strip()
+        if pieces and count_tokens(tail) < min_tokens:
+            pieces[-1] = pieces[-1] + "\n" + tail
+        elif tail:
+            pieces.append(tail)
+    return [p for p in pieces if p]
+
+
 def chunk_text(
     text: str,
     max_tokens: int = 1500,
@@ -163,14 +196,26 @@ def chunk_text(
             if heading_text in _split_set:
                 _flush()
 
-        # If single paragraph exceeds max, add it as its own chunk
+        # If single paragraph exceeds max: code blocks stay atomic, but prose
+        # gets split at line/sentence boundaries. Web-extracted content often
+        # separates paragraphs with single newlines, so an entire article can
+        # arrive here as one "paragraph" — emitting it whole produced
+        # multi-thousand-token chunks.
         if para_tokens > max_tokens:
             _flush()
-            chunks.append({
-                "content": para,
-                "token_count": para_tokens,
-                "has_code": para_is_code,
-            })
+            if para_is_code:
+                chunks.append({
+                    "content": para,
+                    "token_count": para_tokens,
+                    "has_code": True,
+                })
+            else:
+                for piece in _split_oversized_prose(para, max_tokens, min_tokens):
+                    chunks.append({
+                        "content": piece,
+                        "token_count": count_tokens(piece),
+                        "has_code": False,
+                    })
             continue
 
         # If adding this paragraph exceeds max, start new chunk —
