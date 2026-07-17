@@ -92,6 +92,47 @@ def _extract_links_from_html(
 
 
 # ---------------------------------------------------------------------------
+# Fetching
+# ---------------------------------------------------------------------------
+
+def _fetch_page(url: str) -> str | None:
+    """Fetch *url* with a decoding-safe fallback.
+
+    trafilatura.fetch_url advertises zstd/brotli when those packages are
+    importable but can return the still-compressed body undecoded (seen with
+    zstd on c4model.com — response starts with the zstd magic 0x28B52FFD).
+    When the result doesn't look like markup, refetch via urllib restricted
+    to gzip/identity encoding.
+    """
+    import re
+    import trafilatura
+
+    downloaded = trafilatura.fetch_url(url)
+    if downloaded and re.search(
+        r"(?i)<(!doctype|html|head|body|meta|title|div|article|main|section|p[ >])",
+        downloaded[:4000],
+    ):
+        return downloaded
+
+    import gzip
+    import urllib.request
+
+    req = urllib.request.Request(url, headers={
+        "User-Agent": "Mozilla/5.0 (compatible; curriculum-creator/1.0)",
+        "Accept-Encoding": "gzip",
+    })
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            raw = resp.read()
+            if resp.headers.get("Content-Encoding") == "gzip":
+                raw = gzip.decompress(raw)
+            charset = resp.headers.get_content_charset() or "utf-8"
+            return raw.decode(charset, errors="replace")
+    except Exception:
+        return downloaded or None
+
+
+# ---------------------------------------------------------------------------
 # Multi-page crawl
 # ---------------------------------------------------------------------------
 
@@ -150,7 +191,7 @@ def _crawl_subpages(
             break
 
         # Fetch & extract
-        downloaded = trafilatura.fetch_url(url)
+        downloaded = _fetch_page(url)
         if not downloaded:
             continue
 
@@ -342,7 +383,7 @@ def extract_web(
     import trafilatura
 
     # Fetch the page
-    downloaded = trafilatura.fetch_url(source)
+    downloaded = _fetch_page(source)
     if not downloaded:
         raise RuntimeError(f"Failed to fetch URL: {source}")
 
