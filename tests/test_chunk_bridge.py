@@ -208,3 +208,166 @@ def test_cli_writes_chunk_report(tmp_path, monkeypatch, capsys):
     report = json.loads((tmp_path / "chunk_report.json").read_text())
     assert report["unmatched_source_sections"][0]["missing"] == ["Ghost Section"]
     assert out.exists()
+
+
+# ---------------------------------------------------------------------------
+# Multi-file matching: ambiguity, disambiguated form, _source attribution
+# ---------------------------------------------------------------------------
+
+def setup_multi(tmp_path: Path, files: dict[str, list[dict]], leaves: list[dict]):
+    """Write several extracted files + a structure.json; return their paths."""
+    extracted = tmp_path / "extracted"
+    extracted.mkdir()
+    for fname, sections in files.items():
+        write_json(extracted / fname, {
+            "source_type": "pdf",
+            "source_path": f"/src/{fname.replace('.json', '.pdf')}",
+            "sections": sections,
+        })
+    structure = [{
+        "title": "Area",
+        "depth": 0,
+        "sort_order": 0,
+        "children": [
+            {"title": leaf["title"], "depth": 1, "sort_order": i,
+             **{k: v for k, v in leaf.items() if k != "title"},
+             "children": []}
+            for i, leaf in enumerate(leaves)
+        ],
+    }]
+    structure_path = tmp_path / "structure.json"
+    write_json(structure_path, structure)
+    return structure_path, extracted
+
+
+def test_ambiguous_title_uses_all_matches_in_file_order_and_is_reported(tmp_path):
+    structure_path, extracted = setup_multi(
+        tmp_path,
+        files={
+            "b_book.json": [make_section("Other", n_paras=2), make_section("Summary", n_paras=2)],
+            "a_book.json": [make_section("Summary", n_paras=2)],
+        },
+        leaves=[{"title": "Wrap Up", "source_sections": ["Summary"]}],
+    )
+    chunks, report = bridge_and_chunk(structure_path, extracted)
+    text = "\n\n".join(c["content"] for c in chunks)
+    # both sections are pulled in, a_book (sorted first) before b_book
+    assert text.count("Paragraph 0 about Summary") == 2
+    assert report["ambiguous_titles"] == [{
+        "topic_path": ["Area", "Wrap Up"],
+        "title": "Summary",
+        "matches": [
+            {"file": "a_book.json", "section_index": 0},
+            {"file": "b_book.json", "section_index": 1},
+        ],
+    }]
+    assert report["unmatched_source_sections"] == []
+    assert report["totals"]["sections_used"] == 2
+
+
+def test_disambiguated_file_title_form_selects_one_file(tmp_path):
+    structure_path, extracted = setup_multi(
+        tmp_path,
+        files={
+            "a_book.json": [make_section("Summary", n_paras=2)],
+            "b_book.json": [make_section("Summary", n_paras=2)],
+        },
+        leaves=[
+            {"title": "B Wrap Up", "source_sections": ["b_book.json::Summary"]},
+            {"title": "A Wrap Up", "source_sections": ["a_book::summary"]},  # .json optional, case-insensitive
+        ],
+    )
+    chunks, report = bridge_and_chunk(structure_path, extracted)
+    by_topic = {c["topic_path"][-1]: c for c in chunks}
+    assert len(chunks) == 2
+    assert by_topic["B Wrap Up"]["_source"] == "/src/b_book.pdf"
+    assert by_topic["A Wrap Up"]["_source"] == "/src/a_book.pdf"
+    assert report["ambiguous_titles"] == []
+    assert report["orphan_sections"] == []
+
+
+def test_unknown_file_prefix_is_treated_as_a_plain_title(tmp_path):
+    structure_path, extracted = setup_multi(
+        tmp_path,
+        files={"a_book.json": [make_section("std::vector", n_paras=2)]},
+        leaves=[{"title": "Vectors", "source_sections": ["std::vector"]}],
+    )
+    chunks, report = bridge_and_chunk(structure_path, extracted)
+    assert len(chunks) == 1
+    assert report["unmatched_source_sections"] == []
+
+
+def test_chunk_source_follows_the_section_covering_its_start(tmp_path):
+    structure_path, extracted = setup_multi(
+        tmp_path,
+        files={
+            "a_book.json": [make_section("Part One", n_paras=12)],
+            "b_book.json": [make_section("Part Two", n_paras=12)],
+        },
+        leaves=[{"title": "Both", "source_sections": ["Part One", "Part Two"]}],
+    )
+    chunks, _ = bridge_and_chunk(structure_path, extracted, max_tokens=300, min_tokens=50)
+    assert len(chunks) >= 4
+    sources = [c["_source"] for c in chunks]
+    assert sources[0] == "/src/a_book.pdf"
+    assert sources[-1] == "/src/b_book.pdf"
+    # the switch happens exactly once, where Part Two's text begins
+    assert sources == sorted(sources)
+    first_b = sources.index("/src/b_book.pdf")
+    assert chunks[first_b]["content"].startswith("Paragraph 0 about Part Two")
+    assert "Part Two" not in chunks[first_b - 1]["content"]
+
+
+def test_duplicate_titles_within_one_file_are_reported_and_both_used(tmp_path):
+    structure_path, extracted = setup_multi(
+        tmp_path,
+        files={"book.json": [
+            make_section("Intro", n_paras=2),
+            make_section("Summary", n_paras=2),
+            make_section("Summary", n_paras=2),
+        ]},
+        leaves=[
+            {"title": "Start", "source_sections": ["Intro"]},
+            {"title": "Recap", "source_sections": ["book.json::Summary"]},
+        ],
+    )
+    chunks, report = bridge_and_chunk(structure_path, extracted)
+    assert report["duplicate_titles_in_file"] == [
+        {"file": "book.json", "title": "Summary", "section_indices": [1, 2]},
+    ]
+    recap = "\n\n".join(c["content"] for c in chunks if c["topic_path"][-1] == "Recap")
+    assert recap.count("Paragraph 0 about Summary") == 2
+    # even the file-qualified form is ambiguous inside that file
+    assert report["ambiguous_titles"][0]["matches"] == [
+        {"file": "book.json", "section_index": 1},
+        {"file": "book.json", "section_index": 2},
+    ]
+
+
+def test_empty_sections_never_match_and_are_counted(tmp_path):
+    empty = {"title": "Chapter Page", "content": ""}
+    structure_path, extracted = setup_multi(
+        tmp_path,
+        files={"site.json": [empty, make_section("Chapter Page", n_paras=2)]},
+        leaves=[{"title": "Chapter", "source_sections": ["Chapter Page"]}],
+    )
+    chunks, report = bridge_and_chunk(structure_path, extracted)
+    assert len(chunks) == 1
+    assert report["ambiguous_titles"] == []
+    assert report["duplicate_titles_in_file"] == []
+    assert report["totals"] == {
+        "sections": 1, "sections_used": 1, "empty_sections": 1,
+        "chunks": 1, "tokens": chunks[0]["token_count"],
+    }
+
+
+def test_orphan_entries_carry_file_and_index(tmp_path):
+    structure_path, extracted = setup_multi(
+        tmp_path,
+        files={"book.json": [make_section("Used"), make_section("Spare")]},
+        leaves=[{"title": "Topic", "source_sections": ["Used"]}],
+    )
+    _, report = bridge_and_chunk(structure_path, extracted)
+    assert report["orphan_sections"] == [{
+        "source": "/src/book.pdf", "file": "book.json", "section_index": 1, "title": "Spare",
+    }]

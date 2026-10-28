@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 import _compat  # noqa: F401
 
 from chunk import chunk_text, count_tokens, split_into_paragraphs
@@ -107,13 +109,27 @@ def test_small_tail_merges_into_previous_chunk():
     assert count_tokens("Tiny tail.") < 100  # the tail alone is below min
 
 
-def test_oversized_paragraph_becomes_own_chunk():
+def test_oversized_paragraph_is_split_alone_not_merged_with_neighbours():
+    """A prose paragraph over max_tokens is split at line/sentence boundaries
+    (PDF pages and single-newline web text arrive as one "paragraph", so
+    emitting it whole would breach the hard chunk maximum). The pieces hold
+    only that paragraph's text: neighbours never share a chunk with them."""
+    before, after = para("before", words=100), para("after", words=100)
     big = para("huge", words=600)
-    text = "\n\n".join([para("before", words=50), big, para("after", words=50)])
-    chunks = chunk_text(text, max_tokens=300, min_tokens=50)
-    own = [c for c in chunks if c["content"] == big.strip()]
-    assert len(own) == 1
-    assert own[0]["token_count"] > 300
+    chunks = chunk_text("\n\n".join([before, big, after]), max_tokens=300, min_tokens=50)
+
+    big_sentences = {s for s in re.split(r"(?<=[.!?])\s+", big) if s.strip()}
+    from_big = [c for c in chunks if any(s in big_sentences for s in c["content"].split("\n"))]
+    assert len(from_big) >= 2, "an oversized paragraph must be split, not emitted whole"
+    for c in from_big:
+        assert c["token_count"] <= 300
+        assert set(c["content"].split("\n")) <= big_sentences, (
+            f"chunk mixes neighbour text into the oversized paragraph: {c['content'][:60]!r}"
+        )
+    assert " ".join(c["content"].replace("\n", " ") for c in from_big) == big.strip()
+
+    others = [c for c in chunks if c not in from_big]
+    assert [c["content"] for c in others] == [before.strip(), after.strip()]
 
 
 def test_code_chunk_flagged():
