@@ -2,12 +2,24 @@
 Web URL extractor — fetches a URL and extracts article content
 using trafilatura for clean text extraction.
 
+Content is extracted as markdown (``include_formatting=True``): headings
+arrive as ``#``/``##``/``###`` lines, bullet lists as ``- `` items, tables as
+pipe rows and code as fenced blocks, so section splitting keys off real
+headings and lists survive into the chunks. Two trafilatura 2.0 quirks are
+worked around: inline markup inside ``<li>`` items is flattened before
+extraction (``_flatten_list_items``, otherwise bullets merge or lose their
+marker), and a bold span or inline code that breaks its sentence across lines
+is rejoined afterwards (``_repair_inline_formatting``).
+
+``extract_html(html, url)`` is the network-free seam: everything after the
+fetch (text, metadata, section split, image download) happens there, so it can
+be exercised on a stored page. ``extract_web`` fetches and then delegates to it.
+
 Supports optional multi-page crawling for documentation sites where
 the entry page is a table of contents linking to subpages.
 """
 
 import re
-import sys
 from collections import deque
 from html.parser import HTMLParser
 from pathlib import Path
@@ -150,8 +162,6 @@ def _crawl_subpages(
     Returns (sections_list, limited_by) where *limited_by* is one of
     "none", "max_pages", "max_depth", "max_tokens", or "exhausted".
     """
-    import trafilatura
-
     path_prefix = _compute_path_prefix(entry_url)
     seed_links = _extract_links_from_html(
         entry_html, entry_url, path_prefix, include_paths=include_paths,
@@ -195,29 +205,13 @@ def _crawl_subpages(
         if not downloaded:
             continue
 
-        text = trafilatura.extract(
-            downloaded,
-            include_links=False,
-            include_tables=True,
-            include_comments=False,
-            favor_precision=True,
-        )
+        text = _extract_markdown(downloaded)
         if not text:
             continue
 
         pages_fetched += 1
 
-        # Get page title from metadata
-        page_title = ""
-        meta_json = trafilatura.extract(
-            downloaded, output_format="json", include_links=False,
-        )
-        if meta_json:
-            import json
-            try:
-                page_title = json.loads(meta_json).get("title", "")
-            except (json.JSONDecodeError, TypeError):
-                pass
+        page_title, _ = _extract_metadata(downloaded, url)
         if not page_title:
             slug = urlparse(url).path.split("/")[-1]
             page_title = slug.replace("-", " ").replace(".html", "").title()
@@ -351,8 +345,186 @@ def _extract_web_images(
 
 
 # ---------------------------------------------------------------------------
-# Main extraction entry point
+# trafilatura wrappers
 # ---------------------------------------------------------------------------
+
+# Inline / wrapper tags flattened inside <li> before extraction (see
+# _flatten_list_items). Block tags other than <p>/<div> are left alone.
+_LI_INLINE_TAGS = (
+    "a|abbr|b|cite|code|div|em|i|kbd|mark|p|q|small|span|strong|sub|sup|tt|u|var"
+)
+_LI_ITEM_RE = re.compile(r"(<li\b[^>]*>)((?:(?!<li\b|</li>).)*)(</li>)", re.S | re.I)
+_LI_INLINE_RE = re.compile(rf"</?(?:{_LI_INLINE_TAGS})\b[^>]*>", re.I)
+
+
+def _flatten_list_items(html: str) -> str:
+    """Strip inline markup inside ``<li>`` items so every bullet survives.
+
+    trafilatura 2.0 renders an item whose text contains a child element
+    (``<b>``, ``<code>``, ``<a>`` ...) as "- lead / **child**tail" on two lines
+    and glues the NEXT item onto that line, and an item wrapped in ``<p>``
+    loses its ``- `` marker altogether. Flattening the item to plain text
+    trades bold/code marks inside bullets for intact list structure.
+    """
+    def flatten(m: re.Match) -> str:
+        return m.group(1) + _LI_INLINE_RE.sub("", m.group(2)) + m.group(3)
+
+    return _LI_ITEM_RE.sub(flatten, html)
+
+
+def _extract_markdown(html: str) -> str | None:
+    """Main-content extraction as markdown-formatted text.
+
+    ``include_formatting=True`` keeps headings (``#``), bullets (``- ``), bold /
+    italic / inline code, tables and fenced code; ``include_links=False`` drops
+    link targets but keeps their text (trafilatura 2.0.0 option names).
+    """
+    import trafilatura
+
+    text = trafilatura.extract(
+        _flatten_list_items(html),
+        include_formatting=True,
+        include_tables=True,
+        include_links=False,
+        include_comments=False,
+        favor_precision=True,
+    )
+    return _repair_inline_formatting(text) if text else None
+
+
+_FENCED_BLOCK_RE = re.compile(r"^```.*?^```[ \t]*$", re.S | re.M)
+_INLINE_REPAIRS = (
+    # bold span pushed to a new line right after prose -> rejoin
+    (re.compile(r"(?<=\S)[ \t]*\n(\*\*[^*\n]+\*\*)"), r" \1"),
+    # closing bold/code delimiter glued to the next word -> add the space back
+    (re.compile(r"(\*\*[^*\n]+\*\*|`[^`\n]+`)(?=\w)"), r"\1 "),
+    # inline code pushed to its own line after prose -> rejoin
+    (re.compile(r"(?<=\S)[ \t]*\n(`[^`\n]+`)"), r" \1"),
+    # paragraph break right after inline code when the sentence continues
+    (re.compile(r"(`[^`\n]+`)[ \t]*\n\n(?=[a-z,.;:)])"), r"\1 "),
+)
+
+
+def _repair_inline_formatting(text: str) -> str:
+    """Undo the line breaks trafilatura 2.0 inserts around inline formatting.
+
+    Observed artifacts: a bold span starts a new line and is glued to the word
+    after it ("see a / **coarse-grained**API." on two lines), and an inline
+    code span ends its paragraph ("with `f()`" / blank line / "and more").
+    Both cut sentences in half, which the chunker would then treat as
+    paragraph boundaries. Fenced code blocks are left untouched.
+    """
+    pieces: list[str] = []
+    pos = 0
+    for fence in _FENCED_BLOCK_RE.finditer(text):
+        pieces.append(_repair_prose(text[pos:fence.start()]))
+        pieces.append(fence.group(0))
+        pos = fence.end()
+    pieces.append(_repair_prose(text[pos:]))
+    return "".join(pieces)
+
+
+def _repair_prose(text: str) -> str:
+    for pattern, replacement in _INLINE_REPAIRS:
+        text = pattern.sub(replacement, text)
+    return text
+
+
+def _extract_metadata(html: str, url: str) -> tuple[str, str]:
+    """(title, author) from the page metadata; empty strings when absent."""
+    import trafilatura
+
+    try:
+        meta = trafilatura.extract_metadata(html, default_url=url)
+    except Exception:
+        return "", ""
+    if meta is None:
+        return "", ""
+    return (meta.title or "").strip(), (meta.author or "").strip()
+
+
+# ---------------------------------------------------------------------------
+# Main extraction entry points
+# ---------------------------------------------------------------------------
+
+def extract_html(
+    html: str,
+    url: str,
+    *,
+    images_dir: str | None = None,
+) -> dict:
+    """
+    Extract the content of one already-fetched page (no network, unless
+    *images_dir* asks for image downloads).
+
+    Args:
+        html: The page markup.
+        url: The page URL (used for metadata, image resolution and ``source_path``).
+        images_dir: If provided, download images to this directory.
+
+    Returns the unified intermediate dict for a single page (no crawl keys).
+    """
+    text = _extract_markdown(html)
+    if not text:
+        raise RuntimeError(f"No extractable content at: {url}")
+
+    # Extract images from the HTML
+    image_registry: list[dict] = []
+    if images_dir:
+        image_registry = _extract_web_images(html, url, images_dir)
+
+    title, author = _extract_metadata(html, url)
+    if not title:
+        parsed = urlparse(url)
+        title = parsed.netloc + parsed.path
+
+    # Split entry page text into sections
+    sections = _split_into_sections(text, title)
+
+    # Distribute images across sections (best-effort by order)
+    if image_registry and sections:
+        per_section = max(1, len(image_registry) // len(sections))
+        img_iter = iter(image_registry)
+        for sec in sections:
+            sec_images = []
+            for _ in range(per_section):
+                img = next(img_iter, None)
+                if img:
+                    sec_images.append({
+                        "id": img["id"],
+                        "local_path": img["local_path"],
+                        "alt_text": img.get("alt_text", ""),
+                        "context": f"url:{url}",
+                    })
+            if sec_images:
+                sec["images"] = sec_images
+        remaining = list(img_iter)
+        if remaining and sections:
+            sections[-1].setdefault("images", []).extend(
+                {"id": img["id"], "local_path": img["local_path"],
+                 "alt_text": img.get("alt_text", ""), "context": f"url:{url}"}
+                for img in remaining
+            )
+
+    total_tokens = sum(len(s["content"].split()) for s in sections if s["content"])
+
+    result: dict = {
+        "source_type": "url",
+        "source_path": url,
+        "title": title,
+        "author": author,
+        "sections": sections,
+        "metadata": {
+            "total_sections": len(sections),
+            "total_tokens": total_tokens,
+            "total_images": len(image_registry),
+            "url": url,
+        },
+    }
+    if image_registry:
+        result["images"] = image_registry
+    return result
+
 
 def extract_web(
     source: str,
@@ -380,134 +552,72 @@ def extract_web(
             Useful for category-index pages that link outside the
             index's own path (e.g. /categories/foo/ → /blog/*).
     """
-    import trafilatura
-
-    # Fetch the page
     downloaded = _fetch_page(source)
     if not downloaded:
         raise RuntimeError(f"Failed to fetch URL: {source}")
 
-    # Extract main content as text
-    text = trafilatura.extract(
-        downloaded,
-        include_links=False,
-        include_tables=True,
-        include_comments=False,
-        favor_precision=True,
-    )
+    result = extract_html(downloaded, source, images_dir=images_dir)
+    if not crawl:
+        return result
 
-    if not text:
-        raise RuntimeError(f"No extractable content at: {source}")
-
-    # Extract images from the HTML
-    image_registry: list[dict] = []
-    if images_dir:
-        image_registry = _extract_web_images(downloaded, source, images_dir)
-
-    # Try to get metadata
-    metadata_result = trafilatura.extract(
-        downloaded,
-        output_format="json",
-        include_links=False,
-    )
-
-    title = ""
-    author = ""
-    if metadata_result:
-        import json
-        try:
-            meta = json.loads(metadata_result)
-            title = meta.get("title", "")
-            author = meta.get("author", "")
-        except (json.JSONDecodeError, TypeError):
-            pass
-
-    if not title:
-        parsed = urlparse(source)
-        title = parsed.netloc + parsed.path
-
-    # Split entry page text into sections
-    sections = _split_into_sections(text, title)
-
-    # Distribute images across sections (best-effort by order)
-    if image_registry and sections:
-        per_section = max(1, len(image_registry) // len(sections))
-        img_iter = iter(image_registry)
-        for sec in sections:
-            sec_images = []
-            for _ in range(per_section):
-                img = next(img_iter, None)
-                if img:
-                    sec_images.append({
-                        "id": img["id"],
-                        "local_path": img["local_path"],
-                        "alt_text": img.get("alt_text", ""),
-                        "context": f"url:{source}",
-                    })
-            if sec_images:
-                sec["images"] = sec_images
-        remaining = list(img_iter)
-        if remaining and sections:
-            sections[-1].setdefault("images", []).extend(
-                {"id": img["id"], "local_path": img["local_path"],
-                 "alt_text": img.get("alt_text", ""), "context": f"url:{source}"}
-                for img in remaining
-            )
-
-    # Crawl subpages if requested
+    sections = result["sections"]
     pages_crawled = 1
-    crawl_limited_by = "none"
-
-    if crawl:
-        sub_sections, crawl_limited_by = _crawl_subpages(
-            source,
-            downloaded,
-            max_pages=max_pages,
-            max_depth=max_depth,
-            max_tokens=max_tokens,
-            include_paths=include_paths,
+    sub_sections, crawl_limited_by = _crawl_subpages(
+        source,
+        downloaded,
+        max_pages=max_pages,
+        max_depth=max_depth,
+        max_tokens=max_tokens,
+        include_paths=include_paths,
+    )
+    if sub_sections:
+        sections.extend(sub_sections)
+        pages_crawled += sum(
+            1 for s in sub_sections
+            if s["depth"] == 0 and not s["content"]
         )
-        if sub_sections:
-            sections.extend(sub_sections)
-            pages_crawled += sum(
-                1 for s in sub_sections
-                if s["depth"] == 0 and not s["content"]
-            )
 
-    total_tokens = sum(len(s["content"].split()) for s in sections if s["content"])
-
-    result: dict = {
-        "source_type": "url",
-        "source_path": source,
-        "title": title,
-        "author": author,
-        "sections": sections,
-        "metadata": {
-            "total_sections": len(sections),
-            "total_tokens": total_tokens,
-            "total_images": len(image_registry),
-            "url": source,
-        },
-    }
-
-    if image_registry:
-        result["images"] = image_registry
-    if crawl:
-        result["metadata"]["pages_crawled"] = pages_crawled
-        result["metadata"]["crawl_limited_by"] = crawl_limited_by
-
+    result["metadata"]["total_sections"] = len(sections)
+    result["metadata"]["total_tokens"] = sum(
+        len(s["content"].split()) for s in sections if s["content"]
+    )
+    result["metadata"]["pages_crawled"] = pages_crawled
+    result["metadata"]["crawl_limited_by"] = crawl_limited_by
     return result
 
 
 # ---------------------------------------------------------------------------
-# Section splitting (unchanged logic)
+# Section splitting
 # ---------------------------------------------------------------------------
 
+_HEADING_RE = re.compile(r"^(#{1,3})\s+(.+)$")
+
+
+def _find_headings(text: str) -> list[tuple[int, int, int, str]]:
+    """(start_offset, end_offset, level, title) of every ``#``..``###`` heading
+    line outside fenced code blocks (a ``# comment`` inside a fence is code)."""
+    headings: list[tuple[int, int, int, str]] = []
+    offset = 0
+    in_fence = False
+    for line in text.split("\n"):
+        if line.strip().startswith("```"):
+            in_fence = not in_fence
+        elif not in_fence:
+            m = _HEADING_RE.match(line)
+            if m:
+                headings.append((offset, offset + len(line), len(m.group(1)), m.group(2).strip()))
+        offset += len(line) + 1
+    return headings
+
+
 def _split_into_sections(text: str, fallback_title: str) -> list[dict]:
-    """Split extracted text into sections by headings."""
-    # Look for markdown-style headings (## Heading)
-    heading_pattern = re.compile(r"^(#{1,3})\s+(.+)$", re.MULTILINE)
-    matches = list(heading_pattern.finditer(text))
+    """Split extracted markdown into sections at ``#``..``###`` headings.
+
+    Heading depth maps to section depth (``#`` = 0, ``##`` = 1, ``###`` = 2);
+    deeper headings, bullets, tables and fenced code stay inside the content.
+    Without any heading the text is grouped into ~5-paragraph sections.
+    """
+    matches = _find_headings(text)
 
     if not matches:
         # No headings — try splitting by double newlines into chunks
@@ -538,7 +648,7 @@ def _split_into_sections(text: str, fallback_title: str) -> list[dict]:
     sections = []
 
     # Text before the first heading
-    preamble = text[:matches[0].start()].strip()
+    preamble = text[:matches[0][0]].strip()
     if preamble:
         sections.append({
             "title": fallback_title,
@@ -547,14 +657,12 @@ def _split_into_sections(text: str, fallback_title: str) -> list[dict]:
             "metadata": {},
         })
 
-    for i, match in enumerate(matches):
-        depth = len(match.group(1)) - 1  # # = 0, ## = 1, ### = 2
-        heading = match.group(2).strip()
+    for i, (_, heading_end, level, heading) in enumerate(matches):
+        depth = level - 1  # # = 0, ## = 1, ### = 2
 
         # Content extends to the next heading or end of text
-        start = match.end()
-        end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
-        content = text[start:end].strip()
+        end = matches[i + 1][0] if i + 1 < len(matches) else len(text)
+        content = text[heading_end:end].strip()
 
         sections.append({
             "title": heading,

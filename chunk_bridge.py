@@ -9,72 +9,152 @@ Input:
 
 Output:
   - chunks.json: flat list of chunks with topic_path
+  - chunk_report.json (next to chunks.json): coverage report
 
 Usage:
-  uv run python chunk_bridge.py \
-    --structure output/my-curriculum/structure.json \
-    --extracted output/my-curriculum/extracted/ \
+  uv run python chunk_bridge.py \\
+    --structure output/my-curriculum/structure.json \\
+    --extracted output/my-curriculum/extracted/ \\
     -o output/my-curriculum/chunks.json
+
+Section matching
+----------------
+A ``source_sections`` entry is a section title, matched after whitespace
+normalization, case-insensitively, against every extracted file. Sections are
+indexed twice: by ``(file, title)`` and by title alone.
+
+* ``"Service Layer"`` — title-only form. When several sections carry the title
+  (in one file or across files) ALL matches are used, in file order (files
+  sorted by name, sections in document order), and the entry is reported in
+  ``chunk_report.json`` under ``ambiguous_titles``.
+* ``"peaa.json::Service Layer"`` — disambiguated form: only that extracted
+  file's section(s). The prefix is the extracted filename (``.json`` optional).
+
+Every chunk carries ``_source`` = the ``source_path`` of the extracted section
+whose text the chunk starts in, so multi-source leaves attribute each chunk to
+the right book. The report also lists ``duplicate_titles_in_file`` so the agent
+can see which titles are not unique inside one source.
 """
+
+from __future__ import annotations
 
 import argparse
 import json
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 import _compat  # noqa: F401
 
 from chunk import chunk_by_topics, chunk_text, count_tokens
 
+# Separator of the disambiguated "<file.json>::<title>" source_sections form.
+FILE_TITLE_SEP = "::"
+
 
 def _normalize(text: str) -> str:
     """Normalize whitespace (including non-breaking spaces) for matching."""
-    return text.replace("\xa0", " ").strip()
+    return (text or "").replace("\xa0", " ").strip()
 
 
-def _load_extracted_sections(extracted_dir: Path) -> list[dict]:
-    """Load and merge all extracted intermediate JSONs.
+def _key(title: str) -> str:
+    """Case-insensitive matching key of a section title."""
+    return _normalize(title).lower()
 
-    Preserves the ``images`` list on each section (if present) so that
-    downstream chunking can propagate image references into chunks.
-    """
-    all_sections = []
+
+@dataclass
+class _Section:
+    """One extracted section with its origin."""
+
+    file: str          # extracted filename, e.g. "peaa.json"
+    index: int         # position in that file's sections list
+    title: str
+    content: str
+    source: str        # source_path of the extracted file
+    images: list[dict]
+    meta: dict
+
+    def ref(self) -> dict:
+        return {"file": self.file, "section_index": self.index}
+
+
+def _load_extracted_sections(extracted_dir: Path) -> list[_Section]:
+    """Load every section of every extracted JSON, in file order."""
+    sections: list[_Section] = []
     for json_file in sorted(extracted_dir.glob("*.json")):
         with open(json_file, encoding="utf-8") as f:
             data = json.load(f)
         source_path = data.get("source_path", str(json_file))
-        for section in data.get("sections", []):
-            section["_source"] = source_path
-            # images list is preserved as-is (may be absent)
-            all_sections.append(section)
-    return all_sections
+        for index, section in enumerate(data.get("sections", [])):
+            sections.append(_Section(
+                file=json_file.name,
+                index=index,
+                title=section.get("title", "") or "",
+                content=section.get("content", "") or "",
+                source=source_path,
+                images=section.get("images") or [],
+                meta=section.get("metadata") or {},
+            ))
+    return sections
 
 
-def _build_section_index(
-    sections: list[dict],
-) -> tuple[dict[str, str], dict[str, str], dict[str, list[dict]], dict[str, dict]]:
-    """Build lookups: normalized_title → content, source_path, images, metadata."""
-    content_index: dict[str, str] = {}
-    source_index: dict[str, str] = {}
-    images_index: dict[str, list[dict]] = {}
-    meta_index: dict[str, dict] = {}
-    for section in sections:
-        title = section.get("title", "")
-        if title:
-            norm = _normalize(title)
-            content_index[norm] = section.get("content", "")
-            content_index[norm.lower()] = section.get("content", "")
-            source_index[norm] = section.get("_source", "")
-            source_index[norm.lower()] = section.get("_source", "")
-            imgs = section.get("images", [])
-            if imgs:
-                images_index[norm] = imgs
-                images_index[norm.lower()] = imgs
-            meta = section.get("metadata") or {}
-            if meta:
-                meta_index[norm] = meta
-                meta_index[norm.lower()] = meta
-    return content_index, source_index, images_index, meta_index
+class _SectionIndex:
+    """Title lookups over the extracted sections (only titled, non-empty ones)."""
+
+    def __init__(self, sections: list[_Section]):
+        self.sections = sections
+        self.files = {s.file for s in sections}
+        self.by_title: dict[str, list[_Section]] = {}
+        self.by_file_title: dict[tuple[str, str], list[_Section]] = {}
+        for s in sections:
+            if not s.title or not s.content.strip():
+                continue
+            k = _key(s.title)
+            self.by_title.setdefault(k, []).append(s)
+            self.by_file_title.setdefault((s.file, k), []).append(s)
+
+    @property
+    def indexed(self) -> list[_Section]:
+        return [s for s in self.sections if s.title and s.content.strip()]
+
+    def split_ref(self, ref: str) -> tuple[str | None, str]:
+        """``"peaa.json::Title"`` -> ("peaa.json", "Title"); plain titles -> (None, ref).
+
+        The prefix must name an extracted file (``.json`` optional) — a title
+        that merely contains ``::`` (``std::vector``) stays a title.
+        """
+        if FILE_TITLE_SEP in ref:
+            prefix, title = ref.split(FILE_TITLE_SEP, 1)
+            prefix = _normalize(prefix)
+            for candidate in (prefix, prefix + ".json"):
+                if candidate in self.files:
+                    return candidate, title
+        return None, ref
+
+    def lookup(self, ref: str) -> list[_Section]:
+        """All sections matching one source_sections entry, in file order."""
+        file, title = self.split_ref(ref)
+        if file is not None:
+            return list(self.by_file_title.get((file, _key(title)), []))
+        return list(self.by_title.get(_key(title), []))
+
+    def duplicate_titles_in_file(self) -> list[dict]:
+        return [
+            {"file": file, "title": matches[0].title, "section_indices": [m.index for m in matches]}
+            for (file, _), matches in self.by_file_title.items()
+            if len(matches) > 1
+        ]
+
+
+def _legacy_content_index(sections: list[_Section]) -> dict[str, str]:
+    """title -> content lookup for the synthetic-page fallback (last title wins)."""
+    index: dict[str, str] = {}
+    for s in sections:
+        if s.title:
+            norm = _normalize(s.title)
+            index[norm] = s.content
+            index[norm.lower()] = s.content
+    return index
 
 
 def _assign_synthetic_pages(sections: list[dict]) -> list[dict]:
@@ -159,7 +239,7 @@ def _convert_structure_to_topic_tree(
     return topic_tree, current_page
 
 
-def _sections_to_pages(sections: list[dict], tokens_per_page: int = 500) -> list[dict]:
+def _sections_to_pages(sections: list[_Section], tokens_per_page: int = 500) -> list[dict]:
     """
     Convert sections into synthetic pages.
 
@@ -169,7 +249,7 @@ def _sections_to_pages(sections: list[dict], tokens_per_page: int = 500) -> list
     page_num = 1
 
     for section in sections:
-        content = section.get("content", "")
+        content = section.content
         if not content.strip():
             continue
 
@@ -279,12 +359,47 @@ def _attach_images(
         chunks[idx].setdefault("images", []).append(img)
 
 
+@dataclass
+class _Part:
+    """One section's span inside a leaf's joined text."""
+
+    start: int
+    end: int
+    section: _Section
+
+
+def _attribute_sources(chunks: list[dict], parts: list[_Part], full_text: str) -> None:
+    """Set each chunk's ``_source`` to the section covering the chunk's start.
+
+    Chunk text is the joined text with whitespace normalized, so a chunk's
+    first line is found verbatim at or after the previous chunk's end; when it
+    is not (unexpected normalization) the start is estimated proportionally.
+    """
+    if not parts:
+        return
+    lengths = [len(c["content"]) + 2 for c in chunks]
+    total_chunk_len = max(sum(lengths), 1)
+    search_pos = 0
+    consumed = 0
+    for chunk, length in zip(chunks, lengths):
+        first_line = chunk["content"].split("\n", 1)[0].strip()
+        pos = full_text.find(first_line, search_pos) if first_line else -1
+        if pos < 0:
+            pos = int(consumed / total_chunk_len * len(full_text))
+        part = parts[0]
+        for candidate in parts:
+            if candidate.start <= pos:
+                part = candidate
+        if part.section.source:
+            chunk["_source"] = part.section.source
+        # normalization only shrinks text, so this never overshoots the true end
+        search_pos = pos + len(chunk["content"])
+        consumed += length
+
+
 def _chunk_by_source_sections(
     topics: list[dict],
-    section_index: dict[str, str],
-    source_index: dict[str, str],
-    images_index: dict[str, list[dict]] | None = None,
-    meta_index: dict[str, dict] | None = None,
+    index: _SectionIndex,
     max_tokens: int = 1500,
     min_tokens: int = 200,
     report: dict | None = None,
@@ -295,64 +410,56 @@ def _chunk_by_source_sections(
     This approach bypasses the synthetic page system and works correctly
     regardless of how many sections exist in the extracted data.
 
-    When *report* is given, coverage problems (unmatched source_sections,
-    leaves with zero chunks, out-of-range token counts) are recorded in it
-    instead of being silently dropped.
+    When *report* is given, coverage problems (unmatched or ambiguous
+    source_sections, leaves with zero chunks, out-of-range token counts) are
+    recorded in it instead of being silently dropped.
     """
     leaves = _collect_leaf_topics(topics)
     all_chunks = []
-    images_index = images_index or {}
-    meta_index = meta_index or {}
-
-    def _lookup(title: str):
-        """Resolve one section title -> (content, source, images, meta) or None."""
-        norm = _normalize(title)
-        content = section_index.get(norm) or section_index.get(norm.lower())
-        if not content:
-            return None
-        if report is not None:
-            report["_used_keys"].add(norm.lower())
-        return (
-            content,
-            source_index.get(norm) or source_index.get(norm.lower(), ""),
-            images_index.get(norm) or images_index.get(norm.lower(), []),
-            meta_index.get(norm) or meta_index.get(norm.lower(), {}),
-        )
 
     for leaf in leaves:
-        parts: list[str] = []
-        sources = set()
+        parts: list[_Part] = []
         # (image, char offset into full_text)
         image_placements: list[tuple[dict, int]] = []
         unmatched: list[str] = []
         offset = 0
 
-        def _add_part(content: str, src: str, imgs: list[dict], meta: dict) -> None:
+        def _add_part(section: _Section) -> None:
             nonlocal offset
             sec_start = offset
-            sec_end = offset + len(content)
-            parts.append(content)
-            if src:
-                sources.add(src)
-            for img in imgs:
+            sec_end = offset + len(section.content)
+            parts.append(_Part(sec_start, sec_end, section))
+            for img in section.images:
                 image_placements.append(
-                    (img, _image_offset(img, sec_start, sec_end, meta))
+                    (img, _image_offset(img, sec_start, sec_end, section.meta))
                 )
+            if report is not None:
+                report["_used"].add((section.file, section.index))
             offset = sec_end + 2  # account for the "\n\n" join
+
+        def _resolve(ref: str) -> bool:
+            """Add every section matching *ref*; False when nothing matched."""
+            matches = index.lookup(ref)
+            if not matches:
+                return False
+            if len(matches) > 1 and report is not None:
+                report["ambiguous_titles"].append({
+                    "topic_path": leaf["topic_path"],
+                    "title": ref,
+                    "matches": [m.ref() for m in matches],
+                })
+            for section in matches:
+                _add_part(section)
+            return True
 
         # Collect content from all source_sections
         for sec_title in leaf["source_sections"]:
-            found = _lookup(sec_title)
-            if found:
-                _add_part(*found)
-            else:
+            if not _resolve(sec_title):
                 unmatched.append(sec_title)
 
         # Fallback: try matching the topic title itself
         if not parts:
-            found = _lookup(leaf["title"])
-            if found:
-                _add_part(*found)
+            _resolve(leaf["title"])
 
         if unmatched and report is not None:
             report["unmatched_source_sections"].append({
@@ -365,21 +472,19 @@ def _chunk_by_source_sections(
                 report["empty_topics"].append(leaf["topic_path"])
             continue
 
-        full_text = "\n\n".join(parts)
-        source_path = next(iter(sources), "")
+        full_text = "\n\n".join(p.section.content for p in parts)
         chunks = chunk_text(
             full_text,
             max_tokens=max_tokens,
             min_tokens=min_tokens,
             split_after_headings=leaf.get("split_after_headings"),
         )
+        _attribute_sources(chunks, parts, full_text)
 
         for i, chunk in enumerate(chunks):
             chunk["topic_path"] = leaf["topic_path"]
             chunk["chunk_index"] = i
             chunk["page_number"] = 1
-            if source_path:
-                chunk["_source"] = source_path
             if report is not None:
                 lo, hi = REPORT_TOKEN_RANGE
                 if not (lo <= chunk["token_count"] <= hi):
@@ -399,31 +504,33 @@ def _chunk_by_source_sections(
 def _new_report() -> dict:
     return {
         "unmatched_source_sections": [],
+        "ambiguous_titles": [],
+        "duplicate_titles_in_file": [],
         "empty_topics": [],
         "orphan_sections": [],
         "out_of_range_chunks": [],
         "totals": {},
-        "_used_keys": set(),
+        "_used": set(),
     }
 
 
-def _finalize_report(report: dict, sections: list[dict], chunks: list[dict]) -> dict:
-    """Compute orphan sections + totals; strip internal bookkeeping."""
-    used = report.pop("_used_keys")
-    seen: set[str] = set()
-    for section in sections:
-        title = _normalize(section.get("title", ""))
-        if not title or title.lower() in seen:
-            continue
-        seen.add(title.lower())
-        if title.lower() not in used:
+def _finalize_report(report: dict, index: _SectionIndex, chunks: list[dict]) -> dict:
+    """Compute orphan sections, duplicate titles + totals; strip bookkeeping."""
+    used: set[tuple[str, int]] = report.pop("_used")
+    indexed = index.indexed
+    for section in indexed:
+        if (section.file, section.index) not in used:
             report["orphan_sections"].append({
-                "source": section.get("_source", ""),
-                "title": title,
+                "source": section.source,
+                "file": section.file,
+                "section_index": section.index,
+                "title": _normalize(section.title),
             })
+    report["duplicate_titles_in_file"] = index.duplicate_titles_in_file()
     report["totals"] = {
-        "sections": len(seen),
+        "sections": len(indexed),
         "sections_used": len(used),
+        "empty_sections": len(index.sections) - len(indexed),
         "chunks": len(chunks),
         "tokens": sum(c.get("token_count", 0) for c in chunks),
     }
@@ -453,19 +560,18 @@ def bridge_and_chunk(
 
     # Load all extracted sections
     sections = _load_extracted_sections(extracted_dir)
-    section_index, source_index, images_index, meta_index = _build_section_index(sections)
 
     # Prefer source_sections-based chunking (handles large documents correctly)
     if _has_source_sections(topics):
+        index = _SectionIndex(sections)
         report = _new_report()
         chunks = _chunk_by_source_sections(
-            topics, section_index, source_index, images_index, meta_index,
-            max_tokens=max_tokens, min_tokens=min_tokens, report=report,
+            topics, index, max_tokens=max_tokens, min_tokens=min_tokens, report=report,
         )
-        return chunks, _finalize_report(report, sections, chunks)
+        return chunks, _finalize_report(report, index, chunks)
 
     # Legacy fallback: synthetic page alignment (for structures without source_sections)
-    topic_tree, _ = _convert_structure_to_topic_tree(topics, section_index)
+    topic_tree, _ = _convert_structure_to_topic_tree(topics, _legacy_content_index(sections))
     pages = _sections_to_pages(sections)
 
     if not pages:
@@ -530,6 +636,13 @@ def main():
                 f"  [yellow]Warning:[/] {' > '.join(entry['topic_path'])} — "
                 f"unmatched source_sections: {entry['missing']}"
             )
+        for entry in report["ambiguous_titles"]:
+            files = ", ".join(f"{m['file']}#{m['section_index']}" for m in entry["matches"])
+            console.print(
+                f"  [yellow]Warning:[/] {' > '.join(entry['topic_path'])} — "
+                f"{entry['title']!r} matches {len(entry['matches'])} sections ({files}); "
+                f"all were used — disambiguate with '<file.json>::<title>'"
+            )
         for topic_path in report["empty_topics"]:
             console.print(
                 f"  [yellow]Warning:[/] {' > '.join(topic_path)} produced NO "
@@ -538,7 +651,12 @@ def main():
         for orphan in report["orphan_sections"]:
             console.print(
                 f"  [yellow]Warning:[/] extracted section {orphan['title']!r} "
-                f"({orphan['source']}) is referenced by no topic — dropped"
+                f"({orphan['file']}) is referenced by no topic — dropped"
+            )
+        for dup in report["duplicate_titles_in_file"]:
+            console.print(
+                f"  [yellow]Note:[/] {dup['file']} has {len(dup['section_indices'])} sections "
+                f"titled {dup['title']!r} (indices {dup['section_indices']})"
             )
         if report["out_of_range_chunks"]:
             console.print(
