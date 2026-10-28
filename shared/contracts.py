@@ -175,6 +175,12 @@ CARD_TYPES_BY_KNOWLEDGE = {
 
 CRITIQUE_STATUSES = ("pending", "pass", "fail", "FAILED")
 QUESTION_VERDICTS = ("keep", "rewrite", "drop")
+KEEP_DROP_VERDICTS = ("keep", "drop")
+CLAIM_VERDICTS = ("supported", "not_supported", "irrelevant")
+GRADE_VALUES = ("pass", "fail")
+CANDIDATE_LABELS = ("A", "B", "C")
+# Fields withheld from the questions critic work file (re-derived or graded blind instead)
+QUESTION_WITHHELD = ("rationale", "source_quote", "probes", "key_points", "bloom_level", "distractors", "explanation", "feedback", "variants")
 
 # ---------------------------------------------------------------------------
 # Thresholds (the single place to tune gates)

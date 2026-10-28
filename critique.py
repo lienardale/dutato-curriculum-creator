@@ -81,6 +81,7 @@ from contracts import (
     CRITIQUED_STAGES,
     FIDELITY_PRECISION_MIN,
     FIDELITY_RECALL_MIN,
+    GROUP_ID_RE,
     GROUPS_FILE,
     LESSONS_DIR,
     PER_ITEM_CRITERIA,
@@ -422,11 +423,14 @@ def _load_artifact(inputs: _Inputs, stage: str, item_id: str) -> dict | None:
 
 
 def _list_item_ids(inputs: _Inputs, stage: str) -> list[str]:
+    """Item ids of a stage: group ids, source keys (qualification), or the ``g:<slug>`` ids
+    the per-item files map back to (helper files such as ``lessons/anchor.json`` are skipped)."""
     if stage == "groups":
         groups = inputs.groups(quiet=True)
         return [g["id"] for g in (groups or {}).get("groups") or [] if isinstance(g, dict) and g.get("id")]
     stage_dir = inputs.input_dir / STAGE_DIRS[stage]
-    return [_item_id_from_filename(stage, p.name) for p in list_item_files(stage_dir)]
+    ids = [_item_id_from_filename(stage, p.name) for p in list_item_files(stage_dir)]
+    return ids if stage == "qualification" else [i for i in ids if GROUP_ID_RE.match(i)]
 
 
 def _question_items(artifact: dict) -> list[tuple[str, dict]]:

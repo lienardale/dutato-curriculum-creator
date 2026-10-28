@@ -9,18 +9,47 @@ Bloom's level enums, breadth/balance bounds, and condensation plan
 integrity. Judgment gates (readability, naming, solution correctness)
 remain the operating agent's job.
 
+Two pipelines share this entry point; ``manifest.pipeline`` (read through
+``contracts.pipeline_mode``, absent => ``raw``) selects the stage list:
+
+* **raw** (legacy ``structure.json`` with ``source_sections`` -> chunk_bridge):
+  manifest, extracted, exploration, structure, chunks, exercises, review,
+  condensation — every gate lives in this file.
+* **lesson** (docs/artifacts.md): manifest, extracted, units, qualification,
+  concepts, groups, syntheses, lessons, chunks, structure, questions, cards,
+  critique, review. Each family delegates to its stage module's
+  ``check(input_dir)`` (qualify / regroup / synthesize / lessons / questions /
+  cards) and converts the module's findings 1:1 — no gate is duplicated here.
+  ``qualify.check`` covers three families; its findings are split by check_id
+  prefix (``units.`` / ``qualification.`` / ``concepts.``). ``structure`` and
+  ``chunks`` keep this file's integrity checks but skip the raw-only
+  extracted-section coverage and breadth heuristics (``source_sections`` is
+  empty by contract; regroup owns breadth) and use
+  ``contracts.CHUNK_TOKENS_SOFT_LESSON`` for the chunk token band. The
+  ``critique`` family reads ``critique/summary.json``: items in status
+  ``fail`` / ``FAILED`` are errors at ``--stage upload`` and warnings
+  otherwise, and every critiqued stage whose author artifacts exist but has
+  no (or a pending) verdict yields a ``critique.pending`` warning. The raw-only
+  families (exploration, exercises, condensation) still run in lesson mode
+  when their file exists. ``--stage upload`` in lesson mode requires manifest,
+  structure, chunks, lessons, questions, cards and the critique summary (with
+  no failing item), escalates ``questions.missing`` / ``cards.missing`` to
+  errors, and needs ``review.json`` with ``approved: true``.
+
 Usage:
     python validate.py output/<name>/                  # validate every stage whose checkpoint exists
     python validate.py output/<name>/ --stage structure
+    python validate.py output/<name>/ --stage lessons  # lesson mode: any lesson-pipeline family
     python validate.py output/<name>/ --stage upload   # pre-upload gate (requires review approval)
     python validate.py output/<name>/ --json           # also write validation_report.json
     python validate.py output/<name>/ --strict         # warnings fail too
 
 Exit codes: 0 = clean, 1 = errors found (or warnings with --strict).
 
-Findings are {check_id, severity, location, message}. The check_id values
-are referenced by rubrics/review_checklist.md and embedded into review.json
-under the "validation" key.
+Findings are {check_id, severity, location, message}; severity is "error",
+"warning" or (stage-module informational findings in lesson mode) "info".
+The check_id values are referenced by rubrics/review_checklist.md and
+embedded into review.json under the "validation" key.
 """
 
 from __future__ import annotations
@@ -35,6 +64,26 @@ from pathlib import Path
 import _compat  # noqa: F401
 
 from chunk import count_tokens
+from contracts import (
+    CARDS_DIR,
+    CHUNK_TOKENS_HARD,
+    CHUNK_TOKENS_SOFT_LESSON,
+    CRITIQUE_SUMMARY,
+    CRITIQUED_STAGES,
+    GROUP_ID_RE,
+    GROUPS_FILE,
+    LESSONS_DIR,
+    PIPELINE_LESSON,
+    PIPELINES,
+    QUALIFICATION_DIR,
+    QUESTIONS_DIR,
+    SYNTHESES_DIR,
+    UNITS_DIR,
+    filename_to_item_id,
+    item_id_to_filename,
+    list_item_files,
+    pipeline_mode,
+)
 from normalize_titles import PREFIX_PATTERNS, is_book_meta
 
 BLOOM_LEVELS = {"remember", "understand", "apply", "analyze", "evaluate", "create"}
@@ -53,16 +102,55 @@ HARD_RANGE = (50, 2500)
 LEVEL_TARGET_PCT = {1: 30, 2: 40, 3: 30}
 LEVEL_TOLERANCE_PCT = 15
 
+# Raw-pipeline stage families (STAGE_CHECKS below maps each to its checkpoint + check).
 STAGES = [
     "manifest", "extracted", "exploration", "structure",
     "chunks", "exercises", "review", "condensation",
 ]
 
+# Lesson-pipeline stage families in pipeline order (docs/artifacts.md).
+LESSON_STAGES = [
+    "manifest", "extracted", "units", "qualification", "concepts", "groups",
+    "syntheses", "lessons", "chunks", "structure", "questions", "cards",
+    "critique", "review",
+]
+# Checkpoint per lesson-mode family (directories hold authored per-item files).
+LESSON_ARTIFACTS = {
+    "manifest": "manifest.json",
+    "extracted": "extracted",
+    "units": UNITS_DIR,
+    "qualification": QUALIFICATION_DIR,
+    "concepts": "concepts.json",
+    "groups": GROUPS_FILE,
+    "syntheses": SYNTHESES_DIR,
+    "lessons": LESSONS_DIR,
+    "chunks": "chunks.json",
+    "structure": "structure.json",
+    "questions": QUESTIONS_DIR,
+    "cards": CARDS_DIR,
+    "critique": CRITIQUE_SUMMARY,
+    "review": "review.json",
+}
+# Raw-only families that still run in lesson mode when their checkpoint exists.
+LESSON_OPTIONAL_RAW_STAGES = ["exploration", "exercises", "condensation"]
+LESSON_ONLY_STAGES = [s for s in LESSON_STAGES if s not in STAGES]
+LESSON_UPLOAD_REQUIRED = {"manifest", "structure", "chunks", "lessons", "questions", "cards", "critique"}
+# Stage-module warnings that become errors at --stage upload (a lesson without practice).
+LESSON_UPLOAD_ESCALATED = {"questions.missing", "cards.missing"}
+# Per-family check_id prefixes of qualify.check (everything else lands in "units").
+_QUALIFY_FAMILY_PREFIX = {"qualification": "qualification.", "concepts": "concepts."}
+# Author artifact location per critiqued stage (for the critique.pending warning).
+_CRITIQUED_ARTIFACT_DIRS = {
+    "qualification": QUALIFICATION_DIR, "syntheses": SYNTHESES_DIR, "lessons": LESSONS_DIR,
+    "questions": QUESTIONS_DIR, "cards": CARDS_DIR,
+}
+_SEVERITY_RANK = {"error": 0, "warning": 1, "info": 2}
+
 
 @dataclass
 class Finding:
     check_id: str
-    severity: str  # "error" | "warning"
+    severity: str  # "error" | "warning" | "info"
     location: str
     message: str
 
@@ -150,6 +238,18 @@ def check_manifest(input_dir: Path) -> list[Finding]:
         findings.append(Finding(
             "manifest.invalid_variant", "error", path.name,
             f"variant={variant!r} not in {sorted(VARIANTS)}",
+        ))
+
+    pipeline = manifest.get("pipeline")
+    if pipeline is None:
+        findings.append(Finding(
+            "manifest.missing_key", "warning", path.name,
+            f"Key 'pipeline' is missing (defaults to 'raw'; set one of {sorted(PIPELINES)} explicitly)",
+        ))
+    elif pipeline not in PIPELINES:
+        findings.append(Finding(
+            "manifest.invalid_pipeline", "error", path.name,
+            f"pipeline={pipeline!r} not in {sorted(PIPELINES)}",
         ))
 
     for i, src in enumerate(manifest.get("sources") or []):
@@ -267,7 +367,11 @@ def check_exploration(input_dir: Path) -> list[Finding]:
     return findings
 
 
-def check_structure(input_dir: Path) -> list[Finding]:
+def check_structure(input_dir: Path, lesson_mode: bool | None = None) -> list[Finding]:
+    """Integrity of structure.json. In lesson mode (``lessons.py build`` output; auto-detected
+    from the manifest when ``lesson_mode`` is None) the extracted-section coverage checks and
+    the raw breadth / children-count / level-distribution heuristics are skipped: leaves carry
+    ``source_sections: []`` by contract and regroup.check owns the breadth rules."""
     findings: list[Finding] = []
     path = input_dir / "structure.json"
     try:
@@ -278,10 +382,14 @@ def check_structure(input_dir: Path) -> list[Finding]:
     if not topics:
         return [Finding("structure.empty", "error", path.name, "No topics defined")]
 
+    if lesson_mode is None:
+        lesson_mode = pipeline_mode(input_dir) == PIPELINE_LESSON
+
     # Extracted titles (absent for condensed variants — section-level checks
     # are skipped there because their source_sections reference original
-    # topic titles, not extracted sections).
-    by_file = _extracted_titles(input_dir / "extracted")
+    # topic titles, not extracted sections — and in lesson mode, where the
+    # structure is built from lessons, not from source sections).
+    by_file = {} if lesson_mode else _extracted_titles(input_dir / "extracted")
     extracted_keys = {_key(t) for titles in by_file.values() for t in titles if t}
     has_extracted = bool(by_file)
 
@@ -334,7 +442,7 @@ def check_structure(input_dir: Path) -> list[Finding]:
                     f"suggested_level={level!r} must be 1, 2, or 3",
                 ))
 
-        if children and not (2 <= len(children) <= 8):
+        if children and not lesson_mode and not (2 <= len(children) <= 8):
             findings.append(Finding(
                 "structure.children_count", "warning", loc,
                 f"Parent has {len(children)} children (recommended 2-8)",
@@ -412,15 +520,15 @@ def check_structure(input_dir: Path) -> list[Finding]:
                 f"(upload, condense) cannot distinguish them",
             ))
 
-    # Breadth
-    if not (5 <= len(topics) <= 15):
+    # Breadth (raw only — regroup.check gates areas / groups per area in lesson mode)
+    if not lesson_mode and not (5 <= len(topics) <= 15):
         findings.append(Finding(
             "structure.breadth", "warning", path.name,
             f"{len(topics)} depth-0 topics (recommended 5-15)",
         ))
 
-    # Level distribution
-    valid_levels = [lv for lv in depth0_levels if lv in (1, 2, 3)]
+    # Level distribution (raw only)
+    valid_levels = [] if lesson_mode else [lv for lv in depth0_levels if lv in (1, 2, 3)]
     if len(valid_levels) >= 5:
         for level, target in LEVEL_TARGET_PCT.items():
             pct = 100 * valid_levels.count(level) / len(valid_levels)
@@ -533,7 +641,10 @@ def _check_prereq_transitive(edges: dict[str, set[str]]) -> list[Finding]:
     return findings
 
 
-def check_chunks(input_dir: Path) -> list[Finding]:
+def check_chunks(input_dir: Path, lesson_mode: bool | None = None) -> list[Finding]:
+    """Integrity of chunks.json. In lesson mode (one chunk per lesson page; auto-detected
+    from the manifest when ``lesson_mode`` is None) the token band is
+    ``contracts.CHUNK_TOKENS_SOFT_LESSON`` / ``CHUNK_TOKENS_HARD``."""
     findings: list[Finding] = []
     path = input_dir / "chunks.json"
     try:
@@ -543,6 +654,9 @@ def check_chunks(input_dir: Path) -> list[Finding]:
 
     if not chunks:
         return [Finding("chunks.empty", "error", path.name, "No chunks produced")]
+
+    if lesson_mode is None:
+        lesson_mode = pipeline_mode(input_dir) == PIPELINE_LESSON
 
     structure_path = input_dir / "structure.json"
     node_paths: set[tuple[str, ...]] = set()
@@ -559,16 +673,17 @@ def check_chunks(input_dir: Path) -> list[Finding]:
             "structure.json not found — skipping topic-path cross-checks",
         ))
 
-    # Variants use a wider acceptable token range (AGENT.md: 200-2000)
-    soft_lo, soft_hi = SOFT_RANGE_EXTENSIVE
+    # Variants use a wider acceptable token range (AGENT.md: 200-2000);
+    # lesson pages are shorter by contract (docs/artifacts.md Stage 5).
+    soft_lo, soft_hi = CHUNK_TOKENS_SOFT_LESSON if lesson_mode else SOFT_RANGE_EXTENSIVE
+    hard_lo, hard_hi = CHUNK_TOKENS_HARD if lesson_mode else HARD_RANGE
     manifest_path = input_dir / "manifest.json"
-    if manifest_path.exists():
+    if not lesson_mode and manifest_path.exists():
         try:
             if _load_json(manifest_path).get("variant") in CONDENSE_TIERS:
                 soft_lo, soft_hi = SOFT_RANGE_VARIANT
         except json.JSONDecodeError:
             pass
-    hard_lo, hard_hi = HARD_RANGE
 
     by_path: dict[tuple[str, ...], list[int]] = {}
     for i, chunk in enumerate(chunks):
@@ -808,6 +923,72 @@ def check_condensation(input_dir: Path) -> list[Finding]:
     return findings
 
 
+def _item_files(stage_dir: Path) -> list[Path]:
+    """Authored per-item files of a ``g:<slug>``-keyed directory: names that map back to a
+    group id (``lessons/anchor.json`` and other helper files are not items)."""
+    return [p for p in list_item_files(stage_dir) if GROUP_ID_RE.match(filename_to_item_id(p.name))]
+
+
+def _critiqued_artifacts_present(input_dir: Path, stage: str) -> bool:
+    """True when the author artifacts of a critiqued stage exist (so a critique is due)."""
+    if stage == "groups":
+        return (input_dir / GROUPS_FILE).exists()
+    if stage == "qualification":  # keyed by source, not by g:<slug>
+        return bool(list_item_files(input_dir / QUALIFICATION_DIR))
+    return bool(_item_files(input_dir / _CRITIQUED_ARTIFACT_DIRS[stage]))
+
+
+def check_critique(input_dir: Path, upload: bool = False) -> list[Finding]:
+    """Read critique/summary.json (written by ``critique.py check``): failing items are
+    errors at --stage upload and warnings otherwise; critiqued stages whose author
+    artifacts exist but have no verdicts (or pending ones) warn ``critique.pending``."""
+    findings: list[Finding] = []
+    path = input_dir / CRITIQUE_SUMMARY
+    try:
+        summary = _load_json(path)
+    except json.JSONDecodeError as e:
+        return [Finding("critique.invalid_json", "error", CRITIQUE_SUMMARY, str(e))]
+    stages = summary.get("stages") if isinstance(summary, dict) else None
+    if not isinstance(stages, dict):
+        return [Finding(
+            "critique.shape", "error", CRITIQUE_SUMMARY,
+            "summary must be an object with a 'stages' map — run `critique.py check <stage>`",
+        )]
+
+    failing_severity = "error" if upload else "warning"
+    for stage in CRITIQUED_STAGES:
+        data = stages.get(stage)
+        by_item = data.get("by_item") if isinstance(data, dict) else None
+        if not isinstance(by_item, dict):
+            by_item = {}
+        pending: list[str] = []
+        for item_id, entry in sorted(by_item.items()):
+            status = entry.get("status") if isinstance(entry, dict) else None
+            loc = f"critique/{stage}/{item_id_to_filename(item_id)}"
+            if status in ("fail", "FAILED"):
+                detail = ", ".join(entry.get("critical_failed") or []) or "see the verdict"
+                findings.append(Finding(
+                    "critique.item_failed", failing_severity, loc,
+                    f"{status} at round {entry.get('round')} ({detail})"
+                    + (" — fix or drop the item before uploading" if upload else ""),
+                ))
+            elif status != "pass":  # "pending" (no or stale verdict) or an unknown status
+                pending.append(item_id)
+        if stage not in stages and _critiqued_artifacts_present(input_dir, stage):
+            findings.append(Finding(
+                "critique.pending", "warning", f"critique/{stage}/",
+                f"{stage} artifacts exist but no critique verdict was checked — "
+                f"run `critique.py prepare {stage}`, the critic, then `critique.py check {stage}`",
+            ))
+        elif pending:
+            findings.append(Finding(
+                "critique.pending", "warning", f"critique/{stage}/",
+                f"{len(pending)} item(s) await a critique verdict: {', '.join(pending[:10])}"
+                + (f" (+{len(pending) - 10} more)" if len(pending) > 10 else ""),
+            ))
+    return findings
+
+
 # ---------------------------------------------------------------------------
 # Orchestration
 # ---------------------------------------------------------------------------
@@ -824,16 +1005,168 @@ STAGE_CHECKS = {
 }
 
 
+def _contract_findings(findings) -> list[Finding]:
+    """contracts.Finding (stage modules) -> validate.Finding, 1:1."""
+    return [Finding(str(f.check_id), str(f.severity), str(f.location), str(f.message)) for f in findings]
+
+
+def _lesson_artifact_present(input_dir: Path, name: str) -> bool:
+    """Checkpoint presence per lesson-mode family: per-item directories count once they
+    hold an authored file (work/ files alone do not), units/ once a source file exists."""
+    artifact = input_dir / LESSON_ARTIFACTS[name]
+    if name == "units":
+        return any(p.name not in ("index.json", "dedup.json") for p in list_item_files(artifact))
+    if name == "qualification":
+        return bool(list_item_files(artifact))
+    if name in ("syntheses", "lessons", "questions", "cards"):
+        return bool(_item_files(artifact))
+    return artifact.exists()
+
+
+class _LessonValidator:
+    """Runs one lesson-mode family by delegating to the stage module (results memoized so
+    the three qualify families share a single ``qualify.check`` run per validation)."""
+
+    def __init__(self, input_dir: Path, stage: str):
+        self.input_dir = input_dir
+        self.stage = stage
+        self._qualify: list[Finding] | None = None
+
+    def _qualify_findings(self) -> list[Finding]:
+        if self._qualify is None:
+            import qualify
+            self._qualify = _contract_findings(qualify.check(self.input_dir))
+        return self._qualify
+
+    def run(self, name: str) -> list[Finding]:
+        if name in ("units", "qualification", "concepts"):
+            prefix = _QUALIFY_FAMILY_PREFIX.get(name)
+            others = tuple(p for n, p in _QUALIFY_FAMILY_PREFIX.items() if n != name)
+            return [
+                f for f in self._qualify_findings()
+                if (f.check_id.startswith(prefix) if prefix else not f.check_id.startswith(others))
+            ]
+        if name == "groups":
+            import regroup
+            return _contract_findings(regroup.check(self.input_dir))
+        if name == "syntheses":
+            import synthesize
+            return _contract_findings(synthesize.check(self.input_dir))
+        if name == "lessons":
+            import lessons
+            return _contract_findings(lessons.check(self.input_dir))
+        if name == "questions":
+            import questions
+            return _contract_findings(questions.check(self.input_dir))
+        if name == "cards":
+            import cards
+            return _contract_findings(cards.check(self.input_dir))
+        if name == "structure":
+            return check_structure(self.input_dir, lesson_mode=True)
+        if name == "chunks":
+            return check_chunks(self.input_dir, lesson_mode=True)
+        if name == "critique":
+            return check_critique(self.input_dir, upload=self.stage == "upload")
+        artifact, fn = STAGE_CHECKS[name]  # manifest, extracted, review
+        return fn(self.input_dir)
+
+
+def _run_lesson_validation(input_dir: Path, stage: str) -> list[Finding]:
+    """Lesson-mode counterpart of run_validation (same stage keywords)."""
+    runner = _LessonValidator(input_dir, stage)
+
+    if stage in LESSON_ARTIFACTS:
+        if not _lesson_artifact_present(input_dir, stage):
+            return [Finding(
+                f"{stage}.file_missing", "error", LESSON_ARTIFACTS[stage],
+                f"Checkpoint {LESSON_ARTIFACTS[stage]} not found in {input_dir}",
+            )]
+        return runner.run(stage)
+    if stage in STAGE_CHECKS:  # a raw-only family asked for explicitly
+        artifact, fn = STAGE_CHECKS[stage]
+        if not (input_dir / artifact).exists():
+            return [Finding(
+                f"{stage}.file_missing", "error", artifact,
+                f"Checkpoint {artifact} not found in {input_dir}",
+            )]
+        return fn(input_dir)
+
+    if stage == "enrich":
+        required = {"structure"}
+        families, extras = ["manifest", "structure"], ["exercises"]
+    elif stage == "upload":
+        required = set(LESSON_UPLOAD_REQUIRED)
+        families, extras = list(LESSON_STAGES), list(LESSON_OPTIONAL_RAW_STAGES)
+    elif stage == "all":
+        required = set()
+        families, extras = list(LESSON_STAGES), list(LESSON_OPTIONAL_RAW_STAGES)
+    else:
+        raise ValueError(f"Unknown stage: {stage!r}")
+
+    findings: list[Finding] = []
+    for name in families:
+        if _lesson_artifact_present(input_dir, name):
+            findings.extend(runner.run(name))
+        elif name in required:
+            findings.append(Finding(
+                f"{name}.file_missing", "error", LESSON_ARTIFACTS[name],
+                f"Checkpoint {LESSON_ARTIFACTS[name]} is required for {stage} but not found",
+            ))
+    for name in extras:
+        artifact, fn = STAGE_CHECKS[name]
+        if (input_dir / artifact).exists():
+            findings.extend(fn(input_dir))
+
+    if stage == "upload":
+        for f in findings:
+            if f.check_id in LESSON_UPLOAD_ESCALATED and f.severity == "warning":
+                f.severity = "error"
+                f.message += " — every lesson needs questions and cards before upload"
+        findings.extend(_upload_approval(input_dir))
+    return findings
+
+
+def _upload_approval(input_dir: Path) -> list[Finding]:
+    review_path = input_dir / "review.json"
+    approved = False
+    if review_path.exists():
+        try:
+            approved = _load_json(review_path).get("approved") is True
+        except json.JSONDecodeError:
+            pass
+    if approved:
+        return []
+    return [Finding(
+        "upload.not_approved", "error", "review.json",
+        "review.json missing or approved is not true — get user "
+        "approval before uploading",
+    )]
+
+
 def run_validation(input_dir: Path, stage: str = "all") -> list[Finding]:
     """Run validation checks. Returns the list of findings.
 
-    stage: one of STAGES, or
+    The pipeline mode comes from manifest.pipeline (contracts.pipeline_mode):
+    raw (default) uses STAGES, lesson uses LESSON_STAGES (see the module docstring).
+
+    stage: one of STAGES / LESSON_STAGES, or
       - "all":    every stage whose checkpoint file exists (skip missing)
-      - "upload": all of the above, but manifest/structure/chunks are required
-                  and review.json must exist with approved=true
+      - "upload": all of the above, but manifest/structure/chunks (raw) — or
+                  manifest/structure/chunks/lessons/questions/cards/critique
+                  (lesson) — are required and review.json must exist with
+                  approved=true
       - "enrich": structure (+ exercises if present); structure required
     """
     findings: list[Finding] = []
+
+    mode = pipeline_mode(input_dir)
+    if mode == PIPELINE_LESSON:
+        return _run_lesson_validation(input_dir, stage)
+    if stage in LESSON_ONLY_STAGES:
+        return [Finding(
+            f"{stage}.not_applicable", "error", "manifest.json",
+            f"stage {stage!r} belongs to the lesson pipeline but manifest.pipeline is {mode!r}",
+        )]
 
     if stage in STAGE_CHECKS:
         artifact, fn = STAGE_CHECKS[stage]
@@ -867,19 +1200,7 @@ def run_validation(input_dir: Path, stage: str = "all") -> list[Finding]:
             ))
 
     if stage == "upload":
-        review_path = input_dir / "review.json"
-        approved = False
-        if review_path.exists():
-            try:
-                approved = _load_json(review_path).get("approved") is True
-            except json.JSONDecodeError:
-                pass
-        if not approved:
-            findings.append(Finding(
-                "upload.not_approved", "error", "review.json",
-                "review.json missing or approved is not true — get user "
-                "approval before uploading",
-            ))
+        findings.extend(_upload_approval(input_dir))
 
     return findings
 
@@ -916,8 +1237,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("input_dir", type=Path, help="output/<name>/ directory")
     parser.add_argument(
         "--stage", default="all",
-        choices=[*STAGES, "all", "upload", "enrich"],
-        help="Stage to validate (default: all stages whose checkpoint exists)",
+        choices=[*STAGES, *LESSON_ONLY_STAGES, "all", "upload", "enrich"],
+        help="Stage to validate (default: all stages whose checkpoint exists); "
+             "units/qualification/concepts/groups/syntheses/lessons/questions/cards/critique "
+             "apply to manifest.pipeline = lesson",
     )
     parser.add_argument(
         "--json", action="store_true",
@@ -946,8 +1269,8 @@ def main(argv: list[str] | None = None) -> int:
         table.add_column("Check")
         table.add_column("Location", overflow="fold")
         table.add_column("Message", overflow="fold")
-        for f in sorted(findings, key=lambda f: (f.severity != "error", f.check_id)):
-            style = "red" if f.severity == "error" else "yellow"
+        for f in sorted(findings, key=lambda f: (_SEVERITY_RANK.get(f.severity, 3), f.check_id)):
+            style = {"error": "red", "warning": "yellow"}.get(f.severity, "cyan")
             table.add_row(
                 f"[{style}]{f.severity}[/]", f.check_id, f.location, f.message,
             )

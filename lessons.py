@@ -81,6 +81,7 @@ from contracts import (
     DANGLING_REFERENCE_PATTERNS,
     DEFINITION_WINDOW_CHARS,
     EXAMPLE_REQUIRED_OVER_WORDS,
+    GROUP_ID_RE,
     GROUPS_FILE,
     IMAGE_PLACEHOLDER_RE,
     LESSON_METRICS_FILE,
@@ -277,8 +278,11 @@ class Context:
         return self.lessons[gid]
 
     def lesson_files(self) -> list[Path]:
-        """Authored lesson files (work/ and the anchor pointer excluded)."""
-        return [p for p in list_item_files(self.input_dir / LESSONS_DIR) if p.name != ANCHOR_FILE]
+        """Authored lesson files: work/ excluded, and only names that map back to a
+        ``g:<slug>`` id (so the anchor pointer ``lessons/anchor.json`` is not a lesson —
+        every consumer of lessons/ applies the same rule)."""
+        return [p for p in list_item_files(self.input_dir / LESSONS_DIR)
+                if p.name != ANCHOR_FILE and GROUP_ID_RE.match(filename_to_item_id(p.name))]
 
 
 def _read(path: Path, location: str, findings: list[Finding], check_id: str):

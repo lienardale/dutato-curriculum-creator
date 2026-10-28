@@ -43,7 +43,7 @@ ground it in — or "no unit covers this → delete".
 ## 4. Per-stage protocol
 
 ### qualification (blind re-tag)
-Input: a 10% sample of units (text only). Task: assign `concepts` (from `concepts.json`),
+Input: a 10% sample of units, at least 15 (text only). Task: assign `concepts` (from `concepts.json`),
 `unit_type`, `keep` without seeing the author's tags. The script compares; disagreement >20%
 on concepts or unit_type fails the source.
 
@@ -68,7 +68,8 @@ Independently re-label each objective's Bloom level **before** reading the autho
 
 ### questions (answer-first)
 Input per question: the page, cited units, the prompt and the marked answer/options. Withheld:
-`rationale`, `source_quote`, `probes`. Protocol in order, fail-fast:
+`rationale`, `source_quote`, `probes`, `key_points`, `bloom_level`, `distractors`, `explanation`,
+`feedback`, `variants`. Protocol in order, fail-fast:
 1. **Answer first**: derive the answer from the page/units before reading the key. For
    `check`/MCQ the derived answer must match the key.
 2. understandable → topic-related → clear → **central** (tests the objective, not a literal)
@@ -96,7 +97,7 @@ cloze/discrimination), `card.tests_takeaway`.
   brief item) to ground the fix in.
 - The author edits only those spans; a repair whose diff exceeds half the item or touches
   unnamed paragraphs is rejected (`repair.oversized`, `repair.out_of_scope`).
-- Each repair bumps `revision`; the next critique round uses the same `round` number.
+- Each repair bumps `revision`; the next verdict carries `round` = the new revision.
 - **At most 2 repair rounds**. A third failure marks the item `FAILED`; it is listed in
   `review.json` for the human and never silently passed.
 - The author's checkpoint carries 1–3 `lessons_learned` lines across rounds; `prepare` prepends

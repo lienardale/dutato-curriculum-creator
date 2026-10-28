@@ -26,8 +26,9 @@ What it does, per line of a section:
   table, caption) so every source type reaches the segmenter in the same
   shape; fenced code is copied verbatim, indented / code-looking lines, list
   items and table rows are never joined. In pre-paragraphed sources (web,
-  office, notion) a lowercase line that follows a line without terminal
-  punctuation is a sentence the extractor split and is rejoined.
+  office, notion) a lowercase line (or one starting with ``,`` / ``;``) that
+  follows a line without terminal punctuation is a sentence the extractor
+  split and is rejoined.
 
 ``source_type == "code"`` only gets the ligature mapping.
 
@@ -84,7 +85,9 @@ _TITLE_PREFIX_RE = re.compile(r"^(chapter|part)\s+([0-9]+|[ivxlc]+)\s*[.:\-–�
 _TITLE_PAREN_SUFFIX_RE = re.compile(r"\s*\([^()]*\)\s*$")
 
 _TERMINAL_RE = re.compile(r"[.!?:][\"”’'\)\]]*$")
-_LOWER_START_RE = re.compile(r"^[(\"“‘'\[]*[a-z]")
+# A continuation line: starts lowercase (after optional opening quote/bracket) or
+# with a comma / semicolon — no paragraph ever starts with ", facing <concern>".
+_LOWER_START_RE = re.compile(r"^(?:[(\"“‘'\[]*[a-z]|[,;])")
 _LIST_ITEM_RE = re.compile(r"^(?:[-*•+–]|\d{1,3}[.)])\s+\S")
 _BARE_MARKER_RE = re.compile(r"^(?:[•–-]|\d{1,3}[.)])$")
 _TABLE_ROW_RE = re.compile(r"^\|.*\|$")

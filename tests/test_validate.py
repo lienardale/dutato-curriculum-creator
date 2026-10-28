@@ -514,3 +514,204 @@ def test_cli_writes_report(curriculum_dir: Path):
     assert report["summary"]["errors"] == 0
     assert report["summary"]["warnings"] == 0
     assert report["findings"] == []
+
+
+# ---------------------------------------------------------------------------
+# Lesson mode (manifest.pipeline = "lesson") — the lesson_curriculum_dir fixture
+# is the integration test of the whole artifact contract
+# ---------------------------------------------------------------------------
+
+from conftest import LESSON_DM, LESSON_SL, make_text  # noqa: E402
+
+
+def _fmt(findings):
+    return [f"{f.severity} {f.check_id} @ {f.location}: {f.message}" for f in findings]
+
+
+def test_lesson_fixture_is_clean_at_all_and_upload(lesson_curriculum_dir: Path):
+    for stage in ("all", "upload"):
+        findings = run_validation(lesson_curriculum_dir, stage)
+        assert errors(findings) == [], _fmt(findings)
+        assert warnings(findings) == [], _fmt(findings)
+
+
+def test_lesson_fixture_every_family_runs_clean(lesson_curriculum_dir: Path):
+    for stage in validate.LESSON_STAGES:
+        findings = run_validation(lesson_curriculum_dir, stage)
+        assert errors(findings) == [], (stage, _fmt(findings))
+
+
+def test_raw_fixture_still_validates_and_rejects_lesson_families(curriculum_dir: Path):
+    assert run_validation(curriculum_dir, "all") == []
+    assert errors(run_validation(curriculum_dir, "upload")) == []
+    assert errors(run_validation(curriculum_dir, "units")) == ["units.not_applicable"]
+
+
+def test_manifest_invalid_pipeline_is_error(curriculum_dir: Path):
+    path = curriculum_dir / "manifest.json"
+    manifest = read_json(path)
+    manifest["pipeline"] = "lecture"
+    write_json(path, manifest)
+    assert "manifest.invalid_pipeline" in errors(run_validation(curriculum_dir, "manifest"))
+
+
+def test_manifest_missing_pipeline_is_warning(curriculum_dir: Path):
+    path = curriculum_dir / "manifest.json"
+    manifest = read_json(path)
+    del manifest["pipeline"]
+    write_json(path, manifest)
+    findings = run_validation(curriculum_dir, "manifest")
+    assert errors(findings) == []
+    assert any(f.check_id == "manifest.missing_key" and "pipeline" in f.message for f in findings)
+
+
+def test_lesson_families_delegate_to_stage_modules(lesson_curriculum_dir: Path):
+    cur = lesson_curriculum_dir
+    # qualify.check findings are split by prefix into units / qualification / concepts
+    qual_path = cur / "qualification" / "peaa.json"
+    qual = read_json(qual_path)
+    first = next(iter(qual["units"].values()))
+    first["concepts"][0]["quote"] = "not a substring of the unit"
+    write_json(qual_path, qual)
+    assert "qualification.quote_mismatch" in errors(run_validation(cur, "qualification"))
+    assert "qualification.quote_mismatch" not in ids(run_validation(cur, "units"))
+    assert "qualification.quote_mismatch" not in ids(run_validation(cur, "concepts"))
+    concepts_path = cur / "concepts.json"
+    concepts = read_json(concepts_path)
+    concepts["concepts"][0]["label"] = "software"
+    write_json(concepts_path, concepts)
+    assert "concepts.too_broad" in warnings(run_validation(cur, "concepts"))
+    # lessons.check behind the lessons family
+    from contracts import item_id_to_filename
+    lesson_path = cur / "lessons" / item_id_to_filename(LESSON_DM)
+    lesson = read_json(lesson_path)
+    lesson["pages"][1]["markdown"] = None
+    write_json(lesson_path, lesson)
+    assert "lessons.markdown_missing" in errors(run_validation(cur, "lessons"))
+    assert "lessons.markdown_missing" in errors(run_validation(cur, "all"))
+    # groups / syntheses / questions / cards families
+    groups_path = cur / "groups.json"
+    groups = read_json(groups_path)
+    groups["groups"][0]["watch"] = []
+    write_json(groups_path, groups)
+    assert "groups.watch" in errors(run_validation(cur, "groups"))
+    (cur / "syntheses" / item_id_to_filename(LESSON_SL)).unlink()
+    assert "syntheses.missing" in errors(run_validation(cur, "syntheses"))
+    q_path = cur / "questions" / item_id_to_filename(LESSON_SL)
+    q = read_json(q_path)
+    q["embedded"] = []
+    write_json(q_path, q)
+    assert "questions.none_reachable" in errors(run_validation(cur, "questions"))
+    c_path = cur / "cards" / item_id_to_filename(LESSON_SL)
+    c = read_json(c_path)
+    c["cards"] = c["cards"][:2]
+    write_json(c_path, c)
+    assert "cards.count" in errors(run_validation(cur, "cards"))
+
+
+def test_lesson_single_family_reports_missing_checkpoint(lesson_curriculum_dir: Path):
+    import shutil
+    shutil.rmtree(lesson_curriculum_dir / "cards")
+    assert errors(run_validation(lesson_curriculum_dir, "cards")) == ["cards.file_missing"]
+    # raw-only families still answer in lesson mode
+    assert errors(run_validation(lesson_curriculum_dir, "exploration")) == ["exploration.file_missing"]
+    assert "cards.file_missing" not in ids(run_validation(lesson_curriculum_dir, "all"))
+    assert "cards.file_missing" in errors(run_validation(lesson_curriculum_dir, "upload"))
+
+
+def test_lesson_critique_pending_is_warning(lesson_curriculum_dir: Path):
+    path = lesson_curriculum_dir / "critique" / "summary.json"
+    summary = read_json(path)
+    summary["stages"]["lessons"]["by_item"][LESSON_DM]["status"] = "pending"
+    del summary["stages"]["cards"]
+    write_json(path, summary)
+    for stage in ("critique", "all", "upload"):
+        findings = run_validation(lesson_curriculum_dir, stage)
+        pending = [f for f in findings if f.check_id == "critique.pending"]
+        assert {f.location for f in pending} == {"critique/lessons/", "critique/cards/"}, _fmt(findings)
+        assert all(f.severity == "warning" for f in pending)
+        assert "critique.item_failed" not in ids(findings)
+    assert errors(run_validation(lesson_curriculum_dir, "all")) == []
+
+
+def test_lesson_failed_item_blocks_upload_only(lesson_curriculum_dir: Path):
+    path = lesson_curriculum_dir / "critique" / "summary.json"
+    summary = read_json(path)
+    entry = summary["stages"]["questions"]["by_item"][LESSON_SL]
+    entry.update(status="FAILED", round=2, critical_failed=[f"{LESSON_SL}#q1:q.answerable"])
+    summary["stages"]["cards"]["by_item"][LESSON_DM]["status"] = "fail"
+    write_json(path, summary)
+    findings = run_validation(lesson_curriculum_dir, "all")
+    assert errors(findings) == []
+    assert warnings(findings).count("critique.item_failed") == 2
+    findings = run_validation(lesson_curriculum_dir, "upload")
+    failed = [f for f in findings if f.check_id == "critique.item_failed"]
+    assert len(failed) == 2 and all(f.severity == "error" for f in failed)
+    assert any("q.answerable" in f.message and "FAILED" in f.message for f in failed)
+
+
+def test_lesson_critique_summary_shape_errors(lesson_curriculum_dir: Path):
+    path = lesson_curriculum_dir / "critique" / "summary.json"
+    path.write_text("{not json", encoding="utf-8")
+    assert errors(run_validation(lesson_curriculum_dir, "critique")) == ["critique.invalid_json"]
+    write_json(path, {"contract_version": 1})
+    assert errors(run_validation(lesson_curriculum_dir, "critique")) == ["critique.shape"]
+
+
+def test_lesson_upload_requires_practice_for_every_lesson(lesson_curriculum_dir: Path):
+    from contracts import item_id_to_filename
+    (lesson_curriculum_dir / "cards" / item_id_to_filename(LESSON_DM)).unlink()
+    findings = run_validation(lesson_curriculum_dir, "all")
+    assert errors(findings) == [] and "cards.missing" in warnings(findings)
+    findings = run_validation(lesson_curriculum_dir, "upload")
+    assert "cards.missing" in errors(findings)
+    (lesson_curriculum_dir / "review.json").unlink()
+    assert "upload.not_approved" in errors(run_validation(lesson_curriculum_dir, "upload"))
+
+
+def test_lesson_structure_and_chunks_use_lesson_rules(lesson_curriculum_dir: Path):
+    cur = lesson_curriculum_dir
+    # Built structure: leaves carry source_sections [] and the curriculum has one area —
+    # raw-mode coverage/breadth rules would fire, lesson mode skips them.
+    assert validate.check_structure(cur) == []
+    raw_view = validate.check_structure(cur, lesson_mode=False)
+    assert "structure.empty_leaf" in errors(raw_view) and "structure.breadth" in warnings(raw_view)
+    # Chunk token band: CHUNK_TOKENS_SOFT_LESSON (150-900) instead of 500-1500
+    path = cur / "chunks.json"
+    chunks = read_json(path)
+    chunks[0]["content"] = make_text(1000, seed="long page")
+    write_json(path, chunks)
+    findings = run_validation(cur, "chunks")
+    assert "chunks.token_range" in warnings(findings) and errors(findings) == []
+    assert [f.location for f in findings if f.check_id == "chunks.token_range"][0].startswith("chunks.json[0]")
+    raw_view = validate.check_chunks(cur, lesson_mode=False)  # 1000 tokens sits inside the raw 500-1500 band
+    assert not any(f.location.startswith("chunks.json[0]") for f in raw_view if f.check_id == "chunks.token_range")
+    chunks[0]["content"] = "A short page with only a few words on it. " * 8  # ~80 tokens: under 150, over the hard 50
+    write_json(path, chunks)
+    findings = run_validation(cur, "chunks")
+    assert "chunks.token_range" in warnings(findings) and errors(findings) == []
+
+
+def test_lesson_mode_runs_raw_only_families_when_present(lesson_curriculum_dir: Path):
+    write_json(lesson_curriculum_dir / "exercises.json", [{"topic_path": ["Nowhere"], "exercises": [
+        {"title": "x", "problem_statement": "", "hints": [], "expected_solution": "", "bloom_level": "apply", "difficulty": 1}]}])
+    findings = run_validation(lesson_curriculum_dir, "all")
+    assert {"exercises.unknown_topic_path", "exercises.empty_problem"} <= set(errors(findings))
+    assert "exercises.unknown_topic_path" in errors(run_validation(lesson_curriculum_dir, "enrich"))
+
+
+def test_lesson_cli(lesson_curriculum_dir: Path, capsys):
+    assert validate.main([str(lesson_curriculum_dir)]) == 0
+    assert validate.main([str(lesson_curriculum_dir), "--stage", "lessons", "--strict"]) == 0
+    assert validate.main([str(lesson_curriculum_dir), "--stage", "upload", "--json"]) == 0
+    report = read_json(lesson_curriculum_dir / "validation_report.json")
+    assert report["summary"] == {**report["summary"], "stage": "upload", "errors": 0, "warnings": 0}
+    capsys.readouterr()
+    path = lesson_curriculum_dir / "critique" / "summary.json"
+    summary = read_json(path)
+    summary["stages"]["lessons"]["by_item"][LESSON_SL]["status"] = "fail"
+    write_json(path, summary)
+    assert validate.main([str(lesson_curriculum_dir)]) == 0
+    assert validate.main([str(lesson_curriculum_dir), "--strict"]) == 1
+    assert validate.main([str(lesson_curriculum_dir), "--stage", "upload"]) == 1
+    assert "critique.item_failed" in capsys.readouterr().out
