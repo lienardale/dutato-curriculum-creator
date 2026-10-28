@@ -77,6 +77,7 @@ from contracts import (
     CONTRACT_VERSION,
     EMBEDDED_DEFAULT_POSITION,
     EMBEDDED_KINDS,
+    GROUP_ID_RE,
     IMAGE_PLACEHOLDER_RE,
     LESSONS_DIR,
     PIPELINE_LESSON,
@@ -453,6 +454,8 @@ def load_practice_content(input_dir: Path) -> PracticeContent:
 
     for stage_dir, attr in ((LESSONS_DIR, "title"), (QUESTIONS_DIR, "questions"), (CARDS_DIR, "cards")):
         for path in list_item_files(input_dir / stage_dir):
+            if not GROUP_ID_RE.match(filename_to_item_id(path.name)):
+                continue  # helper files (lessons/anchor.json) are not lesson items
             rel = f"{stage_dir}/{path.name}"
             try:
                 data = load_json(path)

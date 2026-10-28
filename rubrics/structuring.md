@@ -1,201 +1,93 @@
-# Topic Structuring Rubric
+# Structuring Rubric — hierarchy and ordering
 
-Rules for building the topic hierarchy (structure.json) from exploration findings.
+How the curriculum tree is shaped. In the lesson pipeline the tree is **not authored
+directly**: `lessons.py build` assembles `structure.json` from `groups.json` (areas, modules,
+groups and their committed prerequisite edges) and `lessons/<id>.json` (titles, descriptions,
+objectives). The rules below are what you apply while writing `groups.json`
+(`rubrics/regrouping.md`) and what `build` and `validate.py --stage structure` enforce.
+Shapes: `docs/artifacts.md` (Stage 3 and Stage 5 "build").
 
-## Hierarchy Rules
+## Hierarchy
 
-### Depth limits
-- **Depth 0**: Major topic areas (5-15 per curriculum)
-- **Depth 1**: Subtopics within each area (2-8 per parent)
-- **Depth 2**: Specific concepts (1-5 per parent, optional)
-- Never go beyond depth 2
+| Depth | Node | Source | Count |
+|---|---|---|---|
+| 0 | **area** | `groups.json → areas[]` | 1–15 per curriculum (`groups.areas_count`) |
+| 1 | **module** (optional) | `areas[].modules[]` | any; a lesson without a `module_id` sits directly under its area |
+| 1 or 2 | **lesson** (leaf) | one per group, `lesson_id` = group id | 2–10 per area (`groups.per_area`) |
 
-### Naming conventions
-- Use clear, descriptive titles (not chapter numbers)
-- Use noun phrases or "What is X?" form
-- Bad: "Chapter 3", "Section 2.1", "3.2.1"
-- Good: "Sorting Algorithms", "Binary Search Trees", "What is Big-O Notation?"
-- **No source branding** in topic titles. Strip parentheticals that name a book, author, publisher, or video channel. The learning app shows standalone topics; users don't need to know which book a chapter came from.
-  - Bad: "Bootstrapping a Cluster (The Hard Way)", "Production Chart Patterns (Bitnami examples)", "Docker Internals (Poulton)".
-  - Good: "Bootstrapping a Cluster from Scratch", "Production Chart Patterns — NGINX".
+- Never deeper than 2 (`structure.invalid_depth`). Leaves never have children.
+- A module exists only to group lessons; an area whose lessons all fit one sequence needs
+  no modules. Mixing direct lessons and modules in one area is allowed; `build` places the
+  direct lessons first, then the modules.
+- Every group references an area that exists (`lessons.build.area_unknown`) and, when set, a
+  module inside that area (`groups.module_ref`).
 
-### Ordering
-- Within each parent: foundational → specific → advanced
-- Across depth-0 topics: survey/overview → fundamentals → applied → advanced
-- Use `sort_order` (0-indexed) to enforce the order
+## Naming
 
-## Level Assignment
+- Titles are noun phrases a learner understands out of context ("Architecture Decision
+  Records", "Bootstrapping a Cluster from Scratch"), or a question ("What Is Big-O
+  Notation?").
+- **No source branding** and no book structure: no author, book, site or channel names, no
+  "Chapter 3", "Part II", "(Fowler)", "3.2.1". The learner sees a standalone curriculum.
+- **Lesson titles are unique curriculum-wide** and must not collide with an area or module
+  title: the uploader keys every topic by title (`lessons.title_duplicate`,
+  `groups.title_duplicate`).
+- Area and module titles name the theme, not the lesson list ("Recording Decisions", not
+  "ADRs, templates and tooling").
 
-Assign `suggested_level` (1, 2, or 3) to each depth-0 topic:
+## Ordering
 
-| Level | Name | Content Type |
-|-------|------|-------------|
-| 1 | Fundamentals | Definitions, core concepts, basic examples |
-| 2 | Intermediate | Techniques, patterns, comparative analysis |
-| 3 | Advanced | Complex applications, trade-offs, synthesis |
+`sort_order` is 0-based and unique per parent (`groups.sort_order`). `build` sorts areas by
+their `sort_order` (then id), modules by theirs, and lessons by their group `sort_order`;
+the `sort_order` written into `structure.json` is the resulting position.
 
-Guidelines:
-- Level 1 should cover ~30% of the curriculum
-- Level 2 should cover ~40%
-- Level 3 should cover ~30%
-- A topic's level is determined by the _most advanced_ concept it contains
+Order by what builds on what, never by one source's table of contents:
 
-**Database effect**: During upload, `suggested_level` creates `curriculum_levels` rows (Fundamentals / Intermediate / Advanced) and links depth-0 topics via `curriculum_level_id`. The app uses these tiers to group topics and guide learning progression from basic to advanced.
+1. **Committed prerequisite edges first.** A lesson comes after every lesson it requires;
+   across areas, the area holding the prerequisites comes first. `validate.py` warns when a
+   prerequisite has a higher `sort_order` than its dependent (`structure.prereq_order`).
+2. **Then learning step**: foundation → building_block → applied → advanced.
+3. **Then `concepts.ordering`** (the registry's foundation-to-advanced list) and, as a last
+   tie-break, the order in which the sources introduce the concept.
+4. Survey / orientation lessons open an area; synthesis and trade-off lessons close it.
 
-## Section Mapping
+Only **committed** edges (`prerequisites[].status == "committed"`, set by
+`regroup.py commit-edges` from the critic's verdicts) reach `structure.json`; `uncertain` and
+`rejected` edges do not order anything. `build` drops an edge whose prerequisite has no
+built lesson (`lessons.build.prerequisite_unbuilt`) — write that lesson or remove the edge.
+The transitive reduction (`prerequisite_edges_reduced`) is script-owned; do not prune implied
+edges by hand.
 
-Each leaf topic (no children) must have `source_sections` listing which extracted sections contain its content:
+## Levels
 
-```json
-{
-  "title": "Binary Search",
-  "source_sections": ["Searching Algorithms", "Binary Search Implementation"]
-}
-```
+`suggested_level` 1–3 on every area and group:
 
-Rules:
-- Every extracted section must appear in at least one topic's `source_sections`
-- A section can appear in multiple topics if it covers multiple concepts
-- If a section doesn't fit any topic, either create a topic for it or confirm with the user it should be excluded
+| Level | Name | Content |
+|---|---|---|
+| 1 | Fundamentals | definitions, core concepts, basic examples |
+| 2 | Intermediate | techniques, patterns, comparative analysis |
+| 3 | Advanced | complex applications, trade-offs, synthesis |
 
-### source_sections must be clean of book-meta
+- A group's level is set by its most advanced objective; an area's level is its own
+  `suggested_level` or, when absent, the majority level of its groups (`build`).
+- Depth-0 levels create `curriculum_levels` rows at upload and group areas into tiers in the
+  app, so every area needs one (`structure.missing_level`, `structure.invalid_level`).
+- Aim for roughly 30 % / 40 % / 30 % of lessons across levels; the distribution is a guideline
+  in lesson mode, not a gate.
 
-Extraction often captures TOC entries, preamble, end-matter, and "Chapter N" chapter markers. These leak book structure into the curriculum and have zero educational value. Before authoring `source_sections`, **always run the normalizer:**
+## What `build` copies into each leaf
 
-```bash
-python normalize_titles.py output/<name>/
-```
+`title`, `description` and `learning_objectives` (`{text, bloom_level}`) from the lesson file;
+`prerequisites` (`{topic: <lesson title>, strength}`) from committed edges; `lesson_id`;
+`source_sections: []` (always empty in lesson mode). Objectives follow
+`rubrics/learning_objectives.md` and are gated at the group stage (observable verb, Bloom
+level under the units' ceiling), not here.
 
-This strips chapter-number prefixes (`Chapter N:`, `N.`, `N:`, `Part I`, `Section N`, etc.) and drops book-meta sections (Cover, Credits, Foreword, Dedication, Index, "Who Should Read This Book?", "How This Book Is Organized", "Technical Requirements", end-of-chapter "Questions"/"Summary", Acknowledgements, etc.) directly in the extracted JSONs.
+## Raw pipeline (legacy)
 
-For low-fidelity PDF extractions that collapsed chapters into bare "Chapter N" titles (no trailing semantic name), provide an explicit per-file remap so the normalizer can rewrite them using the book's TOC:
-
-```bash
-python normalize_titles.py output/<name>/ --remap remap.json
-```
-
-```json
-{
-  "Docker_up_and_running.json": {
-    "Chapter 1": "Introduction to Docker",
-    "Chapter 4": "Working with Docker Images"
-  }
-}
-```
-
-After normalization, `source_sections` strings must:
-- **Not** contain `Chapter N`, `Part I`, `Section N`, or `N: / N. / N.N` prefixes.
-- **Not** include book preamble / end-matter (see deny lists in `normalize_titles.py :: EXACT_META` and `PHRASE_META_RE`).
-- Match an actual section title in an extracted JSON (otherwise the chunker pulls nothing).
-
-After authoring `structure.json`, **always run the validator**:
-
-```bash
-python validate.py output/<name>/ --stage structure
-```
-
-It catches (among others):
-- `structure.stale_ref` (error): a `source_sections` entry that matches no
-  extracted section — that topic gets zero content from it
-- `structure.orphan_section` (warning): an extracted section referenced by
-  no topic — its content is silently dropped at chunking
-- `structure.empty_leaf` (error): a leaf with no usable mapping at all
-- `structure.prereq_cycle` / `structure.prereq_unknown_topic` (errors)
-- breadth, children-count, level-distribution, and duplicate-title warnings
-
-Fix all errors before presenting the structure to the user.
-
-## Balance Checks
-
-After building the structure, verify:
-1. **No empty topics**: Every topic should map to at least one section
-2. **No giant topics**: No single topic should have >10 sections mapped
-3. **Balanced children**: Siblings should be roughly similar in scope
-4. **Complete coverage**: All extracted sections are mapped somewhere
-5. **No orphan paths**: Every depth-2 topic has a depth-1 parent, every depth-1 has a depth-0 parent
-
-## Learning Objectives
-
-After building the hierarchy, add learning objectives to each topic.
-See `rubrics/learning_objectives.md` for the full rubric.
-
-Each topic gains a `learning_objectives` array:
-```json
-"learning_objectives": [
-  {"text": "Implement binary search on a sorted array", "bloom_level": "apply"},
-  {"text": "Analyze the time complexity of binary search", "bloom_level": "analyze"}
-]
-```
-
-- Leaf topics: 2-5 objectives (required)
-- Parent topics: 1-3 broader objectives (optional)
-- Use Bloom's action verbs matching the topic's level
-- **Answerability**: every objective must be satisfiable from the content of
-  the topic's `source_sections` — the review stage verifies each objective
-  against the topic's chunks, and unanswerable objectives must be rewritten
-  or the mapping fixed (see the protocol in `rubrics/review_checklist.md`)
-
-## Prerequisite Links
-
-After building the hierarchy, add prerequisite links using the prerequisite chains
-from `exploration.json`:
-
-```json
-"prerequisites": [
-  {"topic": "Arrays", "strength": "required"},
-  {"topic": "Sorting Algorithms", "strength": "recommended"}
-]
-```
-
-Rules:
-1. **Intra-curriculum only**: Only reference topics within this structure
-2. **Granularity**: Link at the most specific level possible
-3. **No cycles**: The prerequisite graph must be a DAG
-4. **No transitive links**: If A→B→C, don't also add A→C
-5. **Valid references**: Every `topic` value must match a title in this structure (case-insensitive)
-6. **Ordering consistency**: Prerequisites should have a lower `sort_order` than their dependents
-
-## Split Hints (Optional)
-
-If a source section contains distinct conceptual segments, add `split_after_headings`
-to force chunk breaks at specific headings:
-
-```json
-"split_after_headings": ["Pseudocode", "Complexity Analysis"]
-```
-
-Only use when default heading-based splitting would combine concepts that should be
-separate chunks.
-
-## structure.json Format
-
-```json
-[
-  {
-    "title": "Topic Name",
-    "depth": 0,
-    "sort_order": 0,
-    "description": "One-line description",
-    "suggested_level": 1,
-    "learning_objectives": [
-      {"text": "Explain the fundamentals of X", "bloom_level": "understand"}
-    ],
-    "prerequisites": [
-      {"topic": "Prerequisite Topic", "strength": "recommended"}
-    ],
-    "children": [
-      {
-        "title": "Subtopic Name",
-        "depth": 1,
-        "sort_order": 0,
-        "description": "...",
-        "source_sections": ["Extracted Section Title 1", "Extracted Section Title 2"],
-        "learning_objectives": [
-          {"text": "Define key terms of X", "bloom_level": "remember"}
-        ],
-        "children": []
-      }
-    ]
-  }
-]
-```
+A hand-authored `structure.json` with `source_sections` follows the same hierarchy, naming,
+ordering and level rules, plus the section-mapping rules enforced by
+`validate.py --stage structure` (`structure.stale_ref`, `structure.empty_leaf`,
+`structure.orphan_section`): run `normalize_titles.py` first so no `source_sections` entry
+carries a `Chapter N` / `Part I` prefix or a book-meta title, map every extracted section to
+at least one leaf, and keep leaves under 10 sections. See the appendix of `AGENT.md`.

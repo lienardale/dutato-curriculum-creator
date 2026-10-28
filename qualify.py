@@ -15,7 +15,11 @@ here):
                         units: fenced/indented code, pipe tables, bullet/numbered
                         lists and figure captions are atomic; prose is grouped at
                         blank-line boundaries up to UNIT_MAX_TOKENS, a ``#``
-                        heading always starts a unit, a prose run under
+                        heading always starts a unit, a plain heading-like line
+                        (one short line, uppercase start, no terminal
+                        punctuation — how PDF and web extractors emit
+                        sub-headings) starts a unit once the running prose
+                        buffer holds UNIT_MIN_TOKENS, a prose run under
                         UNIT_MIN_TOKENS merges into the previous prose unit (or,
                         when a typed block follows, becomes that unit's lead-in),
                         and a single paragraph over the maximum is split at
@@ -39,8 +43,8 @@ here):
 Usage:
     python qualify.py prepare output/<name>/ [--scope scope.json] [--source KEY ...]
     python qualify.py scope-from-structure output/<name>/legacy/structure.json \\
-        --area "<depth-0 title>" [--area ...] --extracted output/<name>/extracted/ \\
-        -o output/<name>/scope.json
+        --area "<depth-0 title>" [--area ...] -o output/<name>/scope.json \\
+        [--extracted output/<name>/extracted/]   (default: extracted/ next to the scope file)
     python qualify.py check output/<name>/ [--source KEY] [--strict]
 
 Without ``--scope``, ``prepare`` applies ``output/<name>/scope.json`` when that
@@ -133,6 +137,15 @@ _CAPTION_RE = re.compile(r"^(Figure|Fig\.|Table)\s+\d")
 _INDENT_CODE_RE = re.compile(r"^(?: {4,}|\t)")
 _SENTENCE_END_RE = re.compile(r"(?<=[.!?])\s+")
 
+# A plain (non-``#``) sub-heading as PDF / web extractors emit it: one short line
+# starting with a capital or digit and ending without sentence punctuation
+# ("Making Change Possible", "Hot spots"). A lead-in ("Common problems include:")
+# keeps its colon and is therefore never a heading.
+_PLAIN_HEADING_MAX_WORDS = 10
+_PLAIN_HEADING_MAX_CHARS = 80
+_PLAIN_HEADING_START_RE = re.compile(r"^[A-Z0-9]")
+_PLAIN_HEADING_END_RE = re.compile(r"[.!?:;,]$")
+
 # raw_span fallback: locate the unit by its first / last normalized characters.
 _SPAN_PROBE_CHARS = 40
 
@@ -219,6 +232,23 @@ def _classify_block(text: str) -> str:
     return "prose"
 
 
+def _is_plain_heading(text: str) -> bool:
+    """One short capitalised line without terminal punctuation (see _PLAIN_HEADING_*)."""
+    if "\n" in text:
+        return False
+    s = text.strip()
+    return (
+        bool(s)
+        and len(s) <= _PLAIN_HEADING_MAX_CHARS
+        and word_count(s) <= _PLAIN_HEADING_MAX_WORDS
+        and bool(_PLAIN_HEADING_START_RE.match(s))
+        and not _PLAIN_HEADING_END_RE.search(s)
+        and not _LIST_ITEM_RE.match(s)
+        and not _TABLE_ROW_RE.match(s)
+        and not _CAPTION_RE.match(s)
+    )
+
+
 def _sentence_spans(cleaned: str, start: int, end: int) -> list[tuple[int, int]]:
     """Split an oversized prose block into sentence spans packed up to UNIT_MAX_TOKENS."""
     text = cleaned[start:end]
@@ -263,7 +293,13 @@ def segment_text(cleaned: str) -> list[Segment]:
     can take them: one flushed by a typed block becomes the lead-in of that
     typed unit ("Common problems include:" stays with its list); one flushed by
     a heading or the end of the section merges into the previous prose unit.
-    A heading-started buffer never merges backwards.
+    A ``#``-heading-started buffer never merges backwards.
+
+    A plain heading-like line (``_is_plain_heading``) also starts a unit, but
+    only when the running buffer already holds UNIT_MIN_TOKENS — so a chapter
+    summary of one-line terms each followed by a sentence stays grouped instead
+    of fragmenting, while a real sub-heading never ends up as the tail of the
+    unit that precedes it.
     """
     units: list[Segment] = []
     buf: tuple[int, int] | None = None
@@ -298,7 +334,10 @@ def segment_text(cleaned: str) -> list[Segment]:
             text = cleaned[start:end]
             units.append(Segment(kind, start, end, text, count_tokens(text)))
             continue
-        if _HEADING_RE.match(cleaned[start:end]):
+        text = cleaned[start:end]
+        if _HEADING_RE.match(text):
+            flush(before_typed=False)
+        elif buf is not None and _is_plain_heading(text) and count_tokens(cleaned[buf[0]:buf[1]]) >= UNIT_MIN_TOKENS:
             flush(before_typed=False)
         if buf is None:
             buf = (start, end)
@@ -1416,7 +1455,8 @@ def _cmd_prepare(args: argparse.Namespace) -> int:
 
 
 def _cmd_scope(args: argparse.Namespace) -> int:
-    scope, findings = scope_from_structure(args.structure, args.area, args.extracted, args.output)
+    extracted = args.extracted if args.extracted is not None else args.output.parent / EXTRACTED_DIR
+    scope, findings = scope_from_structure(args.structure, args.area, extracted, args.output)
     errors, _ = print_findings(findings)
     if scope is not None:
         n_sections = sum(len(v) for v in scope["include_sections"].values())
@@ -1450,8 +1490,9 @@ def main(argv: list[str] | None = None) -> int:
     p_scope = sub.add_parser("scope-from-structure", help="build scope.json from a legacy structure's areas")
     p_scope.add_argument("structure", type=Path, help="legacy structure.json")
     p_scope.add_argument("--area", action="append", required=True, metavar="TITLE", help="depth-0 topic title (repeatable)")
-    p_scope.add_argument("--extracted", type=Path, required=True, metavar="DIR", help="extracted/ directory")
     p_scope.add_argument("-o", "--output", type=Path, required=True, metavar="scope.json", help="where to write the scope")
+    p_scope.add_argument("--extracted", type=Path, metavar="DIR",
+                         help="extracted/ directory (default: extracted/ next to the -o scope file, i.e. output/<name>/extracted/)")
     p_scope.set_defaults(func=_cmd_scope)
 
     p_check = sub.add_parser("check", help="gate units/, qualification/ and concepts.json; write units/dedup.json")

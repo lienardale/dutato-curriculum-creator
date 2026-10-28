@@ -67,6 +67,7 @@ from contracts import (
     EMBEDDED_PER_PAGE_MAX,
     EXERCISE_FADING,
     EXERCISE_HINTS,
+    GROUP_ID_RE,
     GROUPS_FILE,
     LESSONS_DIR,
     LITERAL_RECALL_PATTERNS,
@@ -357,8 +358,12 @@ class Context:
         return [c.get("label") or "", *(c.get("aliases") or [])]
 
     def lesson_ids(self) -> list[str]:
-        """Lesson ids that have an authored lessons/<item>.json, in group order."""
-        present = {filename_to_item_id(p.name) for p in list_item_files(self.input_dir / LESSONS_DIR)}
+        """Lesson ids that have an authored lessons/<item>.json, in group order.
+
+        Only files whose name maps back to a ``g:<slug>`` id count: a helper file in
+        the directory (``lessons/anchor.json``) is not a lesson."""
+        present = {lid for lid in (filename_to_item_id(p.name) for p in list_item_files(self.input_dir / LESSONS_DIR))
+                   if GROUP_ID_RE.match(lid)}
         ordered = [g for g in self.group_order if g in present]
         return ordered + sorted(present - set(ordered))
 
@@ -954,13 +959,14 @@ def _check_lesson(ctx: Context, lesson_id: str, allow_edge: bool) -> list[Findin
     return out
 
 
-def check(input_dir: Path, allow_edge_questions: bool = False, lesson_ids: list[str] | None = None) -> list[Finding]:
+def check(input_dir: Path, allow_edge_questions: bool = False, lesson_ids: list[str] | None = None, **_opts) -> list[Finding]:
     """Whole stage: every authored questions file, plus lessons that still lack one."""
     ctx = load_context(Path(input_dir))
     findings = list(ctx.findings)
     if not ctx.groups:
         return findings
-    authored = {filename_to_item_id(p.name) for p in list_item_files(ctx.input_dir / QUESTIONS_DIR)}
+    authored = {lid for lid in (filename_to_item_id(p.name) for p in list_item_files(ctx.input_dir / QUESTIONS_DIR))
+                if GROUP_ID_RE.match(lid)}
     targets = lesson_ids or ctx.lesson_ids()
     for lesson_id in targets:
         if lesson_id in authored or lesson_ids:
@@ -973,7 +979,7 @@ def check(input_dir: Path, allow_edge_questions: bool = False, lesson_ids: list[
     return findings
 
 
-def check_item(input_dir: Path, item_id: str, allow_edge_questions: bool = False) -> list[Finding]:
+def check_item(input_dir: Path, item_id: str, allow_edge_questions: bool = False, **_opts) -> list[Finding]:
     """One lesson (g:slug) or one sub-item (g:slug#q3, findings filtered to it)."""
     lesson_id, _, sub = item_id.partition("#")
     ctx = load_context(Path(input_dir))

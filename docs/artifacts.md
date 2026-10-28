@@ -42,7 +42,12 @@ output/<name>/
   cards/work/<id>.json              script     cards.py prepare
   cards/<id>.json                   authored
   critique/<stage>/work/<id>.json   script     critique.py prepare <stage>
+  critique/<stage>/work/<id>.snapshot.json      script  critique.py prepare|check (artifact copy per revision, repair diffs)
+  critique/<stage>/work/<id>.verdict.r<N>.json  script  critique.py check (archived verdict of round N)
+  critique/questions/work/<id>.student.json, <id>.grader.json, <id>.grader.key.json   script  critique.py prepare questions
   critique/<stage>/<id>.json        authored by an INDEPENDENT critic sub-agent
+  critique/questions/<id>.student.json          authored by the TEST STUDENT sub-agent
+  critique/questions/<id>.grader.json           authored by the blind GRADER sub-agent
   critique/summary.json             script     critique.py check <stage>
   validation_report.json            script     validate.py --json
   review.json                       authored
@@ -63,7 +68,7 @@ output/<name>/
 Slugs: lowercase ASCII, hyphen-separated, ≤48 chars (`contracts.slugify`). Lesson **titles must
 be unique curriculum-wide** (the uploader keys topics by title).
 
-## Stage 2 (script) — `qualify.py prepare output/<name>/ [--scope scope.json]`
+## Stage 2 (script) — `qualify.py prepare output/<name>/ [--scope scope.json] [--source KEY ...]`
 
 Reads `extracted/*.json`, cleans text (`shared/clean_text.py`: page numbers, running headers
 recurring on ≥3 pages, watermarks, `N | Chapter` footers, footnote markers, de-hyphenation,
@@ -98,7 +103,7 @@ unit's span are attached.
 
 `scope.json` (optional): `{"include_sources": ["peaa", ...] | null, "include_sections": {"peaa": ["Service Layer", ...]}}`.
 Section titles match after `normalize_ws` + lowercase. `qualify.py scope-from-structure
-output/<name>/legacy/structure.json --area "<depth-0 title>" [--area ...] -o output/<name>/scope.json`
+output/<name>/legacy/structure.json --area "<depth-0 title>" [--area ...] [--extracted DIR] -o output/<name>/scope.json`
 builds a scope from a legacy structure's `source_sections` (resolving titles to the extracted
 files that contain them).
 
@@ -268,7 +273,7 @@ core), page count = budget, every page ↔ ≥1 objective, every objective ↔ �
 exactly one `knowledge_point_id`, no `brief_item_id` of kind `inference` cited as the only
 support of a page.
 
-Full pass gates (`lessons.py check` → `lesson_metrics.json` keyed by lesson id): lesson
+Full pass gates (`lessons.py check` → `lesson_metrics.json` = `{"contract_version": 1, "lessons": {<lesson id>: {...}}}`): lesson
 900–2400 words; page words by role (orientation/recap 150–250, core/worked_example 250–450,
 pitfalls 150–450; ±15% warn, beyond error); ≤4 new bold terms per page; core-page term density
 0.08–0.15; undefined bold terms ≤2% of tokens (defined within 150 chars, on an earlier page, or
@@ -399,7 +404,9 @@ Verdict file, stage-level stages (`groups`, `syntheses`, `lessons`):
 
 `claims` is required for `syntheses` and `lessons` (one entry per brief item / per page
 paragraph, verdict ∈ `supported | not_supported | irrelevant`); `edges` is required for
-`groups` (one per proposed prerequisite, verdict ∈ `confirmed | either | uncertain`).
+`groups` (one per proposed prerequisite, verdict ∈ `confirmed | either | uncertain`). A
+`lessons` verdict also carries `"bloom_relabels": {"<lo id>": "<bloom level>"}` (the critic's
+independent label per objective).
 
 Per-item stages (`qualification`, `questions`, `cards`) carry `items` instead of `criteria`:
 
@@ -410,6 +417,17 @@ Per-item stages (`qualification`, `questions`, `cards`) carry `items` instead of
  "test_student": {"answered": 4, "correct": 4, "unanswerable": [], "undefined_terms": []},
  "notes": ""}
 ```
+
+Other per-item shapes: a `qualification` verdict's `items` are
+`[{"item_id": "<unit id>", "verdict": "keep|drop", "concepts": ["c:…"], "unit_type": "…", "notes": ""}]`
+(the critic's blind tags; the script computes the disagreement rate); `cards` items add
+`"alternatives": [...]` (other plausible fillers for cloze/discrimination). For `questions`, the
+critic work file withholds `rationale`, `source_quote`, `probes`, `key_points`, `bloom_level`,
+`distractors`, `explanation`, `feedback`, `variants`; the test student writes
+`critique/questions/<id>.student.json` = `{"answers": [{"question_id", "answer"}], "unanswerable": [], "undefined_terms": []}`
+and the blind grader writes `critique/questions/<id>.grader.json` =
+`{"grades": {"<qid>": {"A": "pass|fail", "B": "pass|fail", "C": "pass|fail"}}}`; `test_student`
+is computed from those files (a `test_student` block embedded in the critic verdict is only a fallback).
 
 `critique.py check <stage>` computes per item: `pass` iff all critical criteria passed ∧ the
 stage's deterministic `check` has no errors for the item ∧ (positive weights passed / positive
