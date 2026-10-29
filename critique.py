@@ -88,6 +88,8 @@ from contracts import (
     PREREQ_VALIDATOR_VERDICTS,
     QUALIFICATION_DIR,
     QUALIFICATION_DISAGREEMENT_MAX,
+    QUALIFICATION_DISAGREEMENT_TOLERANCE,
+    UNIT_TYPE_FAMILIES,
     QUALIFICATION_SAMPLE_MIN,
     QUALIFICATION_SAMPLE_SHARE,
     QUESTION_VERDICTS,
@@ -1300,10 +1302,15 @@ def _eval_qualification(verdict: dict, extra: dict, loc: str, findings: list[Fin
                                     f"verdict {value!r} not in {KEEP_DROP_VERDICTS}"))
             value = None
         overrides: dict[str, bool] = {}
+        both_keep = (value == "keep") and bool(tags["keep"])
+        both_drop = (value == "drop") and not tags["keep"]
         if isinstance(item.get("concepts"), list):
-            overrides["tags.concepts_agree"] = bool(set(item["concepts"]) & set(tags["concepts"]))
+            # Concept tags only matter on units both sides keep; a dropped unit carries no
+            # teaching claim, so differing tags there are not a disagreement.
+            overrides["tags.concepts_agree"] = (not both_keep) or bool(set(item["concepts"]) & set(tags["concepts"]))
         if item.get("unit_type") is not None:
-            overrides["tags.unit_type_agrees"] = item["unit_type"] == tags["unit_type"]
+            same_family = UNIT_TYPE_FAMILIES.get(item["unit_type"]) == UNIT_TYPE_FAMILIES.get(tags["unit_type"])
+            overrides["tags.unit_type_agrees"] = both_drop or same_family
         if value is not None:
             overrides["tags.keep_agrees"] = (value == "keep") == bool(tags["keep"])
         ev = _eval_criteria(item.get("criteria"), catalogue, iloc, overrides, findings)
@@ -1320,7 +1327,8 @@ def _eval_qualification(verdict: dict, extra: dict, loc: str, findings: list[Fin
     n = len(scores)
     rates = {cid: (count / n if n else 1.0) for cid, count in disagree.items()}
     critical_failed = [cid for cid in ("tags.concepts_agree", "tags.unit_type_agrees")
-                       if rates[cid] > QUALIFICATION_DISAGREEMENT_MAX]
+                       if rates[cid] > QUALIFICATION_DISAGREEMENT_MAX
+                       and disagree[cid] > QUALIFICATION_DISAGREEMENT_TOLERANCE]
     return _Eval(
         critical_all_passed=not critical_failed,
         score=(sum(scores) / n) if n else 0.0,

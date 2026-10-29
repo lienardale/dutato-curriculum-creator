@@ -855,14 +855,33 @@ def test_check_qualification_blind_retag(prepared: Path):
     assert entry["metrics"] == {"sampled": 3, "concept_disagreement": 0.0, "unit_type_disagreement": 0.0,
                                 "keep_disagreement": 0.0}
     verdict = clean_qualification_verdict(prepared)
-    verdict["items"][0]["unit_type"] = "noise"          # 1/3 disagreement > 0.20
+    verdict["items"][0]["unit_type"] = "noise"          # cross-family disagreement (author type is not reference/noise)
+    verdict["items"][0]["verdict"] = "keep"
+    verdict["items"][2]["unit_type"] = "noise"          # second one: 2/3 > 0.20 and above the one-disagreement tolerance
+    verdict["items"][2]["verdict"] = "keep"
     verdict["items"][1]["verdict"] = "drop"             # minor: keep disagreement
     write_verdict(prepared, "qualification", verdict, item_id="adr")
     critique.check(prepared, "qualification", item_id="adr")
     entry = by_item(prepared, "qualification")["adr"]
     assert entry["status"] == "fail" and entry["critical_failed"] == ["tags.unit_type_agrees"]
-    assert entry["metrics"]["unit_type_disagreement"] == pytest.approx(1 / 3)
+    assert entry["metrics"]["unit_type_disagreement"] == pytest.approx(2 / 3)
     assert entry["metrics"]["keep_disagreement"] == pytest.approx(1 / 3)
+
+
+def test_check_qualification_single_disagreement_and_same_family_tolerated(prepared: Path):
+    verdict = clean_qualification_verdict(prepared)
+    author_type = verdict["items"][0]["unit_type"]
+    same_family = {"definition": "mechanism", "mechanism": "context", "context": "definition",
+                   "example": "code", "code": "example", "pitfall": "trade_off", "trade_off": "comparison",
+                   "comparison": "pitfall", "procedure": "procedure", "reference": "noise", "noise": "reference"}
+    verdict["items"][0]["unit_type"] = same_family[author_type]   # same family: not a disagreement
+    verdict["items"][1]["unit_type"] = "noise"                    # one real disagreement: tolerated
+    verdict["items"][1]["verdict"] = "keep"
+    write_verdict(prepared, "qualification", verdict, item_id="adr")
+    critique.check(prepared, "qualification", item_id="adr")
+    entry = by_item(prepared, "qualification")["adr"]
+    assert entry["status"] == "pass" and entry["critical_failed"] == []
+    assert entry["metrics"]["unit_type_disagreement"] == pytest.approx(1 / 3)
 
 
 def test_check_qualification_missing_sampled_unit(prepared: Path):
