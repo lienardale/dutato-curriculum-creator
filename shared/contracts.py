@@ -200,9 +200,19 @@ CONCEPT_THIN_UNITS = 2         # < this many units => thin
 NEW_CONCEPTS_PER_GROUP_MAX = 5
 
 # Qualification critique
+# Blind re-tag agreement compares unit types by family (exact enum equality over 11 fuzzy
+# values measured 13-40% disagreement on real sources even when the tagging was sound).
+UNIT_TYPE_FAMILIES = {
+    "definition": "explain", "mechanism": "explain", "context": "explain",
+    "example": "example", "code": "example",
+    "pitfall": "judge", "trade_off": "judge", "comparison": "judge",
+    "procedure": "procedure",
+    "reference": "reference", "noise": "reference",
+}
 QUALIFICATION_SAMPLE_SHARE = 0.10
 QUALIFICATION_SAMPLE_MIN = 15
 QUALIFICATION_DISAGREEMENT_MAX = 0.20
+QUALIFICATION_DISAGREEMENT_TOLERANCE = 1   # a single disagreement never fails a source (small samples)
 
 # Groups
 GROUP_TOKENS = (300, 8000)
