@@ -202,7 +202,11 @@ concept; `suggested_merges` (source mass <300 tokens or <3 kept units), `suggest
 Script-owned fields (written by scripts, never by the agent): `budget` (`regroup.py budget`),
 `prerequisites[].status` (`regroup.py check` after the prerequisite critique:
 `committed | uncertain | rejected`). `budget` shape:
-`{"pages", "embedded_questions_min", "embedded_questions_max", "quiz_items", "quiz_min_bloom_levels", "recap_item", "cards_min", "cards_max", "exercises_max"}` from `contracts.budget_for`.
+`{"pages", "has_example", "embedded_questions_min", "embedded_questions_max", "quiz_items", "quiz_min_bloom_levels", "recap_item", "cards_min", "cards_max", "exercises_max"}` from `contracts.budget_for`.
+`pages` = knowledge points + 3 (orientation, pitfalls, recap) + 1 when the group has an example
+unit (a primary or related unit whose `unit_type` is `example`/`code` or whose block is code —
+`contracts.group_has_example`), clamped to 4–8; `has_example` records that input so
+`lessons.py prepare` can flag a stale budget (`lessons.prepare.budget_stale`).
 
 `regroup.py check` gates: every kept unit is primary in exactly one group or in `dropped`;
 group tokens 300–8000 (warn); 3–5 knowledge points; 2–4 objectives with observable verbs and
@@ -274,7 +278,8 @@ exactly one `knowledge_point_id`, no `brief_item_id` of kind `inference` cited a
 support of a page.
 
 Full pass gates (`lessons.py check` → `lesson_metrics.json` = `{"contract_version": 1, "lessons": {<lesson id>: {...}}}`): lesson
-900–2400 words; page words by role (orientation/recap 150–250, core/worked_example 250–450,
+900–2800 words (error band; above the 2400-word target `lessons.words_over_target` warns);
+page words by role (orientation/recap 150–250, core/worked_example 250–450,
 pitfalls 150–450; ±15% warn, beyond error); ≤4 new bold terms per page; core-page term density
 0.08–0.15; undefined bold terms ≤2% of tokens (defined within 150 chars, on an earlier page, or
 in a prerequisite lesson's recap); mean sentence ≤22 words (flag >45); ≤4 sentences per

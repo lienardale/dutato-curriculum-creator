@@ -228,7 +228,11 @@ PREREQ_ROOTS_MIN_LESSONS = 10
 PREREQ_BOTTLENECK_WARN = 0.85  # one lesson gating > this share of downstream lessons
 
 # Budgets (deterministic; ceilings not quotas)
-PAGES_RANGE = (3, 6)
+# A lesson's fixed roles are orientation + pitfalls + recap (3 pages), plus one core page per
+# knowledge point, plus one worked_example page when the group has an example unit:
+# pages = knowledge_points + 3 (+ 1 with an example), clamped to PAGES_RANGE.
+PAGES_RANGE = (4, 8)
+PAGES_FIXED = 3                # orientation + pitfalls + recap
 EMBEDDED_PER_PAGE_MAX = 1      # per position (before/after) per page
 QUIZ_ITEMS_PER_LO = 2
 QUIZ_MIN_BLOOM_LEVELS = 3
@@ -236,14 +240,46 @@ CARDS_RANGE = (4, 7)
 EXERCISES_MAX = 3
 CARDS_PER_100_WORDS_MAX = 1.0
 
+# Units that justify a worked_example page (code is embedded, never paraphrased). The same rule
+# decides the budget (regroup.py budget) and the page template (lessons.py prepare).
+EXAMPLE_UNIT_TYPES = ("example", "code")
+EXAMPLE_BLOCK_TYPES = ("code",)
 
-def budget_for(knowledge_points: int, objectives: int, learning_step: str, has_prereq: bool) -> dict:
-    pages = max(PAGES_RANGE[0], min(PAGES_RANGE[1], knowledge_points + 2))
+
+def is_example_unit(unit: dict | None, qualification: dict | None) -> bool:
+    """A unit is an example when its block_type is code or its qualified unit_type is example/code."""
+    block = (unit or {}).get("block_type")
+    unit_type = (qualification or {}).get("unit_type")
+    return block in EXAMPLE_BLOCK_TYPES or unit_type in EXAMPLE_UNIT_TYPES
+
+
+def group_has_example(group: dict, units: dict, qualification: dict) -> bool:
+    """True when any primary or related unit of the group is an example unit.
+
+    ``units`` and ``qualification`` are unit id -> unit / qualification entry maps; a unit missing
+    from either map contributes only what the other map knows about it.
+    """
+    unit_ids = [u for u in (group.get("unit_ids") or []) if isinstance(u, str)]
+    unit_ids += [u for u in (group.get("related_unit_ids") or []) if isinstance(u, str) and u not in unit_ids]
+    return any(is_example_unit((units or {}).get(u), (qualification or {}).get(u)) for u in unit_ids)
+
+
+def pages_for(knowledge_points: int, has_example: bool = False) -> int:
+    """Page count of a lesson: one core page per knowledge point on top of the fixed roles,
+    plus a worked_example page when the group has an example unit, clamped to PAGES_RANGE."""
+    pages = knowledge_points + PAGES_FIXED + (1 if has_example else 0)
+    return max(PAGES_RANGE[0], min(PAGES_RANGE[1], pages))
+
+
+def budget_for(knowledge_points: int, objectives: int, learning_step: str, has_prereq: bool,
+               has_example: bool = False) -> dict:
+    pages = pages_for(knowledge_points, has_example)
     quiz = max(QUIZ_ITEMS_PER_LO * objectives, QUIZ_MIN_BLOOM_LEVELS)
     cards_max = min(CARDS_RANGE[1], 2 + knowledge_points)
     exercises = EXERCISES_MAX if learning_step in ("applied", "advanced") else 1
     return {
         "pages": pages,
+        "has_example": bool(has_example),           # input recorded so lessons.py can detect a stale budget
         "embedded_questions_max": 2 * (pages - 1),  # conservative reachable slots (see questions)
         "embedded_questions_min": 1,
         "quiz_items": quiz,
@@ -273,7 +309,8 @@ FIDELITY_PRECISION_MIN = 0.95
 FIDELITY_RECALL_MIN = 0.90
 
 # Lessons
-LESSON_WORDS = (900, 2400)
+LESSON_WORDS = (900, 2800)          # error band (8 pages x ~300 words at the top)
+LESSON_WORDS_TARGET = (900, 2400)   # above the target max lessons.py warns (lessons.words_over_target)
 PAGE_WORDS = {
     "orientation": (150, 250),
     "core": (250, 450),

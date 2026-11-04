@@ -525,7 +525,39 @@ def _work_is_current(path: Path, revision: int) -> bool:
 # ---------------------------------------------------------------------------
 
 
-def _base_work(stage: str, item_id: str, round_: int, artifact: dict, criteria: list[dict]) -> dict:
+def _previous_round(input_dir: Path | None, stage: str, item_id: str, round_: int) -> dict | None:
+    """Digest of the previous round's verdict (archived by `check`) so a round >= 1 critic
+    judges whether the named repairs landed instead of restarting from scratch."""
+    if input_dir is None or round_ < 1:
+        return None
+    stem = item_id_to_filename(item_id)[:-5]
+    archive = Path(input_dir) / CRITIQUE_DIR / stage / WORK_SUBDIR / f"{stem}.verdict.r{round_ - 1}.json"
+    if not archive.exists():
+        return None
+    try:
+        prev = load_json(archive)
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(prev, dict):
+        return None
+    failed = [c.get("criterion_id") for c in (prev.get("criteria") or []) if isinstance(c, dict) and c.get("passed") is False]
+    failed_items = [
+        {"item_id": it.get("item_id"), "verdict": it.get("verdict"),
+         "failed": [c.get("criterion_id") for c in (it.get("criteria") or []) if isinstance(c, dict) and c.get("passed") is False]}
+        for it in (prev.get("items") or []) if isinstance(it, dict) and it.get("verdict") != "keep"
+    ]
+    return {
+        "round": round_ - 1,
+        "failed_criteria": failed,
+        "failed_items": failed_items,
+        "actionable_items": list(prev.get("actionable_items") or []),
+        "instruction": ("Judge first whether each previous actionable item was addressed. A criterion that passed "
+                        "in the previous round fails again only if the repair introduced a new defect; do not "
+                        "restart the review from scratch."),
+    }
+
+
+def _base_work(stage: str, item_id: str, round_: int, artifact: dict, criteria: list[dict], input_dir: Path | None = None) -> dict:
     return {
         "contract_version": CONTRACT_VERSION,
         "stage": stage,
@@ -533,6 +565,7 @@ def _base_work(stage: str, item_id: str, round_: int, artifact: dict, criteria: 
         "round": round_,
         "criteria": criteria,
         "protocol": _protocol_section(stage),
+        "previous_round": _previous_round(input_dir, stage, item_id, round_),
         "lessons_learned": list(artifact.get("lessons_learned") or []),
         "verdict_file": f"{CRITIQUE_DIR}/{stage}/{item_id_to_filename(item_id)}",
     }
@@ -556,7 +589,7 @@ def _prepare_qualification(inputs: _Inputs, item_id: str, artifact: dict, seed: 
     registry = [{"id": c.get("id"), "label": c.get("label"), "description": c.get("description"),
                  "aliases": list(c.get("aliases") or [])} for c in inputs.concepts()]
     criteria = _criteria_dicts("qualification")
-    work = _base_work("qualification", item_id, _round_of(artifact), artifact, criteria)
+    work = _base_work("qualification", item_id, _round_of(artifact), artifact, criteria, input_dir=inputs.input_dir)
     work.update({
         "source": item_id,
         "sample_seed": seed,
@@ -590,7 +623,7 @@ def _prepare_groups(inputs: _Inputs, item_id: str, artifact: dict) -> dict:
     unit_ids = list(artifact.get("unit_ids") or []) + list(artifact.get("related_unit_ids") or [])
     concept_ids = set(artifact.get("concept_ids") or [])
     criteria = _criteria_dicts("groups")
-    work = _base_work("groups", item_id, _round_of(artifact), artifact, criteria)
+    work = _base_work("groups", item_id, _round_of(artifact), artifact, criteria, input_dir=inputs.input_dir)
     work.update({
         "group": group_view,
         "units": inputs.unit_views(unit_ids, loc),
@@ -621,7 +654,7 @@ def _prepare_syntheses(inputs: _Inputs, item_id: str, artifact: dict) -> dict:
     knowledge_points = [{"id": kp.get("id"), "title": kp.get("title")}
                         for kp in (group or {}).get("knowledge_points") or [] if isinstance(kp, dict)]
     criteria = _criteria_dicts("syntheses")
-    work = _base_work("syntheses", item_id, _round_of(artifact), artifact, criteria)
+    work = _base_work("syntheses", item_id, _round_of(artifact), artifact, criteria, input_dir=inputs.input_dir)
     work.update({
         "claims": claims,
         "claims_instruction": "Label every entry of `claims` supported | not_supported | irrelevant using ONLY its "
@@ -668,7 +701,7 @@ def _prepare_lessons(inputs: _Inputs, item_id: str, artifact: dict) -> dict:
         unit_ids += [u for u in it["unit_ids"] if isinstance(u, str)]
     group = inputs.group(item_id)
     criteria = _criteria_dicts("lessons")
-    work = _base_work("lessons", item_id, _round_of(artifact), artifact, criteria)
+    work = _base_work("lessons", item_id, _round_of(artifact), artifact, criteria, input_dir=inputs.input_dir)
     work.update({
         "title": artifact.get("title"),
         "pages": pages,
@@ -730,7 +763,7 @@ def _build_grader(paths: _Paths, artifact: dict, questions: list[tuple[str, dict
     """Blind grader work file + hidden key. Candidate order is shuffled by a Random seeded with the item id."""
     rng = random.Random(paths.item_id)
     criteria = [c for c in _criteria_dicts("questions") if c["id"] == PROBE_CRITERION]
-    work = _base_work("questions", paths.item_id, _round_of(artifact), artifact, criteria)
+    work = _base_work("questions", paths.item_id, _round_of(artifact), artifact, criteria, input_dir=paths.input_dir)
     key = {"contract_version": CONTRACT_VERSION, "stage": "questions", "item_id": paths.item_id,
            "round": work["round"], "questions": {}}
     entries = []
@@ -784,7 +817,7 @@ def _prepare_questions(inputs: _Inputs, paths: _Paths, artifact: dict, force: bo
     critic_path = paths.work()
     if force or not _work_is_current(critic_path, revision):
         criteria = _criteria_dicts("questions", exclude=(PROBE_CRITERION,))
-        work = _base_work("questions", item_id, revision, artifact, criteria)
+        work = _base_work("questions", item_id, revision, artifact, criteria, input_dir=inputs.input_dir)
         views = []
         for section, q in questions:
             page = pages.get(q.get("page_index"))
@@ -839,7 +872,7 @@ def _prepare_questions(inputs: _Inputs, paths: _Paths, artifact: dict, force: bo
             student_pages.append({"index": idx, "title": page.get("title"), "role": page.get("role"),
                                   "questions_before": slot("before"), "markdown": page.get("markdown"),
                                   "questions_after": slot("after")})
-        work = _base_work("questions", item_id, revision, artifact, [])
+        work = _base_work("questions", item_id, revision, artifact, [], input_dir=inputs.input_dir)
         work.update({
             "verdict_file": f"{CRITIQUE_DIR}/questions/{paths.stem}{STUDENT_SUFFIX}",
             "task": "You are a learner. Read `prerequisite_recaps`, then the pages in order. Answer every "
@@ -890,7 +923,7 @@ def _prepare_cards(inputs: _Inputs, item_id: str, artifact: dict) -> dict:
             "units": inputs.unit_views(card.get("unit_ids") or [], f"{loc} {card.get('id')}"),
         })
     criteria = _criteria_dicts("cards")
-    work = _base_work("cards", item_id, _round_of(artifact), artifact, criteria)
+    work = _base_work("cards", item_id, _round_of(artifact), artifact, criteria, input_dir=inputs.input_dir)
     work.update({
         "cards": cards,
         "output_shape": {

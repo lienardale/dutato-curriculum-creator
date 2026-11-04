@@ -19,6 +19,8 @@ from contracts import (
     LESSON_METRICS_FILE,
     NEW_TERMS_PER_PAGE_MAX,
     PAGE_WORDS,
+    LESSON_WORDS,
+    LESSON_WORDS_TARGET,
     budget_for,
     dump_json,
     item_id_to_filename,
@@ -178,7 +180,7 @@ def build_curriculum(root: Path) -> Path:
              "prerequisites": [{"group_id": DM, "strength": "required", "evidence_unit_ids": ["u:peaa:12:0"],
                                 "reason": "assumes the domain model", "status": "committed"}],
              "consequential": False, "rationale": "",
-             "budget": budget_for(3, 2, "building_block", True)},
+             "budget": budget_for(3, 2, "building_block", True, has_example=True)},
         ],
         "dropped": [],
         "prerequisite_edges_reduced": [{"from": DM, "to": SL}],
@@ -280,7 +282,17 @@ def domain_model_pages() -> list[str]:
          "The transaction script is honest about its shape: one request, one procedure, one path through the rules.",
          "When two requests share a rule, the transaction script copies it or calls a helper, and the copies drift apart.",
          "A business object replaces the data holder by taking the rule into itself."], 330))
-    pitfalls = _page("When it pays off", _fill(
+    core3 = _page("When it pays off", _fill(
+        ["A **rich domain model** is a domain model whose objects carry enough behaviour to settle most business questions on their own.",
+         "The **design cost** is the effort of shaping those objects and their behaviour before the first request can run.",
+         "For example, a billing team pays that cost once and then revises a fee rule inside one invoice object each month.",
+         "The model is worth the effort only when the rules of the business are complex and change frequently."],
+        ["The rich domain model repays its design cost only while the rules keep changing, and every stable year erodes the case for it.",
+         "Suppose the rules never change after launch: the design cost is paid and nothing comes back.",
+         "When change is frequent, each revision lands in one object of the rich domain model instead of in every procedure that touched the rule.",
+         "A transaction script skips that cost and wins while the rules stay few, which is why simple validation and calculation belong to it.",
+         "The rich domain model loses that race on day one and wins it over the following year, once the rules start to shift."], 330))
+    pitfalls = _page("Traps around the model", _fill(
         ["Three misconceptions follow the domain model around, and each one has a direct remedy."],
         [], 0),
         suffix="\n\n### Misconception: a domain model is a set of data classes\n\n"
@@ -306,7 +318,7 @@ def domain_model_pages() -> list[str]:
                          "the rules out of these objects. For example, a billing screen will ask a service to close a month "
                          "while the invoice objects keep deciding their own fees, and that split is the subject of the next "
                          "lesson. Picture the objects you met here as the inner circle that the next lesson wraps.")
-    return [orientation, core1, core2, pitfalls, recap]
+    return [orientation, core1, core2, core3, pitfalls, recap]
 
 
 SL_CODE = "```java\npublic class RecognitionService {\n  public void calculateRevenueRecognitions(long contractNumber) { }\n}\n```"
@@ -330,9 +342,29 @@ def service_layer_pages() -> list[str]:
          "The service layer answers each request by choosing which domain operations run and in what order.",
          "In practice the service layer stays thin while the objects behind the boundary carry the rules.",
          "Each operation on the boundary names a goal of the caller, not a step inside the service layer."], 330))
+    core2 = _page("Application vs domain logic", _fill(
+        ["**Application logic** is the work an application performs around its rules: opening a transaction, choosing which objects to call, and reporting what happened.",
+         "**Domain logic** is the set of rules themselves, the decisions a business would make even if the software vanished.",
+         "Business logic splits into two kinds, and the split decides where each future change will land.",
+         "For example, deciding that a late invoice earns a fee is domain logic, while committing the fee and emailing the customer is application logic."],
+        ["Application logic decides the order of calls; domain logic decides the answer each call returns.",
+         "In practice a service holds the application logic and the objects behind it hold the domain logic, so a reader knows where to look.",
+         "When a new notification is required, the application logic grows and the rules stay still.",
+         "When a fee formula changes, the rules move and the service stays untouched.",
+         "Coordinating transactions and notifying other systems is plumbing, and the plumbing never decides whether a customer owes money."], 330))
+    core3 = _page("Delivery independence", _fill(
+        ["A **delivery mechanism** is the channel that carries a request into the application, such as a web page, a scheduled job or a partner API.",
+         "A **use case** is one operation on the boundary, described by the caller's goal and silent about the channel.",
+         "For example, closing a month is one use case whether the delivery mechanism is a button or a nightly schedule.",
+         "The operation sits between the channel and the entities and orchestrates the flow of data toward them."],
+        ["A use case that reads a request field never asks which delivery mechanism filled it, and that indifference is the whole point.",
+         "The delivery mechanism translates its own format into the plain input the operation expects.",
+         "Because the use case ignores the channel, the same operation serves a screen, a schedule and a partner alike.",
+         "Suppose a new channel arrives: the use case stays untouched and only a thin adapter is written.",
+         "In practice a test drives the use case directly, with no delivery mechanism at all, which is the clearest proof of independence."], 330))
     worked = _page("A revenue recognition service", _fill(
-        ["**Application logic** is the coordination work an application does around the rules: opening a transaction, calling the right objects, and telling other systems what happened.",
-         "Domain logic, by contrast, is the rules themselves, and it stays inside the domain model.",
+        ["Application logic is the coordination work an application does around the rules: opening a transaction, calling the right objects, and telling other systems what happened.",
+         "Domain logic, by contrast, is the rules themselves, and it stays inside the domain model, while application logic covers the responsibilities of the application itself.",
          "Consider the small service below, which recognises revenue for one contract."],
         [], 0),
         suffix=f"\n\n{SL_CODE}\n\n"
@@ -352,7 +384,7 @@ def service_layer_pages() -> list[str]:
                "lets each change land in one place, and the service above shows the split in a dozen lines.\n\n"
                "In practice you can test the application logic with a fake ledger while the rule tests need no "
                "service at all. The boundary makes that separation visible to every reader of the code.")
-    pitfalls = _page("Delivery independence", _fill(
+    pitfalls = _page("Traps at the boundary", _fill(
         ["Three misconceptions pull rules out of the domain model or tie the service layer to a channel."],
         [], 0),
         suffix="\n\n### Misconception: services should hold the business rules\n\n"
@@ -379,7 +411,7 @@ def service_layer_pages() -> list[str]:
                          "know which one is calling. Picture the boundary as a wall with a short list of doors.\n\nEach door is an "
                          "operation named after a goal, and the rules stay behind the wall where the domain model keeps "
                          "them. The next lesson also returns to the anemic domain model as the failure to avoid.")
-    return [orientation, core1, worked, pitfalls, recap]
+    return [orientation, core1, core2, core3, worked, pitfalls, recap]
 
 
 def _lesson(gid: str, title: str, description: str, area: str, module: str, level: int, key_terms: list[str],
@@ -404,12 +436,13 @@ def domain_model_lesson(groups: dict) -> dict:
         _pg(0, "orientation", "Why rules belong with data", [f"{DM}#lo1"], None, ["u:peaa:10:0"], [f"{DM}#b1"], md[0]),
         _pg(1, "core", "Behaviour with data", [f"{DM}#lo1"], f"{DM}#kp1", ["u:peaa:10:0"], [f"{DM}#b1"], md[1]),
         _pg(2, "core", "Objects mirror the business", [f"{DM}#lo1", f"{DM}#lo2"], f"{DM}#kp2", ["u:peaa:10:0", "u:peaa:10:1"], [f"{DM}#b2", f"{DM}#b4"], md[2]),
-        _pg(3, "pitfalls", "When it pays off", [f"{DM}#lo2"], f"{DM}#kp3", ["u:peaa:10:1"], [f"{DM}#b3", f"{DM}#b4"], md[3]),
-        _pg(4, "recap", "Recap", [f"{DM}#lo1", f"{DM}#lo2"], None, ["u:peaa:10:0", "u:peaa:10:1"], [f"{DM}#b1", f"{DM}#b3"], md[4]),
+        _pg(3, "core", "When it pays off", [f"{DM}#lo2"], f"{DM}#kp3", ["u:peaa:10:1"], [f"{DM}#b3"], md[3]),
+        _pg(4, "pitfalls", "Traps around the model", [f"{DM}#lo2"], None, ["u:peaa:10:1"], [f"{DM}#b3", f"{DM}#b4"], md[4]),
+        _pg(5, "recap", "Recap", [f"{DM}#lo1", f"{DM}#lo2"], None, ["u:peaa:10:0", "u:peaa:10:1"], [f"{DM}#b1", f"{DM}#b3"], md[5]),
     ]
     words = sum(word_count(lessons._prose(m)) for m in md)
     return _lesson(DM, "Domain Model", "Rules live with the objects they govern.", "a:domain-logic", "m:patterns", 1,
-                   ["behaviour", "data holder"], groups[DM]["objectives"], [], pages, round(words / 238))
+                   ["behaviour", "data holder", "design cost"], groups[DM]["objectives"], [], pages, round(words / 238))
 
 
 def service_layer_lesson(groups: dict) -> dict:
@@ -417,14 +450,16 @@ def service_layer_lesson(groups: dict) -> dict:
     pages = [
         _pg(0, "orientation", "The front door of an application", [f"{SL}#lo1"], None, ["u:peaa:12:0"], [f"{SL}#b1"], md[0]),
         _pg(1, "core", "The boundary", [f"{SL}#lo1"], f"{SL}#kp1", ["u:peaa:12:0"], [f"{SL}#b1"], md[1]),
-        _pg(2, "worked_example", "A revenue recognition service", [f"{SL}#lo2"], f"{SL}#kp2", ["u:peaa:12:1", "u:peaa:12:2"], [f"{SL}#b2"], md[2]),
-        _pg(3, "pitfalls", "Delivery independence", [f"{SL}#lo2"], f"{SL}#kp3", ["u:peaa:12:3", "u:clean-arch:4:1"], [f"{SL}#b3", f"{SL}#b4"], md[3]),
-        _pg(4, "recap", "Recap", [f"{SL}#lo1", f"{SL}#lo2"], None, ["u:peaa:12:0"], [f"{SL}#b1", f"{SL}#b2"], md[4]),
+        _pg(2, "core", "Application vs domain logic", [f"{SL}#lo2"], f"{SL}#kp2", ["u:peaa:12:1"], [f"{SL}#b2"], md[2]),
+        _pg(3, "core", "Delivery independence", [f"{SL}#lo2"], f"{SL}#kp3", ["u:clean-arch:4:0", "u:clean-arch:4:1"], [f"{SL}#b3"], md[3]),
+        _pg(4, "worked_example", "A revenue recognition service", [f"{SL}#lo2"], None, ["u:peaa:12:1", "u:peaa:12:2"], [f"{SL}#b2"], md[4]),
+        _pg(5, "pitfalls", "Traps at the boundary", [f"{SL}#lo2"], None, ["u:peaa:12:3", "u:clean-arch:4:1"], [f"{SL}#b3", f"{SL}#b4"], md[5]),
+        _pg(6, "recap", "Recap", [f"{SL}#lo1", f"{SL}#lo2"], None, ["u:peaa:12:0"], [f"{SL}#b1", f"{SL}#b2"], md[6]),
     ]
     words = sum(word_count(lessons._prose(m)) for m in md)
     return _lesson(SL, "Service Layer", "One front door that coordinates while the model keeps the rules.",
-                   "a:domain-logic", "m:patterns", 2, ["boundary", "coordination"], groups[SL]["objectives"], [DM],
-                   pages, round(words / 238))
+                   "a:domain-logic", "m:patterns", 2, ["boundary", "coordination", "domain logic", "delivery mechanism", "use case"],
+                   groups[SL]["objectives"], [DM], pages, round(words / 238))
 
 
 def lesson_path(cur: Path, gid: str) -> Path:
@@ -504,7 +539,7 @@ def test_clean_outline_passes_and_full_check_reports_unwritten_pages(outline_cur
 def test_outline_role_order_is_enforced(outline_cur):
     def swap(lesson):
         pages = lesson["pages"]
-        pages[1], pages[3] = pages[3], pages[1]
+        pages[1], pages[5] = pages[5], pages[1]
         for i, p in enumerate(pages):
             p["index"] = i
     mutate(outline_cur, SL, swap)
@@ -512,7 +547,7 @@ def test_outline_role_order_is_enforced(outline_cur):
 
 
 def test_outline_role_counts(outline_cur):
-    mutate(outline_cur, SL, lambda l: l["pages"][4].__setitem__("role", "core"))
+    mutate(outline_cur, SL, lambda l: l["pages"][6].__setitem__("role", "core"))
     found = errors(check_item(outline_cur, SL, outline=True))
     assert "lessons.outline.role_count" in found            # no recap
     mutate(outline_cur, DM, lambda l: l["pages"][1].__setitem__("role", "orientation"))
@@ -646,15 +681,17 @@ def test_clean_full_lessons_pass_and_metrics_are_written(cur):
     metrics = read_json(cur / LESSON_METRICS_FILE)
     assert metrics["contract_version"] == CONTRACT_VERSION and set(metrics["lessons"]) == {DM, SL}
     entry = metrics["lessons"][SL]
-    assert entry["page_count"] == 5 and 900 <= entry["words"] <= 2400 and entry["errors"] == 0
-    assert len(entry["pages"]) == 5
+    assert entry["page_count"] == 7 and LESSON_WORDS_TARGET[0] <= entry["words"] <= LESSON_WORDS_TARGET[1] and entry["errors"] == 0
+    assert len(entry["pages"]) == 7
     for page in entry["pages"]:
         assert PAGE_METRIC_KEYS <= set(page)
         assert page["verbatim"] is not None and page["verbatim"]["max_fragment"] < 8
     core = entry["pages"][1]
     assert core["role"] == "core" and 0.08 <= core["term_density"] <= 0.15
     assert set(core["introduced_terms"]) == {"service layer", "boundary"}
-    assert entry["pages"][3]["items"] == 3 and entry["pages"][4]["items"] == 4
+    assert entry["pages"][5]["items"] == 3 and entry["pages"][6]["items"] == 4
+    for pos in (1, 2, 3):
+        assert entry["pages"][pos]["role"] == "core" and 0.08 <= entry["pages"][pos]["term_density"] <= 0.15
     assert entry["pages"][0]["image_ids"] == [IMAGE_ID]
 
 
@@ -664,6 +701,22 @@ def test_lesson_words_gate(cur):
             page["markdown"] = _trim(page["markdown"], 120)
     mutate(cur, DM, shrink)
     assert "lessons.lesson_words" in errors(check_item(cur, DM))
+
+
+def test_lesson_words_over_target_warns_then_errors_at_ceiling(cur):
+    filler = " ".join(["For example, the boundary holds and the service coordinates."] * 10)
+
+    def grow(lesson, words):
+        pages = lesson["pages"]
+        pages[4]["markdown"] = service_layer_pages()[4]
+        while sum(word_count(lessons._prose(p["markdown"])) for p in pages) <= words:
+            pages[4]["markdown"] += "\n\n" + filler
+    mutate(cur, SL, lambda l: grow(l, LESSON_WORDS_TARGET[1]))
+    found = check_item(cur, SL)
+    assert "lessons.words_over_target" in warnings(found) and "lessons.lesson_words" not in errors(found)
+    mutate(cur, SL, lambda l: grow(l, LESSON_WORDS[1]))
+    found = check_item(cur, SL)
+    assert "lessons.lesson_words" in errors(found) and "lessons.words_over_target" not in warnings(found)
 
 
 def test_page_words_warning_within_tolerance_then_error(cur):
@@ -781,28 +834,28 @@ def test_unknown_image_placeholder(cur):
 
 
 def test_pitfalls_item_count(cur):
-    mutate(cur, SL, lambda l: l["pages"][3].__setitem__("markdown", l["pages"][3]["markdown"].replace("### ", "")))
+    mutate(cur, SL, lambda l: l["pages"][5].__setitem__("markdown", l["pages"][5]["markdown"].replace("### ", "")))
     found = [f for f in check_item(cur, SL) if f.check_id == "lessons.pitfalls_count"]
     assert found and found[0].severity == "error" and found[0].message.startswith("0 misconception")
     # bullets count too: five top-level bullets exceed the range
     bullets = "\n".join(f"- Misconception {i}: a wrong idea. Remediation: the right idea." for i in range(5))
-    mutate(cur, SL, lambda l: l["pages"][3].__setitem__("markdown", "## Delivery independence\n\nFive items follow. For example, consider these.\n\n" + bullets))
+    mutate(cur, SL, lambda l: l["pages"][5].__setitem__("markdown", "## Traps at the boundary\n\nFive items follow. For example, consider these.\n\n" + bullets))
     assert "lessons.pitfalls_count" in errors(check_item(cur, SL))
 
 
 def test_recap_restates_generalization_and_lists_takeaways(cur):
-    mutate(cur, DM, lambda l: l["pages"][4].__setitem__("markdown", l["pages"][4]["markdown"].replace(GENERALIZATION[DM], "A model binds rules to data.")))
+    mutate(cur, DM, lambda l: l["pages"][5].__setitem__("markdown", l["pages"][5]["markdown"].replace(GENERALIZATION[DM], "A model binds rules to data.")))
     assert "lessons.recap_generalization" in errors(check_item(cur, DM))
     def one_bullet(lesson):
-        md = lesson["pages"][4]["markdown"]
+        md = lesson["pages"][5]["markdown"]
         lines = [l for l in md.splitlines() if not l.startswith("- ")][:]
-        lesson["pages"][4]["markdown"] = "\n".join(lines).replace("Keep these takeaways in mind as you move on.",
+        lesson["pages"][5]["markdown"] = "\n".join(lines).replace("Keep these takeaways in mind as you move on.",
                                                                   "Keep these takeaways in mind as you move on.\n\n- The model binds behaviour to data.")
     mutate(cur, DM, one_bullet)
     found = check_item(cur, DM)
     assert "lessons.recap_takeaways" in warnings(found)
     # markdown emphasis around the generalization still counts as verbatim
-    mutate(cur, DM, lambda l: l["pages"][4].__setitem__("markdown", domain_model_pages()[4].replace(GENERALIZATION[DM], f"**{GENERALIZATION[DM]}**")))
+    mutate(cur, DM, lambda l: l["pages"][5].__setitem__("markdown", domain_model_pages()[5].replace(GENERALIZATION[DM], f"**{GENERALIZATION[DM]}**")))
     assert "lessons.recap_generalization" not in errors(check_item(cur, DM))
 
 
@@ -851,8 +904,8 @@ def test_invalid_lesson_json_is_a_finding(cur):
 # ---------------------------------------------------------------------------
 
 WORK_KEYS = {"contract_version", "stage", "lesson_id", "group_id", "pass", "file", "group", "brief", "concepts", "neighbours",
-             "images", "page_template", "unassigned_knowledge_points", "anchor", "outline", "lessons_learned",
-             "instructions", "thresholds"}
+             "images", "page_template", "unassigned_knowledge_points", "knowledge_points_on_optional_pages", "anchor",
+             "outline", "lessons_learned", "instructions", "thresholds"}
 
 
 def test_prepare_outline_pass(tmp_path):
@@ -863,11 +916,17 @@ def test_prepare_outline_pass(tmp_path):
     dm = read_json(cur / "lessons" / "work" / item_id_to_filename(DM))
     assert WORK_KEYS <= set(sl) and sl["pass"] == "outline" and sl["outline"] is None
     assert sl["file"] == f"lessons/{item_id_to_filename(SL)}"
-    assert [p["role"] for p in sl["page_template"]] == ["orientation", "core", "worked_example", "pitfalls", "recap"]
-    assert [p["knowledge_point_id"] for p in sl["page_template"]] == [None, f"{SL}#kp1", f"{SL}#kp2", f"{SL}#kp3", None]
-    assert [p["role"] for p in dm["page_template"]] == ["orientation", "core", "core", "pitfalls", "recap"]
+    # one core page per knowledge point; the code unit earns SL a worked_example page that carries no knowledge point
+    assert [p["role"] for p in sl["page_template"]] == ["orientation", "core", "core", "core", "worked_example", "pitfalls", "recap"]
+    assert [p["knowledge_point_id"] for p in sl["page_template"]] == [None, f"{SL}#kp1", f"{SL}#kp2", f"{SL}#kp3", None, None, None]
+    assert [p["role"] for p in dm["page_template"]] == ["orientation", "core", "core", "core", "pitfalls", "recap"]
+    assert [p["knowledge_point_id"] for p in dm["page_template"]] == [None, f"{DM}#kp1", f"{DM}#kp2", f"{DM}#kp3", None, None]
+    assert sl["unassigned_knowledge_points"] == [] and sl["knowledge_points_on_optional_pages"] == []
     assert sl["page_template"][1]["words"] == list(PAGE_WORDS["core"]) and sl["page_template"][1]["title_hint"] == "The boundary"
-    assert sl["group"]["budget"]["pages"] == 5 and sl["group"]["generalization"] == GENERALIZATION[SL]
+    assert sl["group"]["budget"]["pages"] == 7 and sl["group"]["budget"]["has_example"] is True
+    assert dm["group"]["budget"]["pages"] == 6 and dm["group"]["budget"]["has_example"] is False
+    assert sl["group"]["generalization"] == GENERALIZATION[SL]
+    assert sl["thresholds"]["lesson_words_target"] == list(LESSON_WORDS_TARGET)
     assert sl["group"]["prerequisites"] == [{"group_id": DM, "strength": "required", "status": "committed", "reason": "assumes the domain model"}]
     assert sl["brief"]["examples"][0]["text"].startswith("```java") and sl["brief"]["terminology"][0]["term"] == "anemic domain model"
     assert {c["label"] for c in sl["concepts"]} == {"Service Layer", "Application Logic"}
@@ -908,19 +967,40 @@ def test_prepare_skips_existing_unless_pass_changes_or_force(cur):
     assert "lessons.unknown_lesson" in errors(prepare(cur, lesson_ids=["g:nope"]))
 
 
-def test_prepare_warns_on_kp_overflow_and_missing_brief(tmp_path):
+def test_prepare_at_page_cap_puts_one_kp_on_the_worked_example(tmp_path):
+    # 5 knowledge points + an example unit = 9 pages, clamped to 8: one knowledge point rides on the worked_example page
     cur = build_curriculum(tmp_path)
     groups = read_json(cur / "groups.json")
     sl = groups["groups"][1]
     sl["knowledge_points"] += [{"id": f"{SL}#kp4", "title": "Four", "unit_ids": []}, {"id": f"{SL}#kp5", "title": "Five", "unit_ids": []}]
-    sl["budget"] = budget_for(5, 2, "building_block", True)
+    sl["budget"] = budget_for(5, 2, "building_block", True, has_example=True)
     write_json(cur / "groups.json", groups)
     (cur / "syntheses" / item_id_to_filename(DM)).unlink()
     found = prepare(cur)
-    assert "lessons.prepare.kp_overflow" in warnings(found) and "lessons.prepare.brief_missing" in warnings(found)
+    assert "lessons.prepare.kp_on_optional_page" in warnings(found) and "lessons.prepare.brief_missing" in warnings(found)
+    assert "lessons.prepare.kp_overflow" not in warnings(found)
     work = read_json(cur / "lessons" / "work" / item_id_to_filename(SL))
-    assert work["unassigned_knowledge_points"] == [f"{SL}#kp5"] and len(work["page_template"]) == 6
+    assert sl["budget"]["pages"] == 8 and len(work["page_template"]) == 8
+    assert [p["role"] for p in work["page_template"]] == ["orientation", "core", "core", "core", "core", "worked_example", "pitfalls", "recap"]
+    assert work["page_template"][5]["knowledge_point_id"] == f"{SL}#kp5"
+    assert work["unassigned_knowledge_points"] == [] and work["knowledge_points_on_optional_pages"] == [f"{SL}#kp5"]
     assert read_json(cur / "lessons" / "work" / item_id_to_filename(DM))["brief"] is None
+
+
+def test_prepare_warns_on_kp_overflow_and_stale_budget(tmp_path):
+    # A hand-edited budget below the formula leaves knowledge points without a page and
+    # a has_example that disagrees with the units is reported as stale.
+    cur = build_curriculum(tmp_path)
+    groups = read_json(cur / "groups.json")
+    sl = groups["groups"][1]
+    sl["budget"] = {**budget_for(3, 2, "building_block", True, has_example=False), "pages": 4}
+    write_json(cur / "groups.json", groups)
+    found = prepare(cur)
+    assert "lessons.prepare.kp_overflow" in warnings(found) and "lessons.prepare.budget_stale" in warnings(found)
+    work = read_json(cur / "lessons" / "work" / item_id_to_filename(SL))
+    assert [p["role"] for p in work["page_template"]] == ["orientation", "core", "pitfalls", "recap"]
+    assert work["unassigned_knowledge_points"] == [f"{SL}#kp3"]
+    assert work["knowledge_points_on_optional_pages"] == [f"{SL}#kp2"]
 
 
 # ---------------------------------------------------------------------------
@@ -950,21 +1030,22 @@ def test_build_writes_structure_and_chunks_that_validate(cur, capsys):
     assert leaves[0]["description"] == "Rules live with the objects they govern."
 
     chunks = read_json(cur / "chunks.json")
-    assert len(chunks) == 10
+    assert len(chunks) == 13  # 6 DM pages + 7 SL pages, one chunk per page
     sl_chunks = [c for c in chunks if c["metadata"]["lesson_id"] == SL]
-    assert [c["chunk_index"] for c in sl_chunks] == [0, 1, 2, 3, 4]
+    assert [c["chunk_index"] for c in sl_chunks] == [0, 1, 2, 3, 4, 5, 6]
     assert all(c["topic_path"] == ["Domain Logic", "Patterns", "Service Layer"] for c in sl_chunks)
     assert all(set(c["metadata"]) == CHUNK_METADATA_KEYS and c["page_number"] is None for c in chunks)
-    assert sl_chunks[2]["has_code"] and sl_chunks[2]["metadata"]["page_role"] == "worked_example"
-    assert sl_chunks[2]["metadata"]["source_units"] == ["u:peaa:12:1", "u:peaa:12:2"]
+    assert sl_chunks[4]["has_code"] and sl_chunks[4]["metadata"]["page_role"] == "worked_example"
+    assert sl_chunks[4]["metadata"]["source_units"] == ["u:peaa:12:1", "u:peaa:12:2"]
+    assert not any(c["has_code"] for c in sl_chunks[:4])
     assert sl_chunks[0]["images"] == [{"id": IMAGE_ID, "local_path": f"images/{IMAGE_ID}.png",
                                        "alt_text": "Service layer boundary diagram", "mime_type": "image/png"}]
     assert sl_chunks[1]["images"] == []
     assert all(c["token_count"] == count_tokens(c["content"]) for c in chunks)
-    assert sl_chunks[0]["metadata"]["key_terms"] == ["boundary", "coordination"]
+    assert sl_chunks[0]["metadata"]["key_terms"] == ["boundary", "coordination", "domain logic", "delivery mechanism", "use case"]
 
     table = lessons.format_summary(result["rows"])
-    assert DM in table and SL in table and "2 lesson(s), 10 chunk(s)" in table
+    assert DM in table and SL in table and "2 lesson(s), 13 chunk(s)" in table
     assert main(["build", str(cur)]) == 0
     out = capsys.readouterr().out
     assert "lessons.build.written" in out and "Prereqs" in out

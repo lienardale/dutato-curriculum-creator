@@ -89,6 +89,7 @@ from contracts import (
     YES_NO_STEM_RE,
     Finding,
     budget_for,
+    group_has_example,
     content_words,
     dump_json,
     item_id_to_filename,
@@ -351,6 +352,7 @@ class Context:
             len(group.get("objectives") or []),
             group.get("learning_step") or "building_block",
             bool(self.prerequisites(group)),
+            has_example=group_has_example(group, self.units, {}),
         )
 
     def concept_labels(self, concept_id: str) -> list[str]:

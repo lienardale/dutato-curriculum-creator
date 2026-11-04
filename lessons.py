@@ -48,10 +48,13 @@ Findings print as "[ERROR] <check_id> @ <location>: <message>" ([WARN]/[INFO])
 followed by "<n> errors, <m> warnings".
 
 Knowledge points and page roles: a core page carries exactly one knowledge
-point; a worked_example or pitfalls page may carry one (the budget gives
-``knowledge_points + 2`` pages, so with three fixed roles not every knowledge
-point fits on a core page); orientation and recap carry none; every knowledge
-point sits on exactly one page.
+point; orientation and recap carry none; every knowledge point sits on exactly
+one page. The budget gives ``knowledge_points + 3`` pages (+ 1 when the group
+has an example unit, the same ``contracts.group_has_example`` rule regroup.py
+uses), clamped to 4–8, so every knowledge point normally gets its own core
+page. Only at the 8-page cap (5 knowledge points + a worked example) does one
+knowledge point ride on the worked_example or pitfalls page; the work file
+says so in ``knowledge_points_on_optional_pages``.
 
 Term density: a registry term (concept label or alias, brief terminology,
 lesson key_terms) is "introduced" on the first page that bolds it; un-bolded
@@ -86,6 +89,7 @@ from contracts import (
     IMAGE_PLACEHOLDER_RE,
     LESSON_METRICS_FILE,
     LESSON_WORDS,
+    LESSON_WORDS_TARGET,
     LESSONS_DIR,
     NEW_TERMS_PER_PAGE_MAX,
     PAGE_FURNITURE_PATTERNS,
@@ -111,6 +115,8 @@ from contracts import (
     budget_for,
     dump_json,
     filename_to_item_id,
+    group_has_example,
+    is_example_unit,
     item_id_to_filename,
     list_item_files,
     load_json,
@@ -134,11 +140,8 @@ ESTIMATED_MINUTES_TOLERANCE = 0.50
 
 # Files in units/ that are not per-source unit files.
 UNITS_NON_SOURCE_FILES = {"index.json", "dedup.json"}
-# Units that justify a worked_example page (code is embedded, never paraphrased).
-EXAMPLE_UNIT_TYPES = {"code", "example"}
-EXAMPLE_BLOCK_TYPES = {"code"}
-
 # Fixed-role pages every lesson has; the remaining budget goes to core / worked_example.
+# (Units that justify a worked_example page: contracts.is_example_unit / group_has_example.)
 FIXED_ROLES = ("orientation", "pitfalls", "recap")
 # Roles that may carry a knowledge point without being core pages.
 KP_OPTIONAL_ROLES = ("worked_example", "pitfalls")
@@ -205,7 +208,12 @@ class Context:
             len(group.get("objectives") or []),
             group.get("learning_step") or "building_block",
             bool(self.committed_prerequisites(group)),
+            has_example=self.has_example(group),
         )
+
+    def has_example(self, group: dict) -> bool:
+        """Same rule as `regroup.py budget`: any primary/related unit is a code block or an example/code unit."""
+        return group_has_example(group, self.units, self.qualification)
 
     def committed_prerequisites(self, group: dict) -> list[dict]:
         """Prerequisite entries the pipeline treats as committed: status ``committed``
@@ -248,9 +256,7 @@ class Context:
         return out
 
     def is_example_unit(self, uid: str) -> bool:
-        unit = self.units.get(uid) or {}
-        entry = self.qualification.get(uid) or {}
-        return unit.get("block_type") in EXAMPLE_BLOCK_TYPES or entry.get("unit_type") in EXAMPLE_UNIT_TYPES
+        return is_example_unit(self.units.get(uid), self.qualification.get(uid))
 
     def concept_terms(self, group: dict) -> list[str]:
         terms: list[str] = []
@@ -559,6 +565,7 @@ def _rubric_text(findings: list[Finding]) -> str:
 def _thresholds() -> dict:
     return {
         "lesson_words": list(LESSON_WORDS),
+        "lesson_words_target": list(LESSON_WORDS_TARGET),
         "page_words": {role: list(band) for role, band in PAGE_WORDS.items()},
         "page_words_tolerance": PAGE_WORDS_TOLERANCE,
         "new_terms_per_page_max": NEW_TERMS_PER_PAGE_MAX,
@@ -584,6 +591,12 @@ def page_template(budget_pages: int, knowledge_point_ids: list[str], has_example
     slot is free), pitfalls, recap. Knowledge points go to core pages first,
     then to the worked_example and pitfalls pages. Returns (pages, unassigned
     knowledge point ids).
+
+    With a budget from ``contracts.budget_for`` (pages = knowledge points + 3,
+    + 1 with an example) and the same ``has_example`` the budget was computed
+    with, the core slots equal the knowledge points and nothing rides on the
+    optional pages, except at the 8-page cap (5 knowledge points + example:
+    one knowledge point lands on the worked_example page).
     """
     slots = max(0, budget_pages - len(FIXED_ROLES))
     worked = 1 if has_example and slots >= 2 else 0
@@ -663,12 +676,21 @@ def build_work_file(ctx: Context, gid: str, pass_: str, rubric: str, findings: l
     budget = ctx.budget(group)
     primary, related = ctx.group_units(group)
     brief = _brief_view(ctx, gid, findings)
-    has_example = any(ctx.is_example_unit(u) for u in primary + related) or bool((brief or {}).get("examples"))
+    has_example = ctx.has_example(group)
+    if "has_example" in budget and bool(budget.get("has_example")) != has_example:
+        findings.append(Finding(f"{STAGE}.prepare.budget_stale", "warning", loc,
+                                f"budget.has_example={budget.get('has_example')!r} but the group's units say {has_example} — "
+                                "rerun `regroup.py budget` so the page count matches the template"))
     kp_ids = [k.get("id") for k in (group.get("knowledge_points") or []) if isinstance(k, dict) and k.get("id")]
     template, unassigned = page_template(int(budget.get("pages") or 0), kp_ids, has_example)
     if unassigned:
         findings.append(Finding(f"{STAGE}.prepare.kp_overflow", "warning", loc,
                                 f"budget.pages={budget.get('pages')} leaves {len(unassigned)} knowledge point(s) without a page: {', '.join(unassigned)}"))
+    riding = [p["knowledge_point_id"] for p in template if p["role"] in KP_OPTIONAL_ROLES and p["knowledge_point_id"]]
+    if riding:
+        findings.append(Finding(f"{STAGE}.prepare.kp_on_optional_page", "warning", loc,
+                                f"budget.pages={budget.get('pages')} has fewer core slots than knowledge points; "
+                                f"{len(riding)} knowledge point(s) ride on a worked_example/pitfalls page: {', '.join(riding)}"))
     kp_titles = {k.get("id"): k.get("title") for k in (group.get("knowledge_points") or []) if isinstance(k, dict)}
     for page in template:
         page["title_hint"] = kp_titles.get(page["knowledge_point_id"]) or page["role"].replace("_", " ")
@@ -715,6 +737,9 @@ def build_work_file(ctx: Context, gid: str, pass_: str, rubric: str, findings: l
         "images": images,
         "page_template": template,
         "unassigned_knowledge_points": unassigned,
+        # Knowledge points the template could not give a core page (only at the 8-page cap):
+        # they sit on the worked_example / pitfalls page named in page_template.
+        "knowledge_points_on_optional_pages": riding,
         "anchor": _anchor(ctx, gid, findings),
         "outline": existing if pass_ == "full" else None,
         "lessons_learned": (existing or {}).get("lessons_learned") or [],
@@ -1179,6 +1204,9 @@ def _check_pages(ctx: Context, scope: _Scope, lesson: dict, rel: str) -> tuple[l
 
     if not (LESSON_WORDS[0] <= total_words <= LESSON_WORDS[1]):
         add("error", "lesson_words", rel, f"{total_words} words in the lesson, expected {LESSON_WORDS[0]}-{LESSON_WORDS[1]}")
+    elif total_words > LESSON_WORDS_TARGET[1]:
+        add("warning", "words_over_target", rel,
+            f"{total_words} words in the lesson, above the {LESSON_WORDS_TARGET[1]}-word target (ceiling {LESSON_WORDS[1]}) — trim before adding")
     expected_minutes = total_words / READING_WORDS_PER_MINUTE
     estimated = lesson.get("estimated_minutes")
     if not isinstance(estimated, (int, float)) or isinstance(estimated, bool):
