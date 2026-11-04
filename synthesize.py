@@ -64,6 +64,7 @@ from contracts import (
     UNITS_DIR,
     WORK_SUBDIR,
     Finding,
+    is_example_unit,
     dump_json,
     filename_to_item_id,
     item_id_to_filename,
@@ -82,9 +83,7 @@ RUBRIC_PATH = Path(__file__).resolve().parent / "rubrics" / "synthesis.md"
 WORK_FILE_MAX_TOKENS = 12_000
 NEIGHBOURS_FOLLOWING = 2
 
-# Units a brief may reference through `examples` (code is cited, never copied).
-EXAMPLE_UNIT_TYPES = {"code", "example"}
-EXAMPLE_BLOCK_TYPES = {"code"}
+# Units a brief may reference through `examples`: contracts.is_example_unit (code is cited, never copied).
 
 # Files in units/ that are not per-source unit files.
 UNITS_NON_SOURCE_FILES = {"index.json", "dedup.json"}
@@ -252,9 +251,7 @@ def _is_kept(ctx: Context, uid: str) -> bool:
 
 
 def _is_example_unit(ctx: Context, uid: str) -> bool:
-    unit = ctx.units.get(uid) or {}
-    entry = ctx.qualification.get(uid) or {}
-    return unit.get("block_type") in EXAMPLE_BLOCK_TYPES or entry.get("unit_type") in EXAMPLE_UNIT_TYPES
+    return is_example_unit(ctx.units.get(uid), ctx.qualification.get(uid))
 
 
 def _select_groups(ctx: Context, group_ids: list[str] | None) -> tuple[list[str], list[Finding]]:

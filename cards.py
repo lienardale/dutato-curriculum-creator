@@ -97,6 +97,7 @@ from contracts import (
     YES_NO_STEM_RE,
     Finding,
     budget_for,
+    group_has_example,
     content_words,
     dump_json,
     filename_to_item_id,
@@ -282,6 +283,7 @@ class Context:
             len(group.get("objectives") or []),
             group.get("learning_step") or "building_block",
             bool(self.prerequisites(group)),
+            has_example=group_has_example(group, self.units, self.qualification),
         )
 
     def neighbours(self, lesson_id: str) -> list[str]:

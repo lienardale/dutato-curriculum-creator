@@ -677,11 +677,13 @@ def test_budget_values_written_and_idempotent(tmp_path: Path):
     assert findings == [] and [r["group_id"] for r in rows] == [_gid(1), _gid(2), _gid(3)]
 
     groups = {g["id"]: g for g in read_json(groups_file(cur))["groups"]}
-    assert groups[_gid(1)]["budget"] == budget_for(3, 2, "building_block", False)
+    # 3 knowledge points + the fixture's "example" unit per group: 3 core + worked_example + 3 fixed = 7 pages
+    assert groups[_gid(1)]["budget"] == budget_for(3, 2, "building_block", False, has_example=True)
     assert groups[_gid(1)]["budget"] == {
-        "pages": 5, "embedded_questions_max": 8, "embedded_questions_min": 1, "quiz_items": 4,
+        "pages": 7, "has_example": True, "embedded_questions_max": 12, "embedded_questions_min": 1, "quiz_items": 4,
         "quiz_min_bloom_levels": 3, "recap_item": False, "cards_min": 4, "cards_max": 5, "exercises_max": 1,
     }
+    assert rows[0]["has_example"] is True and rows[0]["pages"] == 7
     assert groups[_gid(2)]["budget"]["recap_item"] is True          # proposed (status None) prerequisite
     assert groups[_gid(3)]["budget"]["recap_item"] is False         # rejected edge does not count
     assert groups[_gid(3)]["budget"]["exercises_max"] == 3          # applied step
@@ -690,6 +692,17 @@ def test_budget_values_written_and_idempotent(tmp_path: Path):
     regroup.apply_budget(cur)
     assert groups_file(cur).read_text(encoding="utf-8") == before
     assert regroup.check(cur) == []                                  # no groups.budget_stale
+
+    # without an example unit the worked_example page disappears: 3 + 3 fixed = 6 pages
+    def drop_examples(d):
+        for uid, entry in d["units"].items():
+            if entry["unit_type"] == "example":
+                entry["unit_type"] = "mechanism"
+    mutate(cur / "qualification" / "src.json", drop_examples)
+    assert "groups.budget_stale" in ids(regroup.check(cur), "warning")
+    rows, findings = regroup.apply_budget(cur)
+    assert findings == [] and all(r["pages"] == 6 and r["has_example"] is False for r in rows)
+    assert regroup.check(cur) == []
 
 
 def test_budget_missing_file(tmp_path: Path):

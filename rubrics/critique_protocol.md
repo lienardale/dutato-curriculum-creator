@@ -102,6 +102,10 @@ cloze/discrimination), `card.tests_takeaway`.
   `review.json` for the human and never silently passed.
 - The author's checkpoint carries 1–3 `lessons_learned` lines across rounds; `prepare` prepends
   them to the next author work file.
+- A round ≥ 1 critic receives `previous_round` (the failed criteria and actionable items of the
+  last verdict). It judges first whether each named repair landed; a criterion that passed in
+  the previous round fails again only if the repair introduced a new defect. Critics do not
+  restart the review from scratch on every round, or nothing ever converges.
 
 ## 6. Calibration
 

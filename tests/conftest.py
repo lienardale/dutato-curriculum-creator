@@ -362,7 +362,9 @@ LESSON_QUALIFICATION = {
     "dm_def": ("definition", "concept", "foundation", [("c:domain-model", "object model of the domain")]),
     "dm_tradeoff": ("trade_off", "principle", "foundation",
                     [("c:transaction-script", "Transaction Script is enough"), ("c:domain-model", "Domain models are worth the effort")]),
-    "dm_objects": ("example", "concept", "foundation", [("c:domain-model", "the object that holds the data the decision needs")]),
+    # Not an "example" unit on purpose: DM then has no example unit (6 pages) while SL has the
+    # code unit (7 pages), so the fixture exercises both branches of contracts.pages_for.
+    "dm_objects": ("mechanism", "concept", "foundation", [("c:domain-model", "the object that holds the data the decision needs")]),
     "dm_change": ("mechanism", "concept", "foundation", [("c:domain-model", "edits one method")]),
     "dm_script": ("definition", "concept", "foundation", [("c:transaction-script", "one procedure per request")]),
     "dm_cost": ("trade_off", "principle", "foundation",
@@ -611,31 +613,42 @@ def lesson_lessons(U: dict[str, str], groups: dict[str, dict]) -> dict[str, dict
     import test_lessons as tl
 
     DM, SL = LESSON_DM, LESSON_SL
+    # Page counts follow contracts.pages_for: DM = 3 knowledge points + 3 fixed roles = 6 pages
+    # (no example unit), SL = 3 + 3 + 1 worked_example = 7 pages (the code unit). Every knowledge
+    # point gets its own core page; worked_example and pitfalls carry none.
     dm_md = tl.domain_model_pages()
-    dm_md[4] = dm_md[4].replace(tl.GENERALIZATION[tl.DM], LESSON_DM_GENERALIZATION)
+    dm_md[5] = dm_md[5].replace(tl.GENERALIZATION[tl.DM], LESSON_DM_GENERALIZATION)
     dm_pages = [
         _page(0, "orientation", "Why rules belong with data", [f"{DM}#lo1"], None, [U["dm_def"]], [f"{DM}#b1"], dm_md[0]),
-        _page(1, "core", "Behaviour with data", [f"{DM}#lo1"], f"{DM}#kp1", [U["dm_def"]], [f"{DM}#b1"], dm_md[1]),
+        _page(1, "core", "Behaviour with data", [f"{DM}#lo1"], f"{DM}#kp1", [U["dm_def"], U["dm_change"]],
+              [f"{DM}#b1", f"{DM}#b7"], dm_md[1]),
         _page(2, "core", "Objects mirror the business", [f"{DM}#lo1", f"{DM}#lo2"], f"{DM}#kp2",
-              [U["dm_def"], U["dm_tradeoff"]], [f"{DM}#b2", f"{DM}#b4"], dm_md[2]),
-        _page(3, "pitfalls", "When it pays off", [f"{DM}#lo2"], f"{DM}#kp3", [U["dm_tradeoff"]], [f"{DM}#b3", f"{DM}#b4"], dm_md[3]),
-        _page(4, "recap", "Recap", [f"{DM}#lo1", f"{DM}#lo2"], None, [U["dm_def"], U["dm_tradeoff"]], [f"{DM}#b1", f"{DM}#b3"], dm_md[4]),
+              [U["dm_def"], U["dm_objects"]], [f"{DM}#b2", f"{DM}#b6"], dm_md[2]),
+        _page(3, "core", "When it pays off", [f"{DM}#lo2"], f"{DM}#kp3", [U["dm_tradeoff"], U["dm_script"]],
+              [f"{DM}#b3", f"{DM}#b4", f"{DM}#b8"], dm_md[3]),
+        _page(4, "pitfalls", "Traps around the model", [f"{DM}#lo2"], None, [U["dm_tradeoff"]],
+              [f"{DM}#b3", f"{DM}#b4", f"{DM}#b5"], dm_md[4]),
+        _page(5, "recap", "Recap", [f"{DM}#lo1", f"{DM}#lo2"], None, [U["dm_def"], U["dm_tradeoff"]], [f"{DM}#b1", f"{DM}#b3"], dm_md[5]),
     ]
     sl_md = tl.service_layer_pages()
     sl_pages = [
         _page(0, "orientation", "The front door of an application", [f"{SL}#lo1"], None, [U["sl_def"]], [f"{SL}#b1"], sl_md[0]),
-        _page(1, "core", "The boundary", [f"{SL}#lo1"], f"{SL}#kp1", [U["sl_def"]], [f"{SL}#b1"], sl_md[1]),
-        _page(2, "worked_example", "A revenue recognition service", [f"{SL}#lo2"], f"{SL}#kp2",
-              [U["sl_logic"], U["sl_code"]], [f"{SL}#b2"], sl_md[2]),
-        _page(3, "pitfalls", "Delivery independence", [f"{SL}#lo2"], f"{SL}#kp3",
-              [U["sl_anemic"], U["ca_delivery"]], [f"{SL}#b3", f"{SL}#b4"], sl_md[3]),
-        _page(4, "recap", "Recap", [f"{SL}#lo1", f"{SL}#lo2"], None, [U["sl_def"]], [f"{SL}#b1", f"{SL}#b2"], sl_md[4]),
+        _page(1, "core", "The boundary", [f"{SL}#lo1"], f"{SL}#kp1", [U["sl_def"]], [f"{SL}#b1", f"{SL}#b5"], sl_md[1]),
+        _page(2, "core", "Application vs domain logic", [f"{SL}#lo2"], f"{SL}#kp2", [U["sl_logic"], U["sl_transactions"]],
+              [f"{SL}#b2", f"{SL}#b7"], sl_md[2]),
+        _page(3, "core", "Delivery independence", [f"{SL}#lo2"], f"{SL}#kp3", [U["ca_usecases"], U["ca_delivery"]],
+              [f"{SL}#b3", f"{SL}#b6"], sl_md[3]),
+        _page(4, "worked_example", "A revenue recognition service", [f"{SL}#lo2"], None,
+              [U["sl_logic"], U["sl_code"]], [f"{SL}#b2"], sl_md[4]),
+        _page(5, "pitfalls", "Traps at the boundary", [f"{SL}#lo2"], None,
+              [U["sl_anemic"], U["sl_thin"], U["ca_delivery"]], [f"{SL}#b4", f"{SL}#b8", f"{SL}#b3"], sl_md[5]),
+        _page(6, "recap", "Recap", [f"{SL}#lo1", f"{SL}#lo2"], None, [U["sl_def"]], [f"{SL}#b1", f"{SL}#b2"], sl_md[6]),
     ]
     return {
         DM: _lesson_file(DM, groups[DM], "Domain Model", "Rules live with the objects they govern.",
-                         ["behaviour", "data holder"], [], dm_pages),
+                         ["behaviour", "data holder", "design cost"], [], dm_pages),
         SL: _lesson_file(SL, groups[SL], "Service Layer", "One front door that coordinates while the model keeps the rules.",
-                         ["boundary", "coordination"], [DM], sl_pages),
+                         ["boundary", "coordination", "domain logic", "delivery mechanism", "use case"], [DM], sl_pages),
     }
 
 

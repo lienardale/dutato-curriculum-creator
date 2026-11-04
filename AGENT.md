@@ -398,7 +398,8 @@ exists (use `--force` after `groups.json` changed for that group).
 
 ## 10. Stage 6 — LESSONS (`lessons/<id>.json`, `lesson_metrics.json`)
 
-A lesson is 3–6 pages with roles orientation → core (one per knowledge point) →
+A lesson is 4–8 pages (`budget.pages` = knowledge points + 3, + 1 with an example unit)
+with roles orientation → core (one per knowledge point) →
 worked_example → pitfalls → recap, written in three passes (`rubrics/lesson_design.md`;
 shape: `docs/artifacts.md`, Stage 5).
 

@@ -16,7 +16,10 @@ id formats come from shared/contracts.py and are never redefined here):
                 coverage, prerequisite DAG hygiene. Writes the transitive
                 reduction to groups.json top-level "prerequisite_edges_reduced"
                 (script-owned) when the edges carry no error.
-  budget        fill each group's script-owned "budget" via contracts.budget_for.
+  budget        fill each group's script-owned "budget" via contracts.budget_for
+                (pages = knowledge points + 3, + 1 when the group has an example
+                unit — block_type "code" or unit_type example/code — clamped
+                to 4–8; the table prints has_example per group).
   commit-edges  map critique/groups/<item>.json edge verdicts onto
                 prerequisites[].status: committed | uncertain | rejected.
 
@@ -101,6 +104,7 @@ from contracts import (
     Finding,
     budget_for,
     dump_json,
+    group_has_example,
     item_id_to_filename,
     load_json,
     normalize_ws,
@@ -832,18 +836,22 @@ def _check_group(ctx: _Ctx, g: dict) -> list[Finding]:
         for uid in _as_list(p.get("evidence_unit_ids"), ploc, "evidence_unit_ids", f):
             _check_unit_ref(ctx, uid, ploc, f, kept_required=False)
 
-    if g.get("budget") is not None and g["budget"] != _group_budget(g):
+    if g.get("budget") is not None and g["budget"] != _group_budget(g, ctx.inp):
         f.append(Finding("groups.budget_stale", "warning", loc, "budget differs from contracts.budget_for — rerun `regroup.py budget`"))
     return f
 
 
-def _group_budget(g: dict) -> dict:
+def _group_budget(g: dict, inp: _Inputs) -> dict:
+    """Deterministic budget of a group (contracts.budget_for) — the same rule lessons.py
+    uses for its page template: has_example is true when any primary/related unit has
+    block_type "code" or a qualified unit_type of example/code."""
     prereqs = [p for p in (g.get("prerequisites") or []) if isinstance(p, dict)]
     return budget_for(
         len(g.get("knowledge_points") or []),
         len(g.get("objectives") or []),
         g.get("learning_step") or "",
         any(p.get("status") in _BUDGET_PREREQ_STATUSES for p in prereqs),
+        has_example=group_has_example(g, inp.units, inp.qual),
     )
 
 
@@ -1095,7 +1103,11 @@ def check_item(input_dir: Path, item_id: str, **_opts) -> list[Finding]:
 
 
 def apply_budget(input_dir: Path) -> tuple[list[dict], list[Finding]]:
-    """Fill every group's script-owned "budget". Idempotent; returns table rows."""
+    """Fill every group's script-owned "budget". Idempotent; returns table rows.
+
+    Reads units/ and qualification/ so the budget's ``has_example`` (a worked_example page)
+    follows the same rule as the lesson page template. Without any units nothing is written.
+    """
     input_dir = Path(input_dir)
     path = input_dir / GROUPS_FILE
     if not path.exists():
@@ -1104,18 +1116,24 @@ def apply_budget(input_dir: Path) -> tuple[list[dict], list[Finding]]:
         data = load_json(path)
     except (OSError, json.JSONDecodeError) as e:
         return [], [Finding("groups.invalid_json", "error", GROUPS_FILE, str(e))]
+    inp = _load_inputs(input_dir)
+    findings = list(inp.findings)
+    if not inp.units:
+        findings.append(Finding("groups.missing_input", "error", f"{UNITS_DIR}/",
+                                "budget needs units/ and qualification/ to decide has_example — nothing written"))
+        return [], findings
     groups = [g for g in (data.get("groups") or []) if isinstance(g, dict)] if isinstance(data, dict) else []
     rows: list[dict] = []
     changed = False
     for g in groups:
-        budget = _group_budget(g)
+        budget = _group_budget(g, inp)
         if g.get("budget") != budget:
             g["budget"] = budget
             changed = True
         rows.append({"group_id": g.get("id"), **budget})
     if changed:
         dump_json(path, data)
-    return rows, []
+    return rows, findings
 
 
 # ---------------------------------------------------------------------------
@@ -1162,10 +1180,16 @@ def commit_edges(input_dir: Path) -> tuple[list[dict], list[Finding]]:
             except (OSError, json.JSONDecodeError) as e:
                 findings.append(Finding("groups.invalid_json", "warning", str(verdict_path.relative_to(input_dir)), f"{e} — edges of {gid} set to uncertain"))
         else:
-            findings.append(Finding("groups.verdict_missing", "warning", str(verdict_path.relative_to(input_dir)), f"no critique verdict for {gid} — its edges are set to uncertain"))
+            findings.append(Finding("groups.verdict_missing", "warning", str(verdict_path.relative_to(input_dir)), f"no critique verdict for {gid} — its proposed edges are set to uncertain"))
         for p in prereqs:
             target = p.get("group_id")
             entry = verdicts.get(target) if isinstance(target, str) else None
+            if entry is None and p.get("status") in ("committed", "rejected"):
+                # An edge already decided in an earlier round is not re-listed in later critic work
+                # files (critics only see proposed edges), so a missing verdict keeps its status.
+                rows.append({"group_id": gid, "prerequisite": target, "verdict": "kept",
+                             "evidence_units": len(set(p.get("evidence_unit_ids") or [])), "status": p.get("status")})
+                continue
             verdict = entry.get("verdict") if entry else None
             if verdict is not None and verdict not in PREREQ_VALIDATOR_VERDICTS:
                 findings.append(Finding("groups.verdict_invalid", "warning", f"{gid} <- {target}", f"verdict {verdict!r} not in {list(PREREQ_VALIDATOR_VERDICTS)} — treated as uncertain"))

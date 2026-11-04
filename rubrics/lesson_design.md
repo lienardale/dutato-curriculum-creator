@@ -9,8 +9,8 @@ followed by an embedded question. Write for that experience.
 
 | What | Target | Gate |
 |---|---|---|
-| Lesson length | 900–2400 words (4–10 min at ~238 wpm) | error outside |
-| Pages | `budget.pages` (3–6) | error if different |
+| Lesson length | 900–2400 words (4–10 min at ~238 wpm) | warning `lessons.words_over_target` above 2400; error outside 900–2800 |
+| Pages | `budget.pages` = knowledge points + 3 (+ 1 with an example unit), clamped to 4–8; one core page per knowledge point | error if different |
 | Orientation / recap page | 150–250 words | warning ±15 %, error beyond 2× |
 | Core / worked-example page | 250–450 words | same |
 | Pitfalls page | 150–450 words, 2–4 misconceptions | same; count error |
@@ -79,13 +79,18 @@ them, standalone pages, objective alignment, ≤ 1 flagged paragraph per page fo
 discontinuity / duplication / inconsistency, register, and an independent Bloom re-label of the
 objectives. Two repair rounds at most; then the lesson is FAILED for the human.
 
-## Example outline (5 pages, 3 knowledge points)
+## Example outline (7 pages: 3 knowledge points + an example unit)
 
 ```
 0 orientation     "Why decisions get lost"            lo1,lo2   —     b1,b2
 1 core            "What an ADR records"               lo1       kp1   b3,b4,b5
 2 core            "The decision lifecycle"            lo2       kp2   b6,b7
-3 worked_example  "Writing an ADR for a cache change" lo1       kp3   b8,ex1
-4 pitfalls        "ADRs that nobody reads"            lo1,lo2   —     w1,w2,w3
-5 recap           "Decisions you can revisit"         lo1,lo2   —     b1
+3 core            "Superseding a decision"            lo2       kp3   b8,b9
+4 worked_example  "Writing an ADR for a cache change" lo1       —     b3,ex1
+5 pitfalls        "ADRs that nobody reads"            lo1,lo2   —     w1,w2,w3
+6 recap           "Decisions you can revisit"         lo1,lo2   —     b1
 ```
+
+Without an example unit the worked_example page is absent (6 pages for 3 knowledge points).
+Only at the 8-page cap does a knowledge point ride on the worked_example or pitfalls page; the
+work file lists it under `knowledge_points_on_optional_pages`.

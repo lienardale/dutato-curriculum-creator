@@ -75,7 +75,7 @@ def test_lesson_status_lists_every_stage_with_counts(lesson_curriculum_dir: Path
     assert "2 groups, budgets filled, 1/1 prerequisites committed" in _line(out, "Lesson candidates grouped")
     assert "(2/2 groups)" in _line(out, "Knowledge briefs")
     assert "2/2 full, 0 outline; critique 2 pass" in _line(out, "Lessons designed")
-    assert "(10 chunks)" in _line(out, "structure.json + chunks.json built")
+    assert "(13 chunks)" in _line(out, "structure.json + chunks.json built")  # 6 DM + 7 SL pages
     assert "(2/2 lessons)" in _line(out, "Questions designed")
     assert "(2/2 lessons)" in _line(out, "Cards designed")
     critique_line = _line(out, "Critiqued by independent critics")

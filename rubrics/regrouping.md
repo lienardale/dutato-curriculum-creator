@@ -118,11 +118,12 @@ level is set by its most advanced objective. Lesson titles are unique curriculum
 ## Budget semantics (ceilings, not quotas)
 
 `regroup.py budget` fills `budget` from `contracts.budget_for(knowledge_points, objectives,
-learning_step, has_prerequisite)`:
+learning_step, has_prerequisite, has_example)`:
 
 | Field | Rule | Meaning downstream |
 |---|---|---|
-| `pages` | knowledge points + 2, clamped to 3–6 | exact page count of the lesson outline |
+| `pages` | knowledge points + 3 (orientation, pitfalls, recap) + 1 when `has_example`, clamped to 4–8 | exact page count of the lesson outline; one core page per knowledge point |
+| `has_example` | true when a primary or related unit is an example (`unit_type` example/code, or a code block) | adds the worked_example page; recorded so `lessons.py prepare` can flag a stale budget |
 | `embedded_questions_min/max` | 1 / 2 × (pages − 1) | at least one embedded question; never more than the slots |
 | `quiz_items` | max(2 × objectives, 3) | quiz size; must span `quiz_min_bloom_levels` (3) |
 | `recap_item` | true when a proposed/committed prerequisite exists | one quiz item recaps the prerequisite |
