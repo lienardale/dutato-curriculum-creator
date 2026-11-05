@@ -661,9 +661,20 @@ def _prepare_syntheses(inputs: _Inputs, item_id: str, artifact: dict) -> dict:
     group = inputs.group(item_id)
     knowledge_points = [{"id": kp.get("id"), "title": kp.get("title")}
                         for kp in (group or {}).get("knowledge_points") or [] if isinstance(kp, dict)]
+    # brief.terminology_defined is judged on the brief's own glossary: without it every critic fails the criterion.
+    terminology = [{"term": t.get("term"), "definition": t.get("definition"), "unit_id": t.get("unit_id")}
+                   for t in artifact.get("terminology") or [] if isinstance(t, dict)]
+    claim_unit_ids = {u["id"] for c in claims for u in c["cited_units"]}
+    term_units = inputs.unit_views([t["unit_id"] for t in terminology
+                                    if isinstance(t["unit_id"], str) and t["unit_id"] not in claim_unit_ids], loc)
     criteria = _criteria_dicts("syntheses")
     work = _base_work("syntheses", item_id, _round_of(artifact), artifact, criteria, input_dir=inputs.input_dir)
     work.update({
+        "terminology": terminology,
+        "terminology_units": [{"id": u["id"], "text": u["text"]} for u in term_units],
+        "terminology_instruction": "Judge brief.terminology_defined on `terminology`: every term a lesson on these "
+                                   "knowledge points will need is listed, and each definition is supported by its "
+                                   "unit (text in the claims' cited_units or in `terminology_units`).",
         "claims": claims,
         "claims_instruction": "Label every entry of `claims` supported | not_supported | irrelevant using ONLY its "
                               "cited_units. A claim no cited unit supports is not_supported even if true.",
