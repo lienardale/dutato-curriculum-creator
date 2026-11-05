@@ -454,7 +454,8 @@ Report: words per page, terms introduced, warnings you could not clear and why.
 ```
 You are an independent critic (rubrics/critique_protocol.md §4 "lessons").
 Read only: critique/lessons/work/<id>.json — pages, `paragraphs` (page:<i>:para:<j>), the brief
-items each page cites, the cited units, objectives, generalization, criteria, protocol.
+items each page cites, the cited units, objectives, generalization, criteria, protocol, and
+`anchor` (the approved pilot's pages, once it exists: the bar for depth and register, not content).
 FIRST write bloom_relabels for every objective from the page text, before reading the
 author's labels. Then one `claims` entry per paragraph ref: supported | not_supported |
 irrelevant against brief_items + units. Then the criteria: mechanism explained (how/why, not
@@ -481,8 +482,11 @@ Do **not** fan out lessons before a pilot is approved:
 {"lesson_id": "g:architecture-decision-records"}
 ```
 
-   at `lessons/anchor.json`. From now on `lessons.py prepare` hands the anchor lesson to every
-   author work file (`anchor`) and the critics judge against the same bar. Freeze the pilot
+   at `lessons/anchor.json`. From now on every other lesson's work files carry it under
+   `anchor`: `lessons.py prepare` gives authors the full anchor lesson, `critique.py prepare
+   lessons` gives critics its pages, and `questions.py prepare` / `cards.py prepare` give the
+   question and card authors its questions and cards, so authors and critics share one bar.
+   Questions and cards are part of the pilot, so build them before approval. Freeze the pilot
    and its verdict files under `tests/fixtures/planted/` only when the user wants a
    regression anchor for rubric changes (see that folder's README).
 5. Batch: `python lessons.py prepare output/<name>/` for all remaining groups, fan out one
@@ -540,7 +544,8 @@ python critique.py check questions output/<name>/
 You are designing the questions for lesson <id> of "<name>" for <audience>.
 Read: questions/work/<id>.json (pages, objectives, knowledge points, watch items =
 distractor seeds, generalization, budget, concepts, brief items, units, prerequisite recaps,
-allowed_slots, existing, lessons_learned, instructions = rubrics/questions.md),
+allowed_slots, anchor = the approved pilot's questions, existing, lessons_learned,
+instructions = rubrics/questions.md),
 docs/artifacts.md "Stage 6".
 Write: questions/<id>.json — embedded (≥ 1, only in allowed_slots), quiz (every objective
 covered, ≥ 3 Bloom levels, MCQ distractors from misconceptions, recap item when
@@ -618,8 +623,8 @@ You are designing the review cards for lesson <id> of "<name>" for <audience>.
 Read: cards/work/<id>.json (pages, objectives, knowledge points, generalization, terminology
 and map items, budget with the one-card-per-100-words ceiling, knowledge-level counts with
 suggested card types, lens_checklist, question_prompts (do not restate them),
-do_not_duplicate (neighbouring lessons' fronts), existing, lessons_learned,
-instructions = rubrics/cards.md), docs/artifacts.md "Stage 7".
+do_not_duplicate (neighbouring lessons' fronts), anchor = the approved pilot's cards,
+existing, lessons_learned, instructions = rubrics/cards.md), docs/artifacts.md "Stage 7".
 Write: cards/<id>.json — one proposition per card, one intended answer, front ≤ 25 words,
 back caps by type, every objective covered, cloze with one blank, ordering items shuffled,
 discrimination options = real confusables; unit_ids and page_index on every card.
@@ -688,9 +693,11 @@ python critique.py prepare <stage> output/<name>/ --item <id>     # work file fo
 python critique.py check <stage> output/<name>/ --item <id>
 ```
 
-The critic prompt for a repair round is the same template; it does not see the previous
-verdict. `FAILED` items are never silently passed: they are listed in `review.json` for the
-human (§16).
+The critic prompt for a repair round is the same template. Its work file carries
+`previous_round` (the failed criteria and actionable items of the last verdict), so the critic
+first judges whether each repair landed (`rubrics/critique_protocol.md` §5) instead of
+restarting from scratch. `FAILED` items are never silently passed: they are listed in
+`review.json` for the human (§16).
 
 ---
 

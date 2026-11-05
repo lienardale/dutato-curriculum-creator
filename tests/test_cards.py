@@ -846,3 +846,13 @@ def test_cli_prepare(cur, capsys):
     assert cards.main(["prepare", str(cur), "--lesson", MAIN]) == 0
     assert "wrote cards/work/" in capsys.readouterr().out
     assert cards.main(["check", str(cur / "nope")]) == 2
+
+
+def test_prepare_hands_the_anchor_cards_to_other_lessons(cur):
+    write_cards(cur, clean_cards())
+    write_json(cur / "lessons" / "anchor.json", {"lesson_id": MAIN})
+    _, findings = cards.prepare(cur, [MAIN, PREREQ])
+    assert errors(findings) == []
+    assert read_json(cur / "cards" / "work" / item_id_to_filename(MAIN))["anchor"] is None
+    anchor = read_json(cur / "cards" / "work" / item_id_to_filename(PREREQ))["anchor"]
+    assert anchor["lesson_id"] == MAIN and anchor["cards"] == clean_cards()["cards"]

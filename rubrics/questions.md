@@ -2,8 +2,9 @@
 
 You are designing the questions for one lesson. Input: `questions/work/<id>.json` (pages,
 objectives, knowledge points, watch items, generalization, budget, concepts, brief items,
-units, prerequisite recaps, `allowed_slots`, this rubric under `instructions`, `existing`,
-`lessons_learned`). Output: `questions/<id>.json` in the shape of docs/artifacts.md
+units, prerequisite recaps, `allowed_slots`, this rubric under `instructions`, `anchor` = the
+approved pilot's questions once it exists, `existing`, `lessons_learned`). Output:
+`questions/<id>.json` in the shape of docs/artifacts.md
 "Stage 6". Then run `python questions.py check output/<name>/ --lesson <id>` and fix every
 finding before the critic sees the file.
 

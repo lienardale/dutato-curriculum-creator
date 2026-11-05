@@ -98,6 +98,8 @@ from contracts import (
     Finding,
     budget_for,
     group_has_example,
+    ANCHOR_NOTE,
+    anchor_artifact,
     content_words,
     dump_json,
     filename_to_item_id,
@@ -502,11 +504,21 @@ def _prepare_lesson(ctx: Context, lesson_id: str) -> tuple[dict | None, list[Fin
         "lens_checklist": [{"lens": lens, "applies_to": applies, "ask": ask} for lens, applies, ask in LENS_CHECKLIST],
         "question_prompts": _question_prompts(questions),
         "do_not_duplicate": do_not_duplicate,
+        "anchor": _anchor_view(ctx, lesson_id),
         "existing": existing,
         "lessons_learned": (existing or {}).get("lessons_learned") or [],
         "instructions": rubric if rubric is not None else RUBRIC_MISSING_NOTE,
     }
     return work, findings
+
+
+def _anchor_view(ctx: Context, lesson_id: str) -> dict | None:
+    """The approved pilot's cards as an exemplar (AGENT.md §10.3); None for the pilot itself or before approval."""
+    found = anchor_artifact(ctx.input_dir, CARDS_DIR, lesson_id)
+    if found is None:
+        return None
+    anchor_id, data = found
+    return {"lesson_id": anchor_id, "note": ANCHOR_NOTE, "cards": data.get("cards") or []}
 
 
 def prepare(input_dir: Path, lesson_ids: list[str] | None = None, force: bool = False) -> tuple[list[Path], list[Finding]]:

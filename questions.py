@@ -92,6 +92,8 @@ from contracts import (
     group_has_example,
     content_words,
     dump_json,
+    ANCHOR_NOTE,
+    anchor_artifact,
     item_id_to_filename,
     filename_to_item_id,
     list_item_files,
@@ -502,10 +504,21 @@ def _prepare_lesson(ctx: Context, lesson_id: str, allow_edge: bool) -> tuple[dic
         "allow_edge_questions": allow_edge,
         "default_position": dict(EMBEDDED_DEFAULT_POSITION),
         "instructions": rubric if rubric is not None else RUBRIC_MISSING_NOTE,
+        "anchor": _anchor_view(ctx, lesson_id),
         "existing": existing,
         "lessons_learned": (existing or {}).get("lessons_learned") or [],
     }
     return work, findings
+
+
+def _anchor_view(ctx: Context, lesson_id: str) -> dict | None:
+    """The approved pilot's questions as an exemplar (AGENT.md §10.3); None for the pilot itself or before approval."""
+    found = anchor_artifact(ctx.input_dir, QUESTIONS_DIR, lesson_id)
+    if found is None:
+        return None
+    anchor_id, data = found
+    return {"lesson_id": anchor_id, "note": ANCHOR_NOTE,
+            **{k: data.get(k) or [] for k in ("embedded", "quiz", "exercises")}}
 
 
 def _next_revision(existing: dict | None) -> int:
