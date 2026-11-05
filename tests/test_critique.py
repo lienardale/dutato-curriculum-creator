@@ -1358,3 +1358,19 @@ def test_prepare_lessons_hands_the_anchor_to_other_critics(cur: Path):
     assert main["anchor"]["lesson_id"] == PREREQ and main["anchor"]["pages"]
     assert set(main["anchor"]["pages"][0]) == {"index", "role", "title", "markdown"}
     assert "anchor" not in prereq
+
+
+def test_prepare_syntheses_shows_the_brief_terminology(cur: Path):
+    brief_path = cur / "syntheses" / item_id_to_filename(MAIN)
+    brief = read_json(brief_path)
+    brief["terminology"] = [
+        {"term": "superseded", "definition": "Status of a record a newer one replaced.", "unit_id": U2},
+        {"term": "accountability", "definition": "The architect still owns delegated outcomes.", "unit_id": U4},
+    ]
+    write_json(brief_path, brief)
+    critique.prepare(cur, "syntheses", items=[MAIN], force=True)
+    work = read_json(cur / "critique" / "syntheses" / "work" / f"{STEM}.json")
+    assert [t["term"] for t in work["terminology"]] == ["superseded", "accountability"]
+    cited = {u["id"] for c in work["claims"] for u in c["cited_units"]}
+    assert [u["id"] for u in work["terminology_units"]] == [u for u in (U2, U4) if u not in cited]
+    assert "terminology_defined" in work["terminology_instruction"]
