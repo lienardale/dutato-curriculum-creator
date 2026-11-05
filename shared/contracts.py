@@ -12,7 +12,9 @@ version of this module; keep the two in sync.
 from __future__ import annotations
 
 import json
+import os
 import re
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -541,11 +543,25 @@ def load_json(path: Path):
 
 
 def dump_json(path: Path, data) -> None:
+    """Write JSON atomically: a temp file in the same directory, then os.replace.
+
+    Parallel sub-agents run the stage scripts at the same time, so a reader must
+    never see a half-written file.
+    """
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-        f.write("\n")
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+            f.write("\n")
+        os.replace(tmp, path)
+    except BaseException:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
 
 
 def pipeline_mode(input_dir: Path) -> str:
