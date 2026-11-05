@@ -910,3 +910,14 @@ def test_cli_prepare(cur, capsys):
     assert questions.main(["prepare", str(cur), "--lesson", MAIN, "--allow-edge-questions"]) == 0
     assert "wrote questions/work/" in capsys.readouterr().out
     assert questions.main(["check", str(cur / "nope")]) == 2
+
+
+def test_prepare_hands_the_anchor_questions_to_other_lessons(cur):
+    write_questions(cur, clean_questions())
+    write_json(cur / "lessons" / "anchor.json", {"lesson_id": MAIN})
+    _, findings = questions.prepare(cur, [MAIN, PREREQ])
+    assert errors(findings) == []
+    assert read_json(cur / "questions" / "work" / item_id_to_filename(MAIN))["anchor"] is None
+    anchor = read_json(cur / "questions" / "work" / item_id_to_filename(PREREQ))["anchor"]
+    assert anchor["lesson_id"] == MAIN and anchor["quiz"] == clean_questions()["quiz"]
+    assert anchor["embedded"] and "never copy" in anchor["note"]

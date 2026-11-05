@@ -1348,3 +1348,13 @@ def test_dump_json_is_atomic_and_leaves_no_temp_files(tmp_path: Path):
     dump_json(target, {"a": 2, "b": "é"})
     assert read_json(target) == {"a": 2, "b": "é"}
     assert [p.name for p in target.parent.iterdir()] == ["data.json"]
+
+
+def test_prepare_lessons_hands_the_anchor_to_other_critics(cur: Path):
+    write_json(cur / "lessons" / "anchor.json", {"lesson_id": PREREQ})
+    critique.prepare(cur, "lessons", force=True)
+    main = read_json(cur / "critique" / "lessons" / "work" / f"{STEM}.json")
+    prereq = read_json(cur / "critique" / "lessons" / "work" / item_id_to_filename(PREREQ))
+    assert main["anchor"]["lesson_id"] == PREREQ and main["anchor"]["pages"]
+    assert set(main["anchor"]["pages"][0]) == {"index", "role", "title", "markdown"}
+    assert "anchor" not in prereq

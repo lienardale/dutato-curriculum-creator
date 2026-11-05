@@ -564,6 +564,38 @@ def dump_json(path: Path, data) -> None:
         raise
 
 
+# lessons/anchor.json -> {"lesson_id": "g:..."}: the human-approved pilot lesson (AGENT.md §10.3).
+ANCHOR_FILE = "anchor.json"
+ANCHOR_NOTE = ("Human-approved pilot lesson of this curriculum: the quality bar for register, depth and item "
+               "craft. Calibrate against it; never copy its content or reuse its wording.")
+
+
+def read_anchor_id(input_dir: Path) -> str | None:
+    """Id of the exemplar lesson named by lessons/anchor.json, or None when unset or unreadable."""
+    path = Path(input_dir) / LESSONS_DIR / ANCHOR_FILE
+    if not path.exists():
+        return None
+    try:
+        data = load_json(path)
+    except (OSError, json.JSONDecodeError):
+        return None
+    lesson_id = data.get("lesson_id") if isinstance(data, dict) else None
+    return lesson_id if isinstance(lesson_id, str) and lesson_id else None
+
+
+def anchor_artifact(input_dir: Path, stage_dir: str, item_id: str) -> tuple[str, dict] | None:
+    """(anchor id, its `<stage_dir>/<anchor>.json`) for every item but the anchor itself; None when absent."""
+    anchor_id = read_anchor_id(input_dir)
+    if anchor_id is None or anchor_id == item_id:
+        return None
+    path = Path(input_dir) / stage_dir / item_id_to_filename(anchor_id)
+    try:
+        data = load_json(path)
+    except (OSError, json.JSONDecodeError):
+        return None
+    return (anchor_id, data) if isinstance(data, dict) else None
+
+
 def pipeline_mode(input_dir: Path) -> str:
     """Read manifest.pipeline; absent => raw (back-compat with old outputs)."""
     manifest_path = Path(input_dir) / "manifest.json"

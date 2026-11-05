@@ -107,7 +107,9 @@ from contracts import (
     UNIT_TYPES,
     UNITS_DIR,
     WORK_SUBDIR,
+    ANCHOR_NOTE,
     Finding,
+    anchor_artifact,
     dump_json,
     filename_to_item_id,
     item_id_to_filename,
@@ -731,6 +733,12 @@ def _prepare_lessons(inputs: _Inputs, item_id: str, artifact: dict) -> dict:
             "notes": "",
         },
     })
+    found = anchor_artifact(inputs.input_dir, LESSONS_DIR, item_id)
+    if found is not None:
+        anchor_id, anchor = found
+        work["anchor"] = {"lesson_id": anchor_id, "note": ANCHOR_NOTE,
+                          "pages": [{k: p.get(k) for k in ("index", "role", "title", "markdown")}
+                                    for p in anchor.get("pages") or [] if isinstance(p, dict)]}
     return _finish(work)
 
 
