@@ -1313,3 +1313,38 @@ def test_verdict_round_ahead_is_a_warning(prepared: Path):
 def test_copy_of_fixture_is_not_mutated_between_tests(cur: Path):
     assert read_json(cur / "lessons" / item_id_to_filename(MAIN))["revision"] == 0
     assert copy.deepcopy(PAGE_TEXT) == PAGE_TEXT
+
+
+def test_parallel_summary_writes_keep_every_item(tmp_path: Path):
+    # Parallel critics each run `check --item`; every item must survive the merge.
+    import threading
+
+    from contracts import CRITIQUE_SUMMARY
+
+    items = [f"g:item-{i:02d}" for i in range(24)]
+    critique._write_summary(tmp_path, "groups", {"g:other-stage": {"status": "pass"}}, replace=False)
+    barrier = threading.Barrier(len(items))
+
+    def write(item: str) -> None:
+        barrier.wait()
+        critique._write_summary(tmp_path, "syntheses", {item: {"status": "pass"}}, replace=False)
+
+    threads = [threading.Thread(target=write, args=(item,)) for item in items]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    summary = read_json(tmp_path / CRITIQUE_SUMMARY)
+    assert sorted(summary["stages"]["syntheses"]["by_item"]) == items
+    assert summary["stages"]["syntheses"]["pass"] == len(items)
+    assert "g:other-stage" in summary["stages"]["groups"]["by_item"]
+
+
+def test_dump_json_is_atomic_and_leaves_no_temp_files(tmp_path: Path):
+    from contracts import dump_json
+
+    target = tmp_path / "nested" / "data.json"
+    dump_json(target, {"a": 1})
+    dump_json(target, {"a": 2, "b": "é"})
+    assert read_json(target) == {"a": 2, "b": "é"}
+    assert [p.name for p in target.parent.iterdir()] == ["data.json"]
