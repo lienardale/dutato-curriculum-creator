@@ -909,3 +909,16 @@ def test_main_enrich_subcommand(lesson_dir: Path, no_dotenv):
     run_upload(lesson_dir, client)
     rc = upload.main(["enrich", str(lesson_dir), "--target", "staging", "--skip-validation"], client_factory=lambda t: client)
     assert rc == 0 and len(client.rows("topic_cards")) == 2
+
+
+def test_update_rerun_replaces_objectives_and_prerequisites(lesson_dir: Path):
+    # A retry with --update must not duplicate objectives or re-insert a prerequisite
+    # pair (topic_prerequisites has UNIQUE(topic_id, prerequisite_topic_id)).
+    client = FakeClient()
+    run_upload(lesson_dir, client)
+    first = (len(client.rows("topic_learning_objectives")), len(client.rows("topic_prerequisites")))
+    run_upload(lesson_dir, client, update_mode=True)
+    run_upload(lesson_dir, client, update_mode=True)
+    assert (len(client.rows("topic_learning_objectives")), len(client.rows("topic_prerequisites"))) == first
+    pairs = [(r["topic_id"], r["prerequisite_topic_id"]) for r in client.rows("topic_prerequisites")]
+    assert len(pairs) == len(set(pairs))
