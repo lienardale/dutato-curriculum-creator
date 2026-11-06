@@ -114,6 +114,7 @@ from contracts import (
     Finding,
     budget_for,
     dump_json,
+    file_lock,
     filename_to_item_id,
     group_has_example,
     is_example_unit,
@@ -1294,16 +1295,18 @@ def _title_duplicates(ctx: Context, selected: list[str]) -> list[Finding]:
 
 
 def _write_metrics(input_dir: Path, metrics: dict[str, dict], partial: bool) -> None:
+    """Merge metrics into lesson_metrics.json; locked because parallel authors each run `check --lesson`."""
     path = input_dir / LESSON_METRICS_FILE
-    existing: dict = {}
-    if partial and path.exists():
-        try:
-            data = load_json(path)
-            existing = data.get("lessons") if isinstance(data, dict) and isinstance(data.get("lessons"), dict) else {}
-        except (OSError, json.JSONDecodeError):
-            existing = {}
-    existing.update(metrics)
-    dump_json(path, {"contract_version": CONTRACT_VERSION, "lessons": existing})
+    with file_lock(path):
+        existing: dict = {}
+        if partial and path.exists():
+            try:
+                data = load_json(path)
+                existing = data.get("lessons") if isinstance(data, dict) and isinstance(data.get("lessons"), dict) else {}
+            except (OSError, json.JSONDecodeError):
+                existing = {}
+        existing.update(metrics)
+        dump_json(path, {"contract_version": CONTRACT_VERSION, "lessons": existing})
 
 
 def check(input_dir: Path, lesson_id: str | None = None, outline: bool = False, **_opts) -> list[Finding]:

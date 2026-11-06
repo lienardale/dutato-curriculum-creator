@@ -1119,3 +1119,26 @@ def test_main_prepare(tmp_path, capsys):
     assert "[INFO] lessons.prepare.written @ lessons/work/" in capsys.readouterr().out
     assert (cur / "lessons" / "work" / item_id_to_filename(SL)).exists()
     assert not (cur / "lessons" / "work" / item_id_to_filename(DM)).exists()
+
+
+def test_parallel_metrics_writes_keep_every_lesson(tmp_path):
+    # Parallel authors each run `check --lesson`; every lesson's metrics must survive the merge.
+    import threading
+
+    import lessons as lessons_mod
+    from contracts import LESSON_METRICS_FILE
+
+    ids = [f"g:lesson-{i:02d}" for i in range(24)]
+    barrier = threading.Barrier(len(ids))
+
+    def write(lid):
+        barrier.wait()
+        lessons_mod._write_metrics(tmp_path, {lid: {"words": 1}}, partial=True)
+
+    threads = [threading.Thread(target=write, args=(lid,)) for lid in ids]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    data = json.loads((tmp_path / LESSON_METRICS_FILE).read_text(encoding="utf-8"))
+    assert sorted(data["lessons"]) == ids
