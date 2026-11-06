@@ -60,15 +60,9 @@ import math
 import random
 import re
 import sys
-from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable
-
-try:
-    import fcntl
-except ImportError:  # pragma: no cover - Windows
-    fcntl = None
 
 import _compat  # noqa: F401
 
@@ -111,6 +105,7 @@ from contracts import (
     Finding,
     anchor_artifact,
     dump_json,
+    file_lock,
     filename_to_item_id,
     item_id_to_filename,
     list_item_files,
@@ -1797,29 +1792,11 @@ def _stage_summary(by_item: dict[str, dict]) -> dict:
     return {"items": len(by_item), **counts, "by_item": {k: by_item[k] for k in sorted(by_item)}}
 
 
-@contextmanager
-def _summary_lock(input_dir: Path):
-    """Exclusive lock around the summary's read-modify-write.
-
-    Parallel critics each run `check --item`; without the lock two of them read
-    the same old summary and the last writer drops the other's item.
-    """
-    if fcntl is None:  # pragma: no cover - non-POSIX hosts run unlocked
-        yield
-        return
-    lock_path = Path(input_dir) / CRITIQUE_DIR / ".summary.lock"
-    lock_path.parent.mkdir(parents=True, exist_ok=True)
-    with lock_path.open("w") as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX)
-        try:
-            yield
-        finally:
-            fcntl.flock(lock, fcntl.LOCK_UN)
-
-
 def _write_summary(input_dir: Path, stage: str, by_item: dict[str, dict], replace: bool) -> dict:
-    """Merge one stage's results into critique/summary.json (replace=False keeps other items of the stage)."""
-    with _summary_lock(input_dir):
+    """Merge one stage's results into critique/summary.json (replace=False keeps other items of the stage).
+
+    Locked: parallel critics each run `check --item` against the same summary."""
+    with file_lock(Path(input_dir) / CRITIQUE_SUMMARY):
         data = _load_summary(input_dir)
         previous = {} if replace else (data["stages"].get(stage) or {}).get("by_item")
         merged = {**(previous if isinstance(previous, dict) else {}), **by_item}

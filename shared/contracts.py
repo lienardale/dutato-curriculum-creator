@@ -15,8 +15,14 @@ import json
 import os
 import re
 import tempfile
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
+
+try:
+    import fcntl
+except ImportError:  # pragma: no cover - Windows
+    fcntl = None
 
 CONTRACT_VERSION = 1
 
@@ -540,6 +546,26 @@ class Finding:
 def load_json(path: Path):
     with Path(path).open(encoding="utf-8") as f:
         return json.load(f)
+
+
+@contextmanager
+def file_lock(target: Path):
+    """Exclusive flock on `<target dir>/.<target name>.lock` for a read-modify-write of `target`.
+
+    Parallel sub-agents run the stage scripts at once; without the lock two of
+    them read the same old file and the last writer drops the other's entries.
+    """
+    if fcntl is None:  # pragma: no cover - non-POSIX hosts run unlocked
+        yield
+        return
+    target = Path(target)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with (target.parent / f".{target.name}.lock").open("w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(lock, fcntl.LOCK_UN)
 
 
 def dump_json(path: Path, data) -> None:
