@@ -57,7 +57,7 @@ import os
 import sys
 import uuid
 from collections import deque
-from collections.abc import Callable, Iterator, Mapping
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -1631,6 +1631,11 @@ def upload_curriculum(
     if chunk_result.replaced:
         console.print(f"  [yellow]↻[/] {chunk_result.replaced} chunks replaced")
 
+    if update_mode and existing_topics:
+        cleared = clear_objectives_and_prerequisites(client, existing_topics.values())
+        if any(cleared.values()):
+            console.print(f"  [yellow]↻[/] Cleared {cleared['objectives']} objectives and "
+                          f"{cleared['prerequisites']} prerequisite links of existing topics (re-inserted below)")
     if any(t.get("learning_objectives") for t, _ in _walk_topics(topics)):
         console.print("  Inserting learning objectives...")
         console.print(f"  [green]✓[/] {insert_learning_objectives(client, path_to_id, topics)} objectives inserted")
@@ -1696,6 +1701,23 @@ def _resolve_domain_id(client: Any, input_dir: Path, manifest: dict) -> str | No
     return None
 
 
+def clear_objectives_and_prerequisites(client: Any, topic_ids: Iterable[str]) -> dict[str, int]:
+    """Delete the learning objectives and outgoing prerequisite links of `topic_ids`.
+
+    Update mode and enrich re-insert both from structure.json; without this a re-run
+    duplicates the objectives and aborts on topic_prerequisites UNIQUE(topic_id,
+    prerequisite_topic_id). Returns counts of deleted rows."""
+    ids = sorted(set(topic_ids))
+    deleted = {"objectives": 0, "prerequisites": 0}
+    for i in range(0, len(ids), BATCH_SIZE):
+        sub_ids = ids[i:i + BATCH_SIZE]
+        result = client.table("topic_learning_objectives").delete().in_("topic_id", sub_ids).execute()
+        deleted["objectives"] += len(result.data or [])
+        result = client.table("topic_prerequisites").delete().in_("topic_id", sub_ids).execute()
+        deleted["prerequisites"] += len(result.data or [])
+    return deleted
+
+
 def clear_enrichment_data(client: Any, domain_id: str, tables: Mapping[str, bool] | None = None) -> dict[str, int]:
     """Delete all enrichment data of a domain: objectives, prerequisites, exercise chunks
     and, for every present practice table, its rows. Returns counts of deleted items."""
@@ -1705,12 +1727,7 @@ def clear_enrichment_data(client: Any, domain_id: str, tables: Mapping[str, bool
     if not topic_ids:
         return deleted
 
-    for i in range(0, len(topic_ids), BATCH_SIZE):
-        sub_ids = topic_ids[i:i + BATCH_SIZE]
-        result = client.table("topic_learning_objectives").delete().in_("topic_id", sub_ids).execute()
-        deleted["objectives"] += len(result.data or [])
-        result = client.table("topic_prerequisites").delete().in_("topic_id", sub_ids).execute()
-        deleted["prerequisites"] += len(result.data or [])
+    deleted.update(clear_objectives_and_prerequisites(client, topic_ids))
     practice_deleted = delete_practice_rows(client, topic_ids, tables or {}, include_exercise_chunks=True)
     deleted["exercises"] = practice_deleted.pop("exercise_chunks")
     deleted.update(practice_deleted)
