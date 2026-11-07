@@ -2,8 +2,8 @@
 
 How to turn a knowledge brief (`syntheses/<id>.json`) into a lesson (`lessons/<id>.json`).
 Shapes live in `docs/artifacts.md` (Stage 5); thresholds in `shared/contracts.py`. A lesson is
-read in the app one page at a time, each page a markdown screen; every page except the last is
-followed by an embedded question. Write for that experience.
+read in the app one page at a time, each page a markdown screen; short embedded questions sit
+between some pages (a check after a page, or a prediction before one). Write for that experience.
 
 ## The contract in numbers
 
@@ -29,7 +29,9 @@ Numbers are ceilings and bands, not quotas: a thin group yields a shorter lesson
 
 1. **orientation** — a hook (a concrete situation the learner recognises), why it matters, one
    prerequisite recalled in a sentence, the objectives in learner words ("by the end you can …"),
-   and the line that every page ends with a question. No new terms beyond naming the concept.
+   and one line saying that short questions along the way ask the learner to predict what comes
+   next or to apply what they just read. Never promise a question after every page: the question
+   stage places only a few, in the slots the viewer allows. No new terms beyond naming the concept.
 2. **core** (one per knowledge point) — *definition → mechanism → example*. Name the term in
    bold once, define it, then explain **how and why** it works (cause → effect, condition →
    consequence), then one concrete example (and a non-example for kinds-of concepts). Terms are
