@@ -1374,3 +1374,35 @@ def test_prepare_syntheses_shows_the_brief_terminology(cur: Path):
     cited = {u["id"] for c in work["claims"] for u in c["cited_units"]}
     assert [u["id"] for u in work["terminology_units"]] == [u for u in (U2, U4) if u not in cited]
     assert "terminology_defined" in work["terminology_instruction"]
+
+
+def test_repair_round_grader_folds_the_new_student_answers(prepared: Path):
+    # Round 1: the repair's prepare runs before the new test student answers. The grader must
+    # not fold the stale round-0 answers, and the next prepare must pick up the round-1 ones.
+    def student(round_, text):
+        write_verdict(prepared, "questions", {
+            "contract_version": CONTRACT_VERSION, "stage": "questions", "item_id": MAIN, "round": round_,
+            "student": "s", "answers": [{"question_id": f"{MAIN}#q1", "answer": text}],
+            "unanswerable": [], "undefined_terms": [],
+        }, suffix=".student.json")
+
+    work = prepared / "critique" / "questions" / "work"
+    student(0, "ROUND ZERO ANSWER")
+    critique.prepare(prepared, "questions")
+    assert "ROUND ZERO ANSWER" in (work / f"{STEM}.grader.json").read_text(encoding="utf-8")
+
+    qpath = prepared / "questions" / item_id_to_filename(MAIN)
+    q = read_json(qpath)
+    q["revision"] = 1
+    write_json(qpath, q)
+    critique.prepare(prepared, "questions")  # the repair's prepare: the round-0 answers are stale now
+    grader = (work / f"{STEM}.grader.json").read_text(encoding="utf-8")
+    assert "ROUND ZERO ANSWER" not in grader
+    assert critique.ROLE_STUDENT not in json.dumps(read_json(work / f"{STEM}.grader.key.json")["questions"])
+
+    student(1, "ROUND ONE ANSWER")
+    critique.prepare(prepared, "questions")  # the grader's prepare folds the new answers in
+    assert "ROUND ONE ANSWER" in (work / f"{STEM}.grader.json").read_text(encoding="utf-8")
+    key = read_json(work / f"{STEM}.grader.key.json")
+    assert critique.ROLE_STUDENT in key["questions"][f"{MAIN}#q1"].values()
+    assert key["student_answers_digest"] == critique._answers_digest({f"{MAIN}#q1": "ROUND ONE ANSWER"})
