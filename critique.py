@@ -54,6 +54,7 @@ from __future__ import annotations
 
 import argparse
 import difflib
+import hashlib
 import importlib
 import json
 import math
@@ -778,6 +779,32 @@ def _grader_has_students(key_path: Path) -> bool:
     return any(ROLE_STUDENT in mapping.values() for mapping in (questions or {}).values() if isinstance(mapping, dict))
 
 
+def _answers_digest(answers: dict[str, str]) -> str:
+    """Fingerprint of the student answers folded into a grader key (empty answers -> fixed digest)."""
+    return hashlib.sha256(json.dumps(sorted(answers.items()), ensure_ascii=False).encode("utf-8")).hexdigest()
+
+
+def _key_answers_digest(key_path: Path) -> str | None:
+    """The digest stored in a grader key; None when the key is missing, unreadable or predates digests."""
+    try:
+        key = load_json(key_path)
+    except (OSError, json.JSONDecodeError):
+        return None
+    digest = key.get("student_answers_digest") if isinstance(key, dict) else None
+    return digest if isinstance(digest, str) else None
+
+
+def _current_student_answers(student: dict | None, revision: int) -> dict[str, str]:
+    """Answers of a test-student verdict written for this revision; a verdict from an earlier round is stale
+    (its questions may have changed) and contributes nothing. A verdict without a round counts as current."""
+    if not isinstance(student, dict):
+        return {}
+    round_ = student.get("round")
+    if isinstance(round_, int) and not isinstance(round_, bool) and round_ != revision:
+        return {}
+    return _student_answers(student)
+
+
 def _build_grader(paths: _Paths, artifact: dict, questions: list[tuple[str, dict]], student_answers: dict[str, str],
                   findings: list[Finding]) -> tuple[dict, dict]:
     """Blind grader work file + hidden key. Candidate order is shuffled by a Random seeded with the item id."""
@@ -785,7 +812,7 @@ def _build_grader(paths: _Paths, artifact: dict, questions: list[tuple[str, dict
     criteria = [c for c in _criteria_dicts("questions") if c["id"] == PROBE_CRITERION]
     work = _base_work("questions", paths.item_id, _round_of(artifact), artifact, criteria, input_dir=paths.input_dir)
     key = {"contract_version": CONTRACT_VERSION, "stage": "questions", "item_id": paths.item_id,
-           "round": work["round"], "questions": {}}
+           "round": work["round"], "student_answers_digest": _answers_digest(student_answers), "questions": {}}
     entries = []
     for _section, q in questions:
         probes = q.get("probes") if isinstance(q.get("probes"), dict) else {}
@@ -914,12 +941,14 @@ def _prepare_questions(inputs: _Inputs, paths: _Paths, artifact: dict, force: bo
     student_answers: dict[str, str] = {}
     if student_verdict_path.exists():
         try:
-            student_answers = _student_answers(load_json(student_verdict_path))
+            student_answers = _current_student_answers(load_json(student_verdict_path), revision)
         except (OSError, json.JSONDecodeError) as e:
             findings.append(Finding("critique.verdict_invalid_json", "error", paths.rel(student_verdict_path), str(e)))
     grader_path, key_path = paths.work(GRADER_SUFFIX), paths.work(GRADER_KEY_SUFFIX)
+    # Refresh whenever the folded answers differ from the current ones: on a repair round the first prepare
+    # runs before the new test student answers, the second must pick those answers up.
     refresh = force or not _work_is_current(grader_path, revision) or not key_path.exists() \
-        or (bool(student_answers) and not _grader_has_students(key_path))
+        or _key_answers_digest(key_path) != _answers_digest(student_answers)
     if refresh:
         grader, key = _build_grader(paths, artifact, questions, student_answers, findings)
         dump_json(grader_path, grader)
@@ -1545,7 +1574,9 @@ def _grade_probes(paths: _Paths, revision: int, embedded_ids: list[str],
     test_student = None
     if student is not None:
         answers = _student_answers(student)
-        if answers and not key_has_student:
+        key_digest = _key_answers_digest(key_path)
+        folded_stale = key_digest is not None and key_digest != _answers_digest(_current_student_answers(student, revision))
+        if (answers and not key_has_student) or folded_stale:
             findings.append(Finding("critique.grader_stale", "warning", paths.rel(key_path),
                                     "The student's answers are not among the grader candidates; re-run "
                                     "`critique.py prepare questions` and the grader"))
