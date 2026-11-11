@@ -671,6 +671,9 @@ python critique.py status  output/<name>/
   is ≥ 0.80 and no undesirable criterion triggered; otherwise `fail`; `FAILED` when the item
   is still failing at round ≥ 2. It writes `critique/summary.json` and prints the table.
   `pending` = no verdict yet, or the verdict's `round` is behind the artifact's `revision`.
+  `verdict_error` = the verdict contradicts itself (an undesirable criterion triggered with no
+  reason / actionable repair, or on a kept sub-item): re-run the critic at the same round; no
+  author repair, and it never counts toward `FAILED`.
 
 **Repair bounds (enforced by `check`):**
 

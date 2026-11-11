@@ -940,14 +940,88 @@ def test_check_questions_partial_or_invalid_grades(prepared: Path):
 
 
 def test_check_questions_undesirable_triggered(prepared: Path):
+    # a real leak: reason + actionable correction + rewrite verdict -> the author repairs it
     write_verdict(prepared, "questions", grades_from_key(prepared), suffix=".grader.json")
     verdict = clean_questions_verdict()
     fail_criterion(verdict["items"][0]["criteria"], "q.answer_leaks_on_page")
+    verdict["items"][0]["verdict"] = "rewrite"
+    write_verdict(prepared, "questions", verdict)
+    findings = critique.check(prepared, "questions", item_id=MAIN)
+    assert critique.UNDESIRABLE_UNACTIONABLE not in ids(findings)
+    entry = by_item(prepared, "questions")[MAIN]
+    assert entry["status"] == "fail" and entry["critical_failed"] == [] and entry["verdict_errors"] == 0
+    assert entry["undesirable"] == [f"{MAIN}#q1:q.answer_leaks_on_page"]
+
+
+def test_check_questions_clean_undesirable_row_passes(prepared: Path):
+    write_verdict(prepared, "questions", grades_from_key(prepared), suffix=".grader.json")
+    verdict = clean_questions_verdict()
+    row = next(c for c in verdict["items"][0]["criteria"] if c["criterion_id"] == "q.answer_leaks_on_page")
+    assert row["passed"] is True  # passed=true means the leak is absent
     write_verdict(prepared, "questions", verdict)
     critique.check(prepared, "questions", item_id=MAIN)
     entry = by_item(prepared, "questions")[MAIN]
-    assert entry["status"] == "fail" and entry["critical_failed"] == []
-    assert entry["undesirable"] == [f"{MAIN}#q1:q.answer_leaks_on_page"]
+    assert entry["status"] == "pass" and entry["undesirable"] == []
+
+
+@pytest.mark.parametrize("variant", ["kept", "optional", "no_reason", "absent"])
+def test_check_questions_unactionable_undesirable_is_verdict_error(prepared: Path, variant: str):
+    write_verdict(prepared, "questions", grades_from_key(prepared), suffix=".grader.json")
+    verdict = clean_questions_verdict()
+    criteria = verdict["items"][0]["criteria"]
+    fail_criterion(criteria, "q.answer_leaks_on_page")
+    row = next(c for c in criteria if c["criterion_id"] == "q.answer_leaks_on_page")
+    if variant != "kept":
+        verdict["items"][0]["verdict"] = "rewrite"  # only the row itself is defective
+    if variant == "optional":
+        row["correction_instruction"] = "Optional: none required; undesirable only."
+    elif variant == "no_reason":
+        row["failure_reason"] = None
+    elif variant == "absent":
+        criteria.remove(row)
+    write_verdict(prepared, "questions", verdict)
+    findings = critique.check(prepared, "questions", item_id=MAIN)
+    assert critique.UNDESIRABLE_UNACTIONABLE in ids(errors(findings))
+    assert "critique.criterion_missing" not in ids(findings) and "critique.reason_missing" not in ids(findings)
+    entry = by_item(prepared, "questions")[MAIN]
+    if variant == "kept":
+        assert entry["status"] == "verdict_error" and entry["undesirable"] == [f"{MAIN}#q1:q.answer_leaks_on_page"]
+    else:  # a rewrite verdict is a real failure elsewhere: the item still fails as before
+        assert entry["status"] == "fail"
+
+
+def test_unactionable_undesirable_never_FAILED_nor_round_advance():
+    verdict = clean_questions_verdict()
+    fail_criterion(verdict["items"][0]["criteria"], "q.answer_leaks_on_page")
+    row = next(c for c in verdict["items"][0]["criteria"] if c["criterion_id"] == "q.answer_leaks_on_page")
+    row["correction_instruction"] = "Optional: none required; undesirable only."
+    sids = [f"{MAIN}#q1", f"{MAIN}#q2"]
+    extra = {"sub_item_ids": sids, "probe_results": {s: True for s in sids}}
+    for round_ in (0, REPAIR_ROUNDS_MAX, REPAIR_ROUNDS_MAX + 1):
+        result = critique.compute_item_status(dict(verdict, round=round_), "questions", [], extra)
+        assert result["status"] == "verdict_error" and result["round"] == round_
+        assert result["verdict_errors"] == 1
+    # with a real repair (rewrite + actionable correction) the gate still fails, and FAILED at the cap
+    row["correction_instruction"] = "Move the keyed gain below the check, grounded in u:x"
+    verdict["items"][0]["verdict"] = "rewrite"
+    assert critique.compute_item_status(dict(verdict, round=0), "questions", [], extra)["status"] == "fail"
+    assert critique.compute_item_status(dict(verdict, round=REPAIR_ROUNDS_MAX), "questions", [], extra)["status"] == "FAILED"
+    # a real critical failure alongside the contradictory row keeps the normal fail / FAILED path
+    verdict["items"][0]["verdict"] = "keep"
+    row["correction_instruction"] = "none required"
+    fail_criterion(verdict["items"][1]["criteria"], "q.central")
+    assert critique.compute_item_status(dict(verdict, round=REPAIR_ROUNDS_MAX), "questions", [], extra)["status"] == "FAILED"
+
+
+def test_undesirable_polarity_in_work_file_and_rubrics():
+    from contracts import UNDESIRABLE_PASSED_MEANING
+    rows = {r["id"]: r for r in critique._criteria_dicts("questions")}
+    assert rows["q.answer_leaks_on_page"]["kind"] == "undesirable"
+    assert rows["q.answer_leaks_on_page"]["passed_means"] == UNDESIRABLE_PASSED_MEANING
+    assert "passed_means" not in rows["q.central"]
+    assert UNDESIRABLE_PASSED_MEANING in critique._protocol_section("questions")
+    rubric = (Path(critique.__file__).resolve().parent / "rubrics" / "questions.md").read_text(encoding="utf-8")
+    assert UNDESIRABLE_PASSED_MEANING in rubric
 
 
 def test_check_questions_rewrite_or_drop_fails_the_lesson(prepared: Path):

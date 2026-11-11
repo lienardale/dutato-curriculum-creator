@@ -181,7 +181,10 @@ CARD_TYPES_BY_KNOWLEDGE = {
     "principle": ("concept", "application"),
 }
 
-CRITIQUE_STATUSES = ("pending", "pass", "fail", "FAILED")
+# verdict_error: the critic's verdict contradicts itself (an undesirable criterion triggered with
+# no failure_reason / actionable correction, or on a sub-item it kept). The critic redoes the
+# verdict at the same round; it never costs the author a repair round and never becomes FAILED.
+CRITIQUE_STATUSES = ("pending", "pass", "fail", "FAILED", "verdict_error")
 QUESTION_VERDICTS = ("keep", "rewrite", "drop")
 KEEP_DROP_VERDICTS = ("keep", "drop")
 CLAIM_VERDICTS = ("supported", "not_supported", "irrelevant")
@@ -375,6 +378,14 @@ CRITIQUE_SCORE_MIN = 0.80      # weighted positive score / max positive score
 WEIGHT_CRITICAL = 5
 WEIGHT_MINOR = 1
 WEIGHT_UNDESIRABLE = -5
+# Polarity of `passed` for undesirable criteria; repeated verbatim in the critic work file
+# (`critique.py prepare`) and in rubrics/critique_protocol.md + rubrics/questions.md.
+UNDESIRABLE_PASSED_MEANING = (
+    "For an undesirable criterion, `passed: true` means the defect is absent and `passed: false` means "
+    "the defect is present; a `false` blocks the item like a failed critical criterion, so it needs a "
+    "`failure_reason`, an actionable `correction_instruction` and, for a question or card, the verdict "
+    "`rewrite` or `drop` (never `keep`), else the verdict itself is rejected as a verdict error."
+)
 
 # ---------------------------------------------------------------------------
 # Critique criteria catalogue: stage -> [(criterion_id, weight, critical, description)]

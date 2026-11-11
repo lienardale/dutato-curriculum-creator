@@ -153,6 +153,7 @@ Critic (`contracts.PER_ITEM_CRITERIA["questions"]`; protocol in rubrics/critique
 — all critical; `q.understandable_clear`, `q.bloom_relabel_match` — minor;
 `q.answer_leaks_on_page` — undesirable. The critic also runs a **test student** over the
 lesson: it answers every embedded question before reading on and lists undefined terms.
+For an undesirable criterion, `passed: true` means the defect is absent and `passed: false` means the defect is present; a `false` blocks the item like a failed critical criterion, so it needs a `failure_reason`, an actionable `correction_instruction` and, for a question or card, the verdict `rewrite` or `drop` (never `keep`), else the verdict itself is rejected as a verdict error.
 
 ## 9. Before you finish
 

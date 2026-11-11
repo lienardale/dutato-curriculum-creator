@@ -90,6 +90,7 @@ from contracts import (
     QUALIFICATION_DIR,
     QUALIFICATION_DISAGREEMENT_MAX,
     QUALIFICATION_DISAGREEMENT_TOLERANCE,
+    UNDESIRABLE_PASSED_MEANING,
     UNIT_TYPE_FAMILIES,
     QUALIFICATION_SAMPLE_MIN,
     QUALIFICATION_SAMPLE_SHARE,
@@ -251,11 +252,15 @@ def _preview(text: str, n: int = 60) -> str:
 def _criteria_dicts(stage: str, exclude: Iterable[str] = ()) -> list[dict]:
     catalogue = CRITERIA.get(stage) or PER_ITEM_CRITERIA.get(stage) or []
     skip = set(exclude)
-    return [
-        {"id": cid, "weight": weight, "critical": critical, "description": description}
-        for cid, weight, critical, description in catalogue
-        if cid not in skip
-    ]
+    out = []
+    for cid, weight, critical, description in catalogue:
+        if cid in skip:
+            continue
+        row = {"id": cid, "weight": weight, "critical": critical, "description": description}
+        if weight < 0:  # undesirable: blocking although not `critical`; spell out the polarity
+            row.update(kind="undesirable", passed_means=UNDESIRABLE_PASSED_MEANING)
+        out.append(row)
+    return out
 
 
 def _protocol_section(stage: str) -> str:
@@ -1052,6 +1057,8 @@ class _Eval:
     score: float = 0.0
     critical_failed: list[str] = field(default_factory=list)
     undesirable: list[str] = field(default_factory=list)
+    # triggered undesirable criteria the critic gave no reason / actionable repair for (verdict error)
+    unactionable: list[str] = field(default_factory=list)
     items_ok: bool = True
     results: dict[str, bool] = field(default_factory=dict)
     metrics: dict[str, Any] = field(default_factory=dict)
@@ -1067,6 +1074,7 @@ def _eval_criteria(entries: Any, catalogue: list, loc: str, overrides: dict[str,
     """
     cat = {cid: (weight, critical) for cid, weight, critical, _ in catalogue}
     seen: dict[str, bool] = {}
+    unactionable: list[str] = []
     if entries is None:
         entries = []
     if not isinstance(entries, list):
@@ -1091,7 +1099,12 @@ def _eval_criteria(entries: Any, catalogue: list, loc: str, overrides: dict[str,
                                     f"`passed` must be a bool, got {passed!r}; treated as failed"))
             passed = False
         evidence = str(entry.get("evidence_span") or "").strip()
-        if not passed:
+        if not passed and cat[cid][0] < 0:
+            problem = _undesirable_row_problem(entry, evidence)
+            if problem:
+                findings.append(Finding(UNDESIRABLE_UNACTIONABLE, "error", f"{loc} {cid}", problem))
+                unactionable.append(cid)
+        elif not passed:
             if not evidence:
                 findings.append(Finding("critique.evidence_missing", "error", f"{loc} {cid}",
                                         "Failed criterion has no evidence_span"))
@@ -1105,8 +1118,14 @@ def _eval_criteria(entries: Any, catalogue: list, loc: str, overrides: dict[str,
         seen[cid] = passed
     for cid in cat:
         if cid not in seen and cid not in overrides:
-            findings.append(Finding("critique.criterion_missing", "error", f"{loc} {cid}",
-                                    "Criterion absent from the verdict; treated as failed"))
+            if cat[cid][0] < 0:  # an absent undesirable row: the critic must redo, not the author
+                findings.append(Finding(UNDESIRABLE_UNACTIONABLE, "error", f"{loc} {cid}",
+                                        "Undesirable criterion absent from the verdict; treated as triggered "
+                                        "and the verdict must be redone"))
+                unactionable.append(cid)
+            else:
+                findings.append(Finding("critique.criterion_missing", "error", f"{loc} {cid}",
+                                        "Criterion absent from the verdict; treated as failed"))
             seen[cid] = False
     for cid, forced in overrides.items():
         if cid not in cat:
@@ -1122,8 +1141,34 @@ def _eval_criteria(entries: Any, catalogue: list, loc: str, overrides: dict[str,
         score=(pos_passed / pos_total) if pos_total else 1.0,
         critical_failed=[cid for cid, (_, critical) in cat.items() if critical and not seen.get(cid)],
         undesirable=[cid for cid, (w, _) in cat.items() if w < 0 and seen.get(cid) is False],
+        unactionable=[cid for cid in unactionable if seen.get(cid) is False],
         results=dict(seen),
     )
+
+
+UNDESIRABLE_UNACTIONABLE = "critique.undesirable_unactionable"
+# correction_instruction that declares itself optional / not needed is not a repair the author can make
+_NON_ACTIONABLE_RE = re.compile(
+    r"^\W*(optional|none|n/?a|nothing|no (change|action|edit|fix|correction|repair)s?)\b"
+    r"|\b(none|no (change|action|edit|fix|correction|repair)s?) (is |are )?(required|needed|necessary)\b"
+    r"|\bnot (required|needed|necessary)\b|\bundesirable only\b",
+    re.IGNORECASE,
+)
+
+
+def _undesirable_row_problem(entry: dict, evidence: str) -> str | None:
+    """Why a triggered (`passed: false`) undesirable row is not actionable, or None when it is."""
+    missing = [k for k, v in (("evidence_span", evidence), ("failure_reason", entry.get("failure_reason")),
+                              ("correction_instruction", entry.get("correction_instruction")))
+               if not str(v or "").strip()]
+    if missing:
+        return (f"Triggered undesirable criterion has no {', '.join(missing)}; the critic must redo the verdict "
+                "(passed=false means the defect is present)")
+    correction = str(entry.get("correction_instruction")).strip()
+    if _NON_ACTIONABLE_RE.search(correction):
+        return (f"Triggered undesirable criterion has a non-actionable correction_instruction {correction[:80]!r}; "
+                "an undesirable criterion blocks the item, so the critic must either give a repair or mark it passed")
+    return None
 
 
 def _relabel_map(raw: Any) -> dict[str, str] | None:
@@ -1284,6 +1329,7 @@ def _eval_per_item(verdict: dict, stage: str, extra: dict, loc: str, findings: l
     sub: dict[str, dict] = {}
     critical_failed: list[str] = []
     undesirable: list[str] = []
+    unactionable: list[str] = []
     scores: list[float] = []
     items_ok = True
     for i, item in enumerate(items):
@@ -1325,6 +1371,14 @@ def _eval_per_item(verdict: dict, stage: str, extra: dict, loc: str, findings: l
                 overrides[BLOOM_CRITERION["questions"]] = relabel == author_bloom[sid]
         ev = _eval_criteria(item.get("criteria"), catalogue, iloc, overrides, findings)
         accepted = value == "keep"  # rewrite/drop are suggestions to the author; the lesson fails until repaired
+        if accepted:  # a kept sub-item routes nothing to the author, so a triggered undesirable is contradictory
+            for cid in ev.undesirable:
+                if cid not in ev.unactionable:
+                    findings.append(Finding(UNDESIRABLE_UNACTIONABLE, "error", f"{iloc} {cid}",
+                                            "Undesirable criterion triggered on a sub-item the critic kept; "
+                                            "use verdict rewrite/drop with the repair, or mark it passed"))
+                    ev.unactionable.append(cid)
+        unactionable += [f"{sid}:{cid}" for cid in ev.unactionable]
         if not accepted:
             items_ok = False
         sub[sid] = {"verdict": value, "accepted": accepted, "score": round(ev.score, 4),
@@ -1346,6 +1400,7 @@ def _eval_per_item(verdict: dict, stage: str, extra: dict, loc: str, findings: l
         score=(sum(scores) / len(scores)) if scores else 0.0,
         critical_failed=critical_failed,
         undesirable=undesirable,
+        unactionable=unactionable,
         items_ok=items_ok,
         metrics=metrics,
     )
@@ -1457,11 +1512,22 @@ def compute_item_status(verdict: dict, stage: str, deterministic_errors: list, e
         findings.append(Finding("critique.actionable_items_excess", "warning", loc,
                                 f"{len(actionable)} actionable items > {ACTIONABLE_ITEMS_MAX}; the author repairs only "
                                 f"the first {ACTIONABLE_ITEMS_MAX}"))
+    if stage in STAGE_LEVEL_STAGES and not actionable:  # stage-level repairs travel only as actionable_items
+        for cid in ev.undesirable:
+            if cid not in ev.unactionable:
+                findings.append(Finding(UNDESIRABLE_UNACTIONABLE, "error", f"{loc} {cid}",
+                                        "Undesirable criterion triggered with no actionable_items for the author"))
+                ev.unactionable.append(cid)
     verdict_errors = sum(1 for f in findings if f.severity == "error")
-    ok = ev.critical_all_passed and not ev.undesirable and ev.score >= CRITIQUE_SCORE_MIN \
-        and not det_errors and ev.items_ok and not verdict_errors
+    redo_errors = sum(1 for f in findings if f.severity == "error" and f.check_id == UNDESIRABLE_UNACTIONABLE)
+    passes_otherwise = ev.critical_all_passed and ev.score >= CRITIQUE_SCORE_MIN and not det_errors \
+        and ev.items_ok and verdict_errors == redo_errors
+    ok = passes_otherwise and not ev.undesirable and not verdict_errors
+    # The only defect is a self-contradictory undesirable row: the critic redoes the verdict at the
+    # same round (no author repair, never FAILED). Real failures elsewhere keep fail / FAILED.
+    redo = not ok and redo_errors > 0 and passes_otherwise and set(ev.undesirable) <= set(ev.unactionable)
     return {
-        "status": _status_for(ok, round_),
+        "status": "verdict_error" if redo else _status_for(ok, round_),
         "round": round_,
         "score": round(ev.score, 4),
         "critical_failed": ev.critical_failed,
@@ -1959,7 +2025,7 @@ def _cmd_check(args: argparse.Namespace) -> int:
     results, findings = _run(args.input_dir, args.stage, args.item, write_summary=True)
     n_err, n_warn = print_findings(findings)
     print(_table(_item_rows(results)))
-    failing = any(e["status"] in ("fail", "FAILED") for by_item in results.values() for e in by_item.values())
+    failing = any(e["status"] in ("fail", "FAILED", "verdict_error") for by_item in results.values() for e in by_item.values())
     return 1 if n_err or failing or (args.strict and n_warn) else 0
 
 
