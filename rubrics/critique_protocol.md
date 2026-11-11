@@ -33,6 +33,7 @@ ground it in — or "no unit covers this → delete".
 ## 3. Default to failure
 
 - Uncertain → `passed: false`. A criterion passes only on positive evidence.
+- For an undesirable criterion, `passed: true` means the defect is absent and `passed: false` means the defect is present; a `false` blocks the item like a failed critical criterion, so it needs a `failure_reason`, an actionable `correction_instruction` and, for a question or card, the verdict `rewrite` or `drop` (never `keep`), else the verdict itself is rejected as a verdict error.
 - A claim with no cited unit that supports it is `not_supported`, even if it is true in the
   world. The pipeline's contract is *source-faithful*, not *true*.
 - Never invent an easier criterion so the item can pass; never soften the rubric because the

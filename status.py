@@ -380,7 +380,7 @@ def check_lesson_status(output_dir: Path) -> dict:
             for s in due:
                 counts = _critique_counts(critique, s)
                 parts.append(f"{s}: {_critique_line(counts)}")
-                if counts is None or counts["pending"] or counts["fail"] or counts["FAILED"]:
+                if counts is None or counts["pending"] or counts["fail"] or counts["FAILED"] or counts["verdict_error"]:
                     complete = False
             add("critique", CRITIQUE_SUMMARY, "Critiqued by independent critics", False, complete, "; ".join(parts))
 
