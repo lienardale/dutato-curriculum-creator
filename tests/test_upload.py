@@ -9,14 +9,18 @@ and the Storage bucket API. Missing tables raise the real
 from __future__ import annotations
 
 import json
+import ssl
 from pathlib import Path
 from types import SimpleNamespace
 
+import httpcore
+import httpx
 import pytest
 
 import _compat  # noqa: F401
 
 from postgrest.exceptions import APIError
+from storage3.exceptions import StorageApiError
 
 import upload
 from upload import Target, UploadError
@@ -50,6 +54,7 @@ class FakeQuery:
     def __init__(self, client: "FakeClient", name: str):
         self.client, self.name = client, name
         self.op, self.payload, self.filters, self._limit = "select", None, [], None
+        self._order, self._range = None, None
 
     def select(self, _cols="*"):
         self.op = "select"
@@ -88,19 +93,52 @@ class FakeQuery:
         self._limit = n
         return self
 
+    def order(self, col):
+        self._order = col
+        return self
+
+    def range(self, start, end):
+        self._range = (start, end)
+        return self
+
     def execute(self):
         if self.name in self.client.missing_tables:
             raise missing_table_error(self.name)
         if self.name in self.client.table_errors:
             raise self.client.table_errors[self.name]
+        self.client.attempts.append((self.name, self.op))
+        fault = self.client.take_fault(self.name, self.op, self.payload)
+        if fault and not fault.after_commit:
+            raise fault.error  # the request never reached the database
+        response = self._apply()
+        if fault:
+            raise fault.error  # committed, but the reply was lost
+        return response
+
+    def _apply(self):
         self.client.calls.append((self.name, self.op))
         rows = self.client.tables.setdefault(self.name, [])
         matching = [r for r in rows if all(f(r) for f in self.filters)]
         if self.op == "select":
-            data = matching if self._limit is None else matching[: self._limit]
+            data = matching
+            if self._order:
+                data = sorted(data, key=lambda r: str(r.get(self._order)))
+            if self._range:
+                # Postgres returns rows in no fixed order: a paged read without ORDER BY may
+                # skip or repeat rows from one page to the next.
+                assert self._order, "a ranged select must be ordered"
+                data = data[self._range[0]: self._range[1] + 1]
+            if self._limit is not None:
+                data = data[: self._limit]
+            if self.client.max_rows is not None:  # the server's silent cap on one response
+                data = data[: self.client.max_rows]
             return FakeResponse([dict(r) for r in data])
         if self.op in ("insert", "upsert"):
             new = self.payload if isinstance(self.payload, list) else [self.payload]
+            taken = {r.get("id") for r in rows}
+            if any(r.get("id") in taken for r in new):  # primary key: the whole batch is refused
+                raise APIError({"message": "duplicate key value violates unique constraint", "code": "23505",
+                                "hint": None, "details": None})
             rows.extend(dict(r) for r in new)
             self.client.writes += len(new)
             return FakeResponse([dict(r) for r in new])
@@ -132,10 +170,18 @@ class FakeBucket:
         self.client, self.name = client, name
 
     def upload(self, path, data, opts):
+        self.client.attempts.append(("storage", path))
         if path in self.client.failing_uploads:
             raise RuntimeError(f"upload failed for {path}")
+        fault = self.client.take_fault("storage", "upload", path)
+        if fault and not fault.after_commit:
+            raise fault.error
+        if any(path == stored for stored, _, _ in self.client.uploads):
+            raise StorageApiError("The resource already exists", "Duplicate", 409)
         self.client.uploads.append((path, len(data), opts))
         self.client.writes += 1
+        if fault:
+            raise fault.error
 
     def get_public_url(self, path):
         return f"https://fake.test/storage/v1/object/public/{self.name}/{path}"
@@ -165,11 +211,24 @@ class FakeAdmin:
         return self.client.users[start: start + per_page]
 
 
+class Fault:
+    """A failure injected into the fake: ``times`` matching requests raise ``error``, either
+    before the request takes effect or (``after_commit``) after it did, like a lost reply.
+    ``when(payload)`` narrows which requests match; ``skip`` lets the first ones through."""
+
+    def __init__(self, table, op, error, times=1, after_commit=False, when=None, skip=0):
+        self.table, self.op, self.error, self.times = table, op, error, times
+        self.after_commit, self.when, self.skip = after_commit, when, skip
+
+
 class FakeClient:
     def __init__(self, missing_tables: set[str] | None = None):
         self.tables: dict[str, list[dict]] = {}
         self.missing_tables = set(missing_tables or ())
         self.table_errors: dict[str, Exception] = {}
+        self.faults: list[Fault] = []
+        self.attempts: list[tuple[str, str]] = []  # every request, failed ones included
+        self.max_rows: int | None = None
         self.calls: list[tuple[str, str]] = []
         self.writes = 0
         self.rpc_results: dict[str, object] = {}
@@ -186,6 +245,24 @@ class FakeClient:
 
     def rpc(self, name, params):
         return FakeRpc(self, name, params)
+
+    def fail(self, table, op, error, **kwargs) -> Fault:
+        fault = Fault(table, op, error, **kwargs)
+        self.faults.append(fault)
+        return fault
+
+    def take_fault(self, table, op, payload) -> Fault | None:
+        for fault in self.faults:
+            if (fault.table, fault.op) != (table, op) or fault.times <= 0:
+                continue
+            if fault.when is not None and not fault.when(payload):
+                continue
+            if fault.skip > 0:
+                fault.skip -= 1
+                continue
+            fault.times -= 1
+            return fault
+        return None
 
     def rows(self, name) -> list[dict]:
         return self.tables.get(name, [])
@@ -922,3 +999,830 @@ def test_update_rerun_replaces_objectives_and_prerequisites(lesson_dir: Path):
     assert (len(client.rows("topic_learning_objectives")), len(client.rows("topic_prerequisites"))) == first
     pairs = [(r["topic_id"], r["prerequisite_topic_id"]) for r in client.rows("topic_prerequisites")]
     assert len(pairs) == len(set(pairs))
+
+
+# ---------------------------------------------------------------------------
+# Retries and interrupted uploads
+# ---------------------------------------------------------------------------
+
+ALL_TABLES = ("domains", "curriculum_levels", "books", "topics", "content_chunks", "topic_learning_objectives",
+              "topic_prerequisites", "reading_questions", "topic_questions", "topic_cards", "topic_exercises")
+
+
+@pytest.fixture(autouse=True)
+def sleeps(monkeypatch) -> list[float]:
+    """No test waits for real: record the retry waits instead."""
+    waits: list[float] = []
+    monkeypatch.setattr(upload, "_sleep", waits.append)
+    return waits
+
+
+def blip() -> Exception:
+    """The transport error that cut the prod upload of 2026-11-15."""
+    return httpx.ReadError("[SSL: SSLV3_ALERT_BAD_RECORD_MAC] ssl/tls alert bad record mac (_ssl.c:2711)")
+
+
+def storage_500() -> Exception:
+    """The Storage reply that failed one image in the same upload."""
+    return StorageApiError("database error, code: 42P10", "DatabaseError", 500)
+
+
+def api_error(code, message="x") -> APIError:
+    return APIError({"message": message, "code": code, "hint": None, "details": None})
+
+
+def http_status_error(status: int) -> httpx.HTTPStatusError:
+    request = httpx.Request("POST", "https://x.supabase.co/storage/v1/object/b/p.png")
+    return httpx.HTTPStatusError(f"{status}", request=request, response=httpx.Response(status, request=request))
+
+
+def raised_while_handling(outer: Exception, inner: Exception, explicit: bool = False) -> Exception:
+    """``outer`` as Python builds it when raised inside ``except inner`` (``from inner`` if explicit)."""
+    try:
+        try:
+            raise inner
+        except Exception as cause:
+            if explicit:
+                raise outer from cause
+            raise outer
+    except Exception as e:
+        return e
+
+
+def snapshot(client: FakeClient) -> dict[str, int]:
+    return {table: len(client.rows(table)) for table in ALL_TABLES}
+
+
+def assert_no_duplicates(client: FakeClient) -> None:
+    for table in ALL_TABLES:
+        ids = [r["id"] for r in client.rows(table)]
+        assert len(ids) == len(set(ids)), table
+    titles = [(r["title"], r["parent_topic_id"]) for r in client.rows("topics")]
+    assert len(titles) == len(set(titles))
+    pages = [(r["topic_id"], r["chunk_index"]) for r in client.rows("content_chunks")]
+    assert len(pages) == len(set(pages))
+
+
+def clean_snapshot(tmp_path: Path) -> dict[str, int]:
+    """Row counts of an upload of the lesson fixture that met no failure."""
+    client = FakeClient()
+    run_upload(build_lesson_dir(tmp_path / "clean"), client)
+    return snapshot(client)
+
+
+def flat(text: str) -> str:
+    return " ".join(text.split())
+
+
+def blip_as_httpx_raises_it() -> Exception:
+    """httpx.ReadError <- httpcore.ReadError <- ssl.SSLError, the chain of the real failure."""
+    text = "[SSL: SSLV3_ALERT_BAD_RECORD_MAC] ssl/tls alert bad record mac (_ssl.c:2711)"
+    inner = raised_while_handling(httpcore.ReadError(text), ssl.SSLError(1, text), explicit=True)
+    return raised_while_handling(httpx.ReadError(text), inner, explicit=True)
+
+
+@pytest.mark.parametrize("error", [
+    blip(),
+    blip_as_httpx_raises_it(),
+    httpx.ConnectError("[Errno 8] nodename nor servname provided, or not known"),
+    httpx.ReadTimeout("The read operation timed out"),
+    httpx.RemoteProtocolError("Server disconnected without sending a response."),
+    httpx.LocalProtocolError("Invalid input ConnectionInputs.SEND_HEADERS in state ConnectionState.CLOSED"),
+    ConnectionResetError(54, "Connection reset by peer"),
+    TimeoutError("timed out"),
+    api_error(502, "JSON could not be generated"),  # gateway page instead of JSON: postgrest reports the status
+    api_error("PGRST002", "Could not query the database for the schema cache. Retrying."),
+    api_error("PGRST000"), api_error("PGRST001"), api_error("PGRST003"),
+    api_error("40001"), api_error("40P01"), api_error("57014"),
+    api_error("08006"), api_error("53300"), api_error("57P01"),
+    api_error(408), api_error(425), api_error(429), api_error(500), api_error(503), api_error(504), api_error(524),
+    storage_500(),
+    StorageApiError("slow down", "TooManyRequests", "429"),
+    # storage3 file API, reply it cannot parse: reported as 400, real status only in the chain
+    raised_while_handling(StorageApiError("Unable to parse error message", "InternalError", 400),
+                          raised_while_handling(KeyError("message"), http_status_error(503)), explicit=True),
+    # storage3 bucket API, HTML error page: a bare JSONDecodeError with the status in its context
+    raised_while_handling(json.JSONDecodeError("Expecting value", "<html>", 0), http_status_error(502)),
+    type("AuthRetryableError", (Exception,), {})("Bad Gateway"),
+])
+def test_is_transient_true(error):
+    assert upload._is_transient(error) is True
+
+
+@pytest.mark.parametrize("error", [
+    api_error("23505", "duplicate key value violates unique constraint"),
+    api_error("23503"), api_error("42501", "permission denied"), api_error("42P01"), api_error("PGRST205"),
+    api_error("PGRST204"), api_error(400), api_error(401), api_error(404), api_error(413), api_error(501),
+    api_error(None),
+    # a certificate the client refuses will be refused again
+    raised_while_handling(httpx.ConnectError("[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed"),
+                          ssl.SSLCertVerificationError(1, "certificate verify failed"), explicit=True),
+    StorageApiError("The resource already exists", "Duplicate", 409),
+    StorageApiError("Bucket not found", "not_found", "404"),
+    raised_while_handling(StorageApiError("The resource already exists", "Duplicate", 409), http_status_error(400),
+                          explicit=True),
+    httpx.UnsupportedProtocol("Request URL is missing an 'http://' or 'https://' protocol."),
+    ValueError("bad"), KeyError("id"), FileNotFoundError("img.png"), RuntimeError("upload failed"),
+    UploadError("stop"),
+    raised_while_handling(upload.TransientUploadError("gave up"), blip(), explicit=True),
+])
+def test_is_transient_false(error):
+    assert upload._is_transient(error) is False
+
+
+def test_retry_returns_after_transient_failures_with_doubling_waits(sleeps, capsys):
+    outcomes = [blip(), api_error(503), "done"]
+
+    def call():
+        outcome = outcomes.pop(0)
+        if isinstance(outcome, Exception):
+            raise outcome
+        return outcome
+
+    assert upload._retry("read things", call) == "done"
+    assert sleeps == [1.0, 2.0]
+    out = flat(capsys.readouterr().out)
+    assert "read things" in out and "[SSL: SSLV3_ALERT_BAD_RECORD_MAC]" in out and "try 2 of 5" in out
+
+
+def test_retry_raises_other_errors_at_once(sleeps):
+    calls = []
+
+    def call():
+        calls.append(1)
+        raise api_error("23505", "duplicate key")
+
+    with pytest.raises(APIError):
+        upload._retry("insert", call)
+    assert len(calls) == 1 and sleeps == []
+
+
+def test_retry_gives_up_after_all_attempts_with_capped_waits(sleeps, monkeypatch):
+    monkeypatch.setattr(upload, "RETRY_MAX_DELAY", 4.0)
+    calls = []
+
+    def call():
+        calls.append(1)
+        raise blip()
+
+    with pytest.raises(upload.TransientUploadError) as ei:
+        upload._retry("insert into topics", call)
+    assert len(calls) == upload.RETRY_ATTEMPTS == 5 and sleeps == [1.0, 2.0, 4.0, 4.0]
+    assert ei.value.exit_code == 1 and isinstance(ei.value.__cause__, httpx.ReadError)
+    assert "insert into topics failed 5 times in a row" in str(ei.value) and "ReadError" in str(ei.value)
+
+
+def test_retry_never_repeats_an_upload_error(sleeps):
+    def call():
+        raise raised_while_handling(upload.TransientUploadError("inner gave up"), blip(), explicit=True)
+
+    with pytest.raises(upload.TransientUploadError, match="inner gave up"):
+        upload._retry("outer", call)
+    assert sleeps == []
+
+
+def test_insert_batch_resends_when_the_request_never_arrived():
+    client = FakeClient()
+    client.fail("topics", "insert", blip(), times=2)
+    rows = [{"id": "a", "title": "A"}, {"id": "b", "title": "B"}]
+    upload._insert_batch(client, "topics", rows)
+    assert [r["id"] for r in client.rows("topics")] == ["a", "b"]
+    assert client.attempts.count(("topics", "insert")) == 3
+
+
+def test_insert_batch_does_not_resend_rows_whose_reply_was_lost():
+    client = FakeClient()
+    client.fail("topics", "insert", blip(), after_commit=True)
+    rows = [{"id": "a", "title": "A"}, {"id": "b", "title": "B"}]
+    upload._insert_batch(client, "topics", rows)
+    assert [r["id"] for r in client.rows("topics")] == ["a", "b"]  # once, and no 23505 on the retry
+    assert client.attempts == [("topics", "insert"), ("topics", "select")]
+
+
+def test_insert_batch_sends_only_the_rows_that_are_missing():
+    client = FakeClient()
+    client.tables["topics"] = [{"id": "a", "title": "A"}]
+    client.fail("topics", "insert", blip())
+    upload._insert_batch(client, "topics", [{"id": "a", "title": "A"}, {"id": "b", "title": "B"}])
+    assert sorted(r["id"] for r in client.rows("topics")) == ["a", "b"]
+
+
+def test_insert_batch_retries_a_failed_read_back():
+    client = FakeClient()
+    client.fail("topics", "insert", blip(), after_commit=True)
+    client.fail("topics", "select", api_error(504, "JSON could not be generated"))
+    upload._insert_batch(client, "topics", [{"id": "a", "title": "A"}])
+    assert [r["id"] for r in client.rows("topics")] == ["a"]
+    assert client.attempts == [("topics", "insert"), ("topics", "select"), ("topics", "select")]
+
+
+@pytest.mark.parametrize("after_commit", [False, True])
+def test_upload_survives_one_failure_on_every_request_kind(lesson_dir: Path, tmp_path: Path, after_commit: bool):
+    client = FakeClient()
+    for table in ALL_TABLES:
+        for op in ("select", "insert", "update", "delete"):
+            client.fail(table, op, blip(), after_commit=after_commit)
+    client.fail("storage", "upload", storage_500(), times=2, after_commit=after_commit)
+    result = run_upload(lesson_dir, client)
+    assert snapshot(client) == clean_snapshot(tmp_path)
+    assert_no_duplicates(client)
+    assert (result["topics_inserted"], result["chunks_inserted"], result["topic_cards"]) == (4, 4, 2)
+    assert sorted(path for path, _, _ in client.uploads) == ["adr-cur/img_adr_1.png", "adr-cur/img_adr_2.png"]
+    adr = client.topic_id(ADR)
+    page_1 = next(r for r in client.rows("content_chunks") if r["topic_id"] == adr and r["chunk_index"] == 1)
+    assert "curriculum-images/adr-cur/img_adr_1.png" in page_1["content"]
+
+
+@pytest.mark.parametrize("after_commit", [False, True])
+def test_update_rerun_survives_one_failure_on_every_request_kind(lesson_dir: Path, tmp_path: Path, after_commit: bool):
+    client = FakeClient()
+    run_upload(lesson_dir, client)
+    for table in ALL_TABLES:
+        for op in ("select", "insert", "update", "delete"):
+            client.fail(table, op, blip(), after_commit=after_commit)
+    run_upload(lesson_dir, client, update_mode=True, replace_chunks=True)
+    assert snapshot(client) == clean_snapshot(tmp_path)
+    assert_no_duplicates(client)
+
+
+def test_images_are_uploaded_before_any_database_write(lesson_dir: Path):
+    client = FakeClient()
+    run_upload(lesson_dir, client)
+    first_write = next(i for i, (name, op) in enumerate(client.attempts) if name != "storage" and op != "select")
+    last_image = max(i for i, (name, _) in enumerate(client.attempts) if name == "storage")
+    assert last_image < first_write
+
+
+def test_image_upload_that_keeps_failing_stops_before_the_database(lesson_dir: Path):
+    client = FakeClient()
+    client.fail("storage", "upload", storage_500(), times=5)
+    with pytest.raises(upload.TransientUploadError) as ei:
+        run_upload(lesson_dir, client)
+    message = flat(str(ei.value))
+    assert "upload image img_adr_1 failed 5 times in a row" in message and "42P10" in message
+    assert "Nothing was written to the database. Run the same command again." in message
+    assert "--update" not in message
+    assert all(op == "select" for name, op in client.attempts if name != "storage")
+    assert snapshot(client) == dict.fromkeys(ALL_TABLES, 0)
+    assert [path for name, path in client.attempts if name == "storage"] == ["adr-cur/img_adr_1.png"] * 5
+    assert not (lesson_dir / "upload_result.json").exists()
+
+
+def test_image_stored_by_a_try_whose_reply_was_lost_counts_as_uploaded(lesson_dir: Path):
+    client = FakeClient()
+    client.fail("storage", "upload", blip(), after_commit=True, when=lambda path: path.endswith("img_adr_1.png"))
+    run_upload(lesson_dir, client)
+    assert sorted(path for path, _, _ in client.uploads) == ["adr-cur/img_adr_1.png", "adr-cur/img_adr_2.png"]
+    adr = client.topic_id(ADR)
+    page_1 = next(r for r in client.rows("content_chunks") if r["topic_id"] == adr and r["chunk_index"] == 1)
+    assert "curriculum-images/adr-cur/img_adr_1.png" in page_1["content"] and "image:" not in page_1["content"]
+
+
+def test_storage_bucket_probe_that_keeps_failing_stops_the_run(lesson_dir: Path, monkeypatch):
+    client = FakeClient()
+
+    def unreachable(name):
+        raise blip()
+
+    monkeypatch.setattr(client.storage, "get_bucket", unreachable)
+    with pytest.raises(upload.TransientUploadError, match="read storage bucket failed 5 times"):
+        run_upload(lesson_dir, client)
+    assert client.uploads == [] and snapshot(client) == dict.fromkeys(ALL_TABLES, 0)
+
+
+def interrupt_chunks(client: FakeClient, monkeypatch) -> None:
+    """Two pages per request; the second request for pages fails until the run gives up."""
+    monkeypatch.setattr(upload, "BATCH_SIZE", 2)
+    client.fail("content_chunks", "insert", blip(), times=5, skip=1)
+
+
+def test_interrupted_first_upload_says_how_to_finish_and_the_rerun_completes(lesson_dir: Path, tmp_path: Path, monkeypatch):
+    expected = clean_snapshot(tmp_path)
+    client = FakeClient()
+    interrupt_chunks(client, monkeypatch)
+    with pytest.raises(upload.TransientUploadError) as ei:
+        run_upload(lesson_dir, client)
+    message = flat(str(ei.value))
+    assert "insert into content_chunks failed 5 times in a row" in message
+    assert "The curriculum may be only partly uploaded." in message
+    assert "Run the same command again with --update --replace-chunks to finish it." in message
+    assert "Rows already written are reused, not duplicated." in message
+    assert len(client.rows("topics")) == 4 and len(client.rows("content_chunks")) == 2  # half a curriculum
+    assert client.rows("topic_cards") == [] and not (lesson_dir / "upload_result.json").exists()
+
+    result = run_upload(lesson_dir, client, update_mode=True, replace_chunks=True)
+    assert snapshot(client) == expected
+    assert_no_duplicates(client)
+    assert (result["topics_inserted"], result["topics_skipped"], result["chunks_inserted"]) == (0, 4, 4)
+    assert (lesson_dir / "upload_result.json").exists()
+
+
+def test_interrupted_first_upload_also_completes_with_update_alone(lesson_dir: Path, tmp_path: Path, monkeypatch):
+    client = FakeClient()
+    interrupt_chunks(client, monkeypatch)
+    with pytest.raises(upload.TransientUploadError):
+        run_upload(lesson_dir, client)
+    kept = set(client.chunk_ids().values())
+    run_upload(lesson_dir, client, update_mode=True)
+    assert snapshot(client) == clean_snapshot(tmp_path)
+    assert_no_duplicates(client)
+    assert kept <= set(client.chunk_ids().values())  # the pages already written are kept
+
+
+def test_plain_rerun_after_an_interrupted_upload_is_refused(lesson_dir: Path, monkeypatch):
+    client = FakeClient()
+    interrupt_chunks(client, monkeypatch)
+    with pytest.raises(upload.TransientUploadError):
+        run_upload(lesson_dir, client)
+    before, writes, uploads = snapshot(client), client.writes, list(client.uploads)
+
+    with pytest.raises(UploadError) as ei:
+        run_upload(lesson_dir, client)
+    message = flat(str(ei.value))
+    assert not isinstance(ei.value, upload.TransientUploadError) and ei.value.exit_code == 1
+    assert "already holds 4 of the 4 topics" in message and "--update --replace-chunks" in message
+    assert snapshot(client) == before and client.writes == writes and client.uploads == uploads
+
+
+def test_plain_upload_into_an_existing_domain_without_these_topics_still_works(lesson_dir: Path):
+    client = FakeClient()
+    client.tables["domains"] = [{"id": "d-old", "slug": "adr-cur", "domain_family": "adr-cur", "variant": "extensive"}]
+    client.tables["topics"] = [
+        {"id": "t-other", "domain_id": "d-old", "title": "Another Area", "depth": 0, "parent_topic_id": None},
+        # same title as a lesson, but at another place in the tree: not the same topic
+        {"id": "t-same-name", "domain_id": "d-old", "title": ADR, "depth": 1, "parent_topic_id": "t-other"},
+    ]
+    result = run_upload(lesson_dir, client)
+    assert result["domain_id"] == "d-old" and result["topics_inserted"] == 4
+    assert len(client.rows("topics")) == 6
+
+
+def test_interrupted_update_says_to_run_the_same_command_again(lesson_dir: Path, tmp_path: Path):
+    client = FakeClient()
+    run_upload(lesson_dir, client)
+    client.fail("topic_questions", "insert", blip(), times=5)
+    with pytest.raises(upload.TransientUploadError) as ei:
+        run_upload(lesson_dir, client, update_mode=True)
+    message = flat(str(ei.value))
+    assert "The update is incomplete. Run the same command again to finish it." in message
+    assert "--replace-chunks" not in message
+    assert client.rows("topic_questions") == []  # cleared, not yet written back
+
+    run_upload(lesson_dir, client, update_mode=True)
+    assert snapshot(client) == clean_snapshot(tmp_path)
+    assert_no_duplicates(client)
+
+
+def test_interrupted_enrich_says_to_run_it_again(lesson_dir: Path, tmp_path: Path):
+    client = FakeClient()
+    run_upload(lesson_dir, client)
+    client.fail("topic_learning_objectives", "insert", blip(), times=5)
+    with pytest.raises(upload.TransientUploadError) as ei:
+        upload.enrich_curriculum(lesson_dir, client, TARGET, skip_validation=True)
+    message = flat(str(ei.value))
+    assert "The enrichment is incomplete" in message and "Run the same command again to finish it." in message
+
+    upload.enrich_curriculum(lesson_dir, client, TARGET, skip_validation=True)
+    assert snapshot(client) == clean_snapshot(tmp_path)
+    assert_no_duplicates(client)
+
+
+def test_enrich_that_cannot_reach_the_target_wrote_nothing(lesson_dir: Path):
+    client = FakeClient()
+    run_upload(lesson_dir, client)
+    before = snapshot(client)
+    client.fail("topics", "select", blip(), times=5)
+    with pytest.raises(upload.TransientUploadError, match="Nothing was written to the database"):
+        upload.enrich_curriculum(lesson_dir, client, TARGET, skip_validation=True)
+    assert snapshot(client) == before
+
+
+def test_main_reports_an_interrupted_upload_without_a_traceback(lesson_dir: Path, no_dotenv, capsys):
+    no_dotenv.setenv("STAGING_SUPABASE_URL", "https://stg.supabase.co")
+    no_dotenv.setenv("STAGING_SUPABASE_SERVICE_ROLE_KEY", "sk-staging")
+    client = FakeClient()
+    client.fail("topics", "insert", blip(), times=5, skip=1)
+    rc = upload.main(["upload", str(lesson_dir), "--target", "staging", "--owner", "user", "--user-id", USER,
+                      "--skip-validation"], client_factory=lambda t: client)
+    out = flat(capsys.readouterr().out)
+    assert rc == 1 and "Traceback" not in out and "sk-staging" not in out
+    assert "Error: insert into topics failed 5 times in a row (ReadError: [SSL: SSLV3_ALERT_BAD_RECORD_MAC]" in out
+    assert "Run the same command again with --update --replace-chunks to finish it." in out
+
+
+def test_main_prints_error_text_that_looks_like_console_markup(lesson_dir: Path, no_dotenv, capsys, monkeypatch):
+    def boom(args, client_factory):
+        raise UploadError("odd text [/] and [ssl] kept as written")
+
+    monkeypatch.setattr(upload, "_run", boom)
+    assert upload.main(["check", str(lesson_dir)]) == 1
+    assert "odd text [/] and [ssl] kept as written" in flat(capsys.readouterr().out)
+
+
+def test_has_table_retries_a_schema_cache_outage_instead_of_calling_the_table_missing():
+    outage = api_error("PGRST002", "Could not query the database for the schema cache. Retrying.")
+    client = FakeClient()
+    client.fail("topic_cards", "select", outage, times=2)
+    assert upload.has_table(client, "topic_cards") is True
+
+    client.fail("topic_cards", "select", outage, times=5)
+    with pytest.raises(upload.TransientUploadError, match="probe table topic_cards failed 5 times"):
+        upload.has_table(client, "topic_cards")
+
+
+def test_upload_does_not_skip_practice_content_when_the_probe_keeps_failing(lesson_dir: Path):
+    client = FakeClient()
+    client.fail("topic_questions", "select", api_error("PGRST002", "Could not query the database for the schema cache."),
+                times=5)
+    with pytest.raises(upload.TransientUploadError, match="Nothing was written to the database"):
+        run_upload(lesson_dir, client)
+    assert client.writes == 0
+
+
+def test_resolve_owner_stops_when_the_target_is_unreachable_instead_of_listing_users():
+    client = FakeClient()
+    client.rpc_results["find_user_by_email"] = blip()
+    with pytest.raises(upload.TransientUploadError, match="resolve owner email failed 5 times"):
+        upload.resolve_owner_id(client, user_email="me@example.com")
+    assert len(client.rpc_calls) == 5 and client.list_users_calls == []
+
+
+def test_resolve_owner_retries_the_user_listing(monkeypatch):
+    client = FakeClient()
+    client.rpc_results["find_user_by_email"] = api_error("PGRST202", "Could not find the function")
+    client.users = [SimpleNamespace(id=USER, email="me@example.com")]
+    real, failures = client.auth.admin.list_users, [blip(), blip()]
+
+    def flaky(page=None, per_page=None):
+        if failures:
+            raise failures.pop()
+        return real(page=page, per_page=per_page)
+
+    monkeypatch.setattr(client.auth.admin, "list_users", flaky)
+    assert upload.resolve_owner_id(client, user_email="me@example.com") == USER
+
+
+def test_reads_are_complete_when_the_server_caps_a_response(lesson_dir: Path, tmp_path: Path, monkeypatch):
+    # PostgREST returns at most max-rows rows per response and says nothing. Update mode
+    # re-inserts every topic and page it did not see, so its reads must page to the end.
+    client = FakeClient()
+    run_upload(lesson_dir, client)
+    client.max_rows = 3  # fewer than the 4 topics and the 4 pages
+    existing, id_to_title = upload.find_existing_topics(client, client.rows("domains")[0]["id"])
+    assert len(existing) == len(id_to_title) == 4
+    assert len(upload.fetch_chunk_ids(client, [r["id"] for r in client.rows("topics")])) == 4
+
+    for cap, page_size in ((3, 1000), (1, 1000), (1000, 2), (2, 2)):
+        client.max_rows = cap
+        monkeypatch.setattr(upload, "SELECT_PAGE_SIZE", page_size)
+        run_upload(lesson_dir, client, update_mode=True)
+        upload.enrich_curriculum(lesson_dir, client, TARGET, skip_validation=True)
+        assert snapshot(client) == clean_snapshot(tmp_path / f"{cap}-{page_size}")
+        assert_no_duplicates(client)
+
+
+# ---------------------------------------------------------------------------
+# Findings of the independent review (2026-11-16)
+# ---------------------------------------------------------------------------
+
+
+def unique_violation() -> APIError:
+    return api_error("23505", 'duplicate key value violates unique constraint "topics_pkey"')
+
+
+def test_retry_line_keeps_error_text_that_looks_like_console_markup(capsys):
+    outcomes = [api_error(503, "upstream [/rest/v1/topics] timed out [bold]"), "done"]
+
+    def call():
+        outcome = outcomes.pop(0)
+        if isinstance(outcome, Exception):
+            raise outcome
+        return outcome
+
+    assert upload._retry("read [topics]", call) == "done"
+    out = flat(capsys.readouterr().out)
+    assert "read [topics]" in out and "upstream [/rest/v1/topics] timed out [bold]" in out
+
+
+def test_insert_batch_accepts_a_collision_with_its_own_first_try():
+    # The first request times out while the database is still running it. The read-back sees
+    # nothing yet, the batch is sent again, and that second insert collides with the first one,
+    # which has committed in between: every row is there, so this is a success.
+    client = FakeClient()
+    client.fail("topics", "insert", httpx.ReadTimeout("The read operation timed out"))
+    client.fail("topics", "insert", unique_violation(), after_commit=True)
+    upload._insert_batch(client, "topics", [{"id": "a", "title": "A"}, {"id": "b", "title": "B"}])
+    assert sorted(r["id"] for r in client.rows("topics")) == ["a", "b"]
+
+
+def test_insert_batch_still_raises_a_real_unique_violation_on_a_retry():
+    client = FakeClient()
+    client.fail("topics", "insert", blip())
+    client.fail("topics", "insert", unique_violation())  # another constraint: the rows are not there
+    with pytest.raises(APIError):
+        upload._insert_batch(client, "topics", [{"id": "a", "title": "A"}])
+    assert client.rows("topics") == []
+
+
+def test_insert_batch_raises_a_unique_violation_when_only_part_of_the_batch_is_there():
+    client = FakeClient()
+    client.tables["topics"] = [{"id": "a", "title": "A"}]  # written by an earlier request
+    client.fail("topics", "insert", blip())
+    client.fail("topics", "insert", unique_violation())  # "b" hits another constraint and is not written
+    with pytest.raises(APIError):
+        upload._insert_batch(client, "topics", [{"id": "a", "title": "A"}, {"id": "b", "title": "B"}])
+    assert [r["id"] for r in client.rows("topics")] == ["a"]
+
+
+def test_plain_rerun_is_refused_when_only_some_topics_exist(lesson_dir: Path):
+    client = FakeClient()
+    client.fail("topics", "insert", blip(), times=5, skip=2)
+    with pytest.raises(upload.TransientUploadError):
+        run_upload(lesson_dir, client)
+    assert len(client.rows("topics")) == 2
+
+    with pytest.raises(UploadError, match="already holds 2 of the 4 topics"):
+        run_upload(lesson_dir, client)
+    assert len(client.rows("topics")) == 2
+
+
+def test_plan_reports_the_refusal_the_upload_would_meet(lesson_dir: Path, no_dotenv, capsys):
+    no_dotenv.setenv("STAGING_SUPABASE_URL", "https://stg.supabase.co")
+    no_dotenv.setenv("STAGING_SUPABASE_SERVICE_ROLE_KEY", "sk")
+    client = FakeClient()
+    run_upload(lesson_dir, client)
+    writes = client.writes
+    capsys.readouterr()
+    args = [str(lesson_dir), "--target", "staging", "--owner", "user", "--user-id", USER, "--skip-validation"]
+    assert upload.main(["plan", *args], client_factory=lambda t: client) == 1
+    assert "already holds 4 of the 4 topics" in flat(capsys.readouterr().out) and client.writes == writes
+    assert upload.main(["plan", *args, "--update"], client_factory=lambda t: client) == 0
+    assert client.writes == writes
+
+
+def test_storage_bucket_creation_that_keeps_failing_stops_the_run(lesson_dir: Path, monkeypatch):
+    client = FakeClient()
+
+    def missing(name):
+        raise StorageApiError("Bucket not found", "not_found", "404")
+
+    def unreachable(name, options=None):
+        raise blip()
+
+    monkeypatch.setattr(client.storage, "get_bucket", missing)
+    monkeypatch.setattr(client.storage, "create_bucket", unreachable)
+    with pytest.raises(upload.TransientUploadError, match="create storage bucket failed 5 times"):
+        run_upload(lesson_dir, client)
+    assert client.uploads == [] and snapshot(client) == dict.fromkeys(ALL_TABLES, 0)
+
+
+def test_main_owner_lookup_that_keeps_failing_says_what_to_run(lesson_dir: Path, no_dotenv, capsys):
+    no_dotenv.setenv("STAGING_SUPABASE_URL", "https://stg.supabase.co")
+    no_dotenv.setenv("STAGING_SUPABASE_SERVICE_ROLE_KEY", "sk")
+    client = FakeClient()
+    client.rpc_results["find_user_by_email"] = blip()
+    rc = upload.main(["upload", str(lesson_dir), "--target", "staging", "--owner", "user",
+                      "--user-email", "me@example.com", "--skip-validation"], client_factory=lambda t: client)
+    out = flat(capsys.readouterr().out)
+    assert rc == 1 and "resolve owner email failed 5 times in a row" in out
+    assert "Nothing was written to the database. Run the same command again." in out
+    assert client.writes == 0
+
+
+def test_resolve_domain_id_falls_back_to_the_slug_the_upload_used(lesson_dir: Path):
+    client = FakeClient()
+    client.tables["domains"] = [{"id": "d-by-name", "slug": "adr"}, {"id": "d-by-key", "slug": "adr-cur"}]
+    assert upload._resolve_domain_id(client, lesson_dir, {"domain": "ADR Cur"}) == "d-by-key"
+    assert upload._resolve_domain_id(client, lesson_dir, {}) == "d-by-name"  # no "domain": the directory name
+
+
+# --- a stopped run must not leave an upload_result.json that says "uploaded" ---
+
+
+def test_interrupted_update_removes_the_earlier_upload_result(lesson_dir: Path, tmp_path: Path):
+    import status
+
+    client = FakeClient()
+    run_upload(lesson_dir, client)
+    result_file = lesson_dir / "upload_result.json"
+    assert result_file.exists()
+
+    client.fail("topic_questions", "insert", blip(), times=5)
+    with pytest.raises(upload.TransientUploadError) as ei:
+        run_upload(lesson_dir, client, update_mode=True)
+    assert "The earlier upload_result.json was removed, so this upload does not show as done." in flat(str(ei.value))
+    assert not result_file.exists()  # the target has no quiz questions: not "uploaded"
+    assert status.check_status(lesson_dir)["current_stage"] == "review"  # status.py no longer says "upload" is done
+
+    run_upload(lesson_dir, client, update_mode=True)
+    assert read_json(result_file)["update_mode"] == "update"
+    assert snapshot(client) == clean_snapshot(tmp_path)
+
+
+def test_interrupted_enrich_keeps_the_upload_result_it_reads_the_domain_from(lesson_dir: Path, tmp_path: Path):
+    # No "domain" in the manifest and a renamed directory: the slug no longer leads to the
+    # domain, so upload_result.json is the only way back to it.
+    manifest = read_json(lesson_dir / "manifest.json")
+    del manifest["domain"], manifest["domain_family"]
+    write_json(lesson_dir / "manifest.json", manifest)
+    client = FakeClient()
+    uploaded = run_upload(lesson_dir, client)
+    assert client.rows("domains")[0]["slug"] == "adr"
+    moved = lesson_dir.rename(lesson_dir.with_name("adr-v2"))
+
+    client.fail("topic_cards", "insert", blip(), times=5)
+    with pytest.raises(upload.TransientUploadError) as ei:
+        upload.enrich_curriculum(moved, client, TARGET, skip_validation=True)
+    assert "The enrichment is incomplete" in str(ei.value) and "removed" not in str(ei.value)
+    assert read_json(moved / "upload_result.json") == uploaded
+
+    result = upload.enrich_curriculum(moved, client, TARGET, skip_validation=True)
+    assert result["domain_id"] == uploaded["domain_id"]
+    assert snapshot(client) == clean_snapshot(tmp_path)
+
+
+def test_interrupted_enrich_that_had_begun_clearing_does_not_say_nothing_was_written(lesson_dir: Path):
+    client = FakeClient()
+    run_upload(lesson_dir, client)
+    client.fail("topic_prerequisites", "delete", blip(), times=5)
+    with pytest.raises(upload.TransientUploadError) as ei:
+        upload.enrich_curriculum(lesson_dir, client, TARGET, skip_validation=True)
+    assert "Nothing was written" not in str(ei.value) and "The enrichment is incomplete" in str(ei.value)
+    assert client.rows("topic_learning_objectives") == []  # already cleared
+
+
+def test_enrich_ignores_a_domain_id_recorded_for_another_target(lesson_dir: Path):
+    prod = Target(name="default", url="https://prod.example.supabase.co", key="service-role-secret")
+    client = FakeClient()  # stands for prod
+    uploaded = upload.upload_curriculum(lesson_dir, client, prod, owner_type="user", user_id=USER, skip_validation=True)
+    # the same output then went to staging: the file now holds the staging domain id
+    write_json(lesson_dir / "upload_result.json", {**uploaded, "target": "staging", "domain_id": "staging-domain-id"})
+
+    result = upload.enrich_curriculum(lesson_dir, client, prod, skip_validation=True)
+    assert result["domain_id"] == uploaded["domain_id"] and result["topics_skipped"] == 4  # found by slug on prod
+    assert len(client.rows("topic_cards")) == 2
+    assert upload._resolve_domain_id(client, lesson_dir, {"domain": "nope"}) == uploaded["domain_id"]  # no target: as before
+
+
+def test_interrupted_upload_keeps_a_result_recorded_for_another_target(lesson_dir: Path):
+    client = FakeClient()
+    run_upload(lesson_dir, client)  # staging
+    recorded = {**read_json(lesson_dir / "upload_result.json"), "target": "default"}
+    write_json(lesson_dir / "upload_result.json", recorded)  # ... then prod: the file is prod's record
+
+    client.fail("topic_questions", "insert", blip(), times=5)
+    with pytest.raises(upload.TransientUploadError) as ei:
+        run_upload(lesson_dir, client, update_mode=True)  # a staging run stops
+    assert "removed" not in str(ei.value)
+    assert read_json(lesson_dir / "upload_result.json") == recorded
+
+
+def test_upload_stopped_by_ctrl_c_after_writing_began_removes_the_earlier_upload_result(lesson_dir: Path):
+    client = FakeClient()
+    run_upload(lesson_dir, client)
+    client.fail("topic_cards", "insert", KeyboardInterrupt())
+    with pytest.raises(KeyboardInterrupt):
+        run_upload(lesson_dir, client, update_mode=True)
+    assert not (lesson_dir / "upload_result.json").exists()
+
+
+def test_domain_insert_whose_reply_and_read_backs_are_lost_is_not_reported_as_nothing_written(lesson_dir: Path):
+    client = FakeClient()
+    client.fail("domains", "insert", blip(), after_commit=True)
+    client.fail("domains", "select", blip(), times=5, skip=2)  # the two reads before the insert go through
+    with pytest.raises(upload.TransientUploadError) as ei:
+        run_upload(lesson_dir, client)
+    assert len(client.rows("domains")) == 1
+    assert "Nothing was written" not in str(ei.value) and "may be only partly uploaded" in str(ei.value)
+
+
+def test_update_leaves_the_objectives_of_another_curriculum_in_the_same_domain(lesson_dir: Path, monkeypatch):
+    # Two curricula can share a domain (same "domain" in their manifests). Finishing an
+    # interrupted upload of one must not clear what belongs to the other.
+    client = FakeClient()
+    client.tables["domains"] = [{"id": "d-old", "slug": "adr-cur", "domain_family": "adr-cur", "variant": "extensive"}]
+    client.tables["topics"] = [
+        {"id": "t-other", "domain_id": "d-old", "title": "Another Area", "depth": 0, "parent_topic_id": None},
+        {"id": "t-other-leaf", "domain_id": "d-old", "title": "Another Lesson", "depth": 1, "parent_topic_id": "t-other"},
+    ]
+    client.tables["topic_learning_objectives"] = [{"id": "o-other", "topic_id": "t-other-leaf", "objective_text": "Keep me"}]
+    client.tables["topic_prerequisites"] = [{"id": "p-other", "topic_id": "t-other-leaf", "prerequisite_topic_id": "t-other"}]
+
+    interrupt_chunks(client, monkeypatch)
+    with pytest.raises(upload.TransientUploadError, match="--update --replace-chunks"):
+        run_upload(lesson_dir, client)
+    for kwargs in ({"update_mode": True, "replace_chunks": True}, {"update_mode": True}):
+        run_upload(lesson_dir, client, **kwargs)
+        assert "o-other" in {r["id"] for r in client.rows("topic_learning_objectives")}
+        assert "p-other" in {r["id"] for r in client.rows("topic_prerequisites")}
+        assert len(client.rows("topic_learning_objectives")) == 1 + 3 and len(client.rows("topic_prerequisites")) == 1 + 1
+
+
+def test_run_that_stops_before_writing_keeps_the_earlier_upload_result(lesson_dir: Path):
+    client = FakeClient()
+    run_upload(lesson_dir, client)
+    before = read_json(lesson_dir / "upload_result.json")
+    client.fail("storage", "upload", storage_500(), times=5)
+    (lesson_dir / "extracted" / "images" / "img_new.png").write_bytes(b"\x89PNG new")
+    chunks = read_json(lesson_dir / "chunks.json")
+    chunks[0]["images"] = [{"id": "img_new", "local_path": "images/img_new.png", "alt_text": "New", "mime_type": "image/png"}]
+    write_json(lesson_dir / "chunks.json", chunks)
+    with pytest.raises(upload.TransientUploadError) as ei:
+        run_upload(lesson_dir, client, update_mode=True)
+    assert "Nothing was written to the database" in str(ei.value) and "removed" not in str(ei.value)
+    assert read_json(lesson_dir / "upload_result.json") == before
+
+
+def test_any_other_failure_after_writing_began_also_removes_the_earlier_upload_result(lesson_dir: Path, capsys):
+    client = FakeClient()
+    run_upload(lesson_dir, client)
+    client.fail("topic_questions", "insert", api_error("23503", "violates foreign key constraint"))
+    with pytest.raises(APIError):  # not transient: raised as it is
+        run_upload(lesson_dir, client, update_mode=True)
+    assert not (lesson_dir / "upload_result.json").exists()
+    assert "upload_result.json removed" in flat(capsys.readouterr().out)
+
+
+# --- raw pipeline: exercises.json chunks on a re-run ---
+
+
+def exercise_pairs(client: FakeClient) -> list[tuple[str, int]]:
+    return sorted((r["topic_id"], r["chunk_index"]) for r in client.rows("content_chunks")
+                  if r["chunk_index"] >= upload.EXERCISE_CHUNK_OFFSET)
+
+
+def run_raw(input_dir: Path, client: FakeClient, **kwargs) -> dict:
+    return run_upload(input_dir, client, **kwargs)
+
+
+def test_raw_update_run_does_not_add_the_exercises_a_second_time(curriculum_dir: Path):
+    client = FakeClient()
+    run_raw(curriculum_dir, client)
+    clean = exercise_pairs(client)
+    assert len(clean) == 5
+    kept = {r["id"] for r in client.rows("content_chunks")}
+
+    result = run_raw(curriculum_dir, client, update_mode=True)
+    assert exercise_pairs(client) == clean and result["exercise_chunks"] == 0
+    assert {r["id"] for r in client.rows("content_chunks")} == kept  # skipped, like the pages
+
+
+def test_raw_replace_run_replaces_the_exercises(curriculum_dir: Path):
+    client = FakeClient()
+    run_raw(curriculum_dir, client)
+    clean = exercise_pairs(client)
+    old = {r["id"] for r in client.rows("content_chunks")}
+    result = run_raw(curriculum_dir, client, update_mode=True, replace_chunks=True)
+    assert exercise_pairs(client) == clean and result["exercise_chunks"] == 5
+    assert old.isdisjoint(r["id"] for r in client.rows("content_chunks"))
+
+
+def test_raw_interrupted_update_then_the_same_command_again_keeps_five_exercises(curriculum_dir: Path):
+    client = FakeClient()
+    run_raw(curriculum_dir, client)
+    clean = exercise_pairs(client)
+    client.fail("topic_prerequisites", "insert", blip(), times=5)
+    with pytest.raises(upload.TransientUploadError, match="Run the same command again to finish it"):
+        run_raw(curriculum_dir, client, update_mode=True)
+    run_raw(curriculum_dir, client, update_mode=True)
+    assert exercise_pairs(client) == clean
+    assert len(client.rows("content_chunks")) == 15 and len(client.rows("topic_prerequisites")) == 1
+
+
+@pytest.mark.parametrize("replace", [False, True])
+@pytest.mark.parametrize("on_area", [False, True])
+def test_raw_first_upload_interrupted_in_the_exercises_completes_without_duplicates(
+        curriculum_dir: Path, monkeypatch, replace: bool, on_area: bool):
+    if on_area:  # exercises attached to a depth-0 topic, which has no page of its own
+        exercises = read_json(curriculum_dir / "exercises.json")
+        for entry in exercises:
+            entry["topic_path"] = entry["topic_path"][:1]
+        write_json(curriculum_dir / "exercises.json", exercises)
+    monkeypatch.setattr(upload, "BATCH_SIZE", 2)
+    client = FakeClient()
+    # 10 pages = 5 requests, then the exercises: the first pair goes through, the next request fails
+    client.fail("content_chunks", "insert", blip(), times=5, skip=6)
+    with pytest.raises(upload.TransientUploadError, match="--update --replace-chunks"):
+        run_raw(curriculum_dir, client)
+    assert len(exercise_pairs(client)) == 2
+
+    run_raw(curriculum_dir, client, update_mode=True, replace_chunks=replace)
+    pairs = exercise_pairs(client)
+    assert len(pairs) == 5 and len(set(pairs)) == 5
+    assert len(client.rows("content_chunks")) == 15 and len(client.rows("topics")) == 15
+    assert_no_duplicates(client)
+
+
+def test_raw_replace_run_replaces_exercises_attached_to_a_topic_without_pages(curriculum_dir: Path):
+    exercises = read_json(curriculum_dir / "exercises.json")
+    for entry in exercises:
+        entry["topic_path"] = entry["topic_path"][:1]  # the depth-0 topic: insert_chunks never touches it
+    write_json(curriculum_dir / "exercises.json", exercises)
+    client = FakeClient()
+    run_raw(curriculum_dir, client)
+    old = {r["id"] for r in client.rows("content_chunks") if r["chunk_index"] >= upload.EXERCISE_CHUNK_OFFSET}
+    assert len(old) == 5
+
+    run_raw(curriculum_dir, client, update_mode=True, replace_chunks=True)
+    new = {r["id"] for r in client.rows("content_chunks") if r["chunk_index"] >= upload.EXERCISE_CHUNK_OFFSET}
+    assert len(new) == 5 and new.isdisjoint(old)

@@ -30,7 +30,7 @@ Module API shared by every stage module: `check(input_dir, **opts)`, `check_item
 - `questions.py` — Stage 8: `prepare` / `check` for embedded questions, quiz items and exercises.
 - `cards.py` — Stage 9: `prepare` / `check` for spaced-repetition cards.
 - `critique.py` — Independent-critic harness: `prepare <stage>` work files (critic; plus test-student and blind-grader files for questions), `check <stage>` computes verdict status and repair gates into `critique/summary.json`, `status` prints the table.
-- `upload.py` — Uploads a raw or lesson-mode output to Supabase (`--target default|staging|custom`); `check` runs the upload-side gates without a database; `plan` / `--dry-run` prints the row plan; `enrich` refreshes objectives, prerequisites and practice content.
+- `upload.py` — Uploads a raw or lesson-mode output to Supabase (`--target default|staging|custom`); `check` runs the upload-side gates without a database; `plan` / `--dry-run` prints the row plan; `enrich` refreshes objectives, prerequisites and practice content. Retries transient network and server failures (5 tries, repeat-safe inserts), uploads images before any database write, and on a run that still fails prints the command that finishes it.
 - `condense.py` — Assembles condensed variants from `condensation_plan.json`
 - `normalize_titles.py` — Required post-extraction pass: strips `Chapter N:` / `N.` / `Part I` prefixes and drops book-meta sections in `extracted/*.json`
 - `chunk_bridge.py` — Raw pipeline only: structure + extracted → `chunks.json` (lesson mode uses `lessons.py build`)

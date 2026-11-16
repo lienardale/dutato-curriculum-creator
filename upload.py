@@ -47,6 +47,27 @@ Module API (used by validate.py / critique.py):
 Writes ``output/<name>/upload_result.json`` (keys listed in docs/artifacts.md)
 at the end of every successful upload or enrich; ``--dry-run`` prints the plan
 and writes nothing.
+
+Interrupted runs: a request that fails for a passing reason (connection reset,
+TLS alert, timeout, unresolved host name, a gateway or server reply of HTTP
+408/425/429/500/502-504 or Cloudflare 520-524, PostgREST PGRST000-003,
+serialization failure, deadlock, statement timeout, database shutting down or
+out of connections) is tried RETRY_ATTEMPTS times with a doubling wait. A
+database error that PostgREST reports in its own JSON body is judged by its
+code, not by the HTTP status. A retried insert first reads back which rows its
+failed try wrote, so nothing is written twice. Images are uploaded before any
+database write: an image that keeps failing that way, or a page placeholder
+whose image could not be uploaded, stops the run with the database untouched
+(any other failed image is a warning and its page goes up without it). When a
+request still fails the run exits 1 without a traceback; the error says
+whether the database was touched and which command finishes the upload (a
+first upload: the same command with ``--update --replace-chunks``; an
+``--update`` run or ``enrich``: the same command again). An upload that stops
+after it began writing also removes an earlier ``upload_result.json`` of the
+same target, so status.py does not report a partial upload as done (``enrich``
+keeps the file: it reads the domain id from it). A plain upload onto a domain
+that already holds topics of this curriculum is refused (``plan`` reports it
+too), since it would insert them a second time.
 """
 
 from __future__ import annotations
@@ -54,20 +75,24 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import ssl
 import sys
+import time
 import uuid
 from collections import deque
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeVar
 from urllib.parse import urlparse
 
 import _compat  # noqa: F401
+import httpx
 from dotenv import load_dotenv
 from postgrest.exceptions import APIError
 from rich.console import Console
+from rich.markup import escape
 
 from contracts import (
     BLOOM_LEVELS,
@@ -105,7 +130,25 @@ TOPIC_QUESTION_PAYLOAD_KEYS = (
 )
 EXERCISE_CHUNK_OFFSET = 1000  # exercise-as-chunk rows live at chunk_index >= this
 BATCH_SIZE = 50
+# Reads of "every row of ..." are paged: PostgREST silently caps one response at its
+# max-rows setting (1000 on Supabase), and update mode would re-insert what it did not see.
+SELECT_PAGE_SIZE = 1000
 LIST_USERS_PAGE_SIZE = 1000
+
+# Retries. A request is tried RETRY_ATTEMPTS times in all; the wait before a retry
+# starts at RETRY_BASE_DELAY seconds and doubles, capped at RETRY_MAX_DELAY.
+RETRY_ATTEMPTS = 5
+RETRY_BASE_DELAY = 1.0
+RETRY_MAX_DELAY = 30.0
+# HTTP statuses of a gateway or server that is briefly unavailable (520-524: Cloudflare).
+TRANSIENT_HTTP_STATUS = frozenset({408, 425, 429, 500, 502, 503, 504, 520, 521, 522, 523, 524})
+# PostgREST could not reach the database (PGRST000-003), and SQLSTATEs that pass on
+# their own: serialization failure, deadlock, statement timeout, server shutting down.
+TRANSIENT_DB_CODES = frozenset({
+    "PGRST000", "PGRST001", "PGRST002", "PGRST003",
+    "40001", "40P01", "57014", "57P01", "57P02", "57P03",
+})
+TRANSIENT_SQLSTATE_CLASSES = ("08", "53")  # connection exception, insufficient resources
 CURRICULUM_IMAGES_BUCKET = "curriculum-images"
 UPLOAD_RESULT_FILE = "upload_result.json"
 SUBCOMMANDS = ("check", "plan", "upload", "enrich")
@@ -124,6 +167,138 @@ class UploadError(Exception):
     def __init__(self, message: str, exit_code: int = 1) -> None:
         super().__init__(message)
         self.exit_code = exit_code
+
+
+class TransientUploadError(UploadError):
+    """A request kept failing for a passing reason (network, gateway, busy server)
+    after every retry. The run stops; what it already wrote stays."""
+
+
+# ---------------------------------------------------------------------------
+# Retries
+# ---------------------------------------------------------------------------
+
+T = TypeVar("T")
+_sleep = time.sleep  # module-level so tests can replace the wait
+
+
+def _error_chain(exc: BaseException) -> Iterator[BaseException]:
+    """``exc`` followed by the errors it was raised from (``__cause__`` / ``__context__``)."""
+    seen: set[int] = set()
+    current: BaseException | None = exc
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        yield current
+        current = current.__cause__ or current.__context__
+
+
+def _http_statuses(exc: BaseException) -> Iterator[int]:
+    """HTTP statuses carried by one error, whatever client library raised it."""
+    if isinstance(exc, httpx.HTTPStatusError):
+        yield exc.response.status_code
+    for name in ("status", "status_code", "code"):
+        value = getattr(exc, name, None)
+        if isinstance(value, bool):
+            continue
+        if isinstance(value, int):
+            yield value
+        elif isinstance(value, str) and len(value) == 3 and value.isdigit():
+            yield int(value)
+
+
+def _is_transient(exc: BaseException) -> bool:
+    """True when repeating the same request may succeed.
+
+    Covers transport failures (connection reset, TLS alert, timeout, a host name
+    that does not resolve), gateway and server statuses (TRANSIENT_HTTP_STATUS) and
+    the database codes in
+    TRANSIENT_DB_CODES / TRANSIENT_SQLSTATE_CLASSES. The whole cause chain is
+    read because the storage client hides the real HTTP status of a reply it
+    cannot parse (it reports 400, or lets a JSONDecodeError through). Constraint
+    violations, permission errors and missing tables are never transient.
+    """
+    if isinstance(exc, UploadError):  # ours: already final (a TransientUploadError has used its retries)
+        return False
+    chain = list(_error_chain(exc))
+    # A certificate the client refuses stays refused. (A name that does not resolve is
+    # retried: that is also what a dropped connection looks like.)
+    if any(isinstance(err, ssl.SSLCertVerificationError) for err in chain):
+        return False
+    for err in chain:
+        if isinstance(err, httpx.TransportError) and not isinstance(err, httpx.UnsupportedProtocol):
+            return True
+        if isinstance(err, (ConnectionError, TimeoutError, ssl.SSLError)):
+            return True
+        if type(err).__name__ == "AuthRetryableError":  # supabase_auth: 502/503/504 or no reply
+            return True
+        if any(status in TRANSIENT_HTTP_STATUS for status in _http_statuses(err)):
+            return True
+        code = getattr(err, "code", None)
+        if isinstance(code, str) and (
+            code in TRANSIENT_DB_CODES or (len(code) == 5 and code[:2] in TRANSIENT_SQLSTATE_CLASSES)
+        ):
+            return True
+    return False
+
+
+def _describe_error(exc: BaseException) -> str:
+    """One line naming the error, short enough for the console."""
+    text = " ".join(str(exc).split())
+    if len(text) > 200:
+        text = text[:197] + "..."
+    return f"{type(exc).__name__}: {text}" if text else type(exc).__name__
+
+
+def _retry(what: str, call: Callable[[], T]) -> T:
+    """Run one request, repeating it with a growing wait while the failure is transient.
+
+    ``call`` must build the request anew on each call and be safe to repeat: a
+    read, a delete or update by filter, or an insert made repeatable by
+    ``_insert_batch``. Raises TransientUploadError after RETRY_ATTEMPTS failed
+    tries; any other failure is raised unchanged on the spot.
+    """
+    delay = RETRY_BASE_DELAY
+    for attempt in range(1, RETRY_ATTEMPTS + 1):
+        try:
+            return call()
+        except UploadError:
+            raise
+        except Exception as e:  # noqa: BLE001 — each client library has its own error family
+            if not _is_transient(e):
+                raise
+            if attempt == RETRY_ATTEMPTS:
+                raise TransientUploadError(
+                    f"{what} failed {RETRY_ATTEMPTS} times in a row ({_describe_error(e)})"
+                ) from e
+            console.print(
+                f"    [yellow]↻[/] {escape(what)}: {escape(_describe_error(e))} — "
+                f"retrying in {delay:g}s (try {attempt + 1} of {RETRY_ATTEMPTS})"
+            )
+            _sleep(delay)
+            delay = min(delay * 2, RETRY_MAX_DELAY)
+    raise AssertionError("unreachable")  # pragma: no cover
+
+
+def _execute(what: str, build: Callable[[], Any]) -> Any:
+    """Build and execute one repeatable PostgREST request, with retries."""
+    return _retry(what, lambda: build().execute())
+
+
+def _select_all(what: str, build: Callable[[], Any]) -> list[dict]:
+    """Every row of a select, read in pages ordered by ``id``.
+
+    ``build`` returns the filtered select. Reading stops at the first empty page,
+    so the result is complete whatever row cap the server applies to a response.
+    """
+    rows: list[dict] = []
+    while True:
+        start = len(rows)
+        page = _execute(
+            what, lambda: build().order("id").range(start, start + SELECT_PAGE_SIZE - 1),
+        ).data or []
+        if not page:
+            return rows
+        rows.extend(page)
 
 
 # ---------------------------------------------------------------------------
@@ -152,11 +327,49 @@ def _batches(rows: list[dict]) -> Iterator[list[dict]]:
         yield rows[i:i + BATCH_SIZE]
 
 
+def _insert_batch(client: Any, table: str, rows: list[dict]) -> None:
+    """Insert one batch of rows that all carry a client-generated ``id``, with retries.
+
+    A request that failed in transit may still have been committed. Every retry
+    therefore first reads back which of the batch's ids exist and sends only the
+    others, so a repeated insert neither duplicates rows nor fails on the rows
+    its own first try wrote. A unique violation on a retry is accepted when the
+    whole batch turns out to be there (the first try committed in between).
+    """
+    ids = [row["id"] for row in rows]
+    retrying = False
+
+    def landed() -> set[str]:
+        found = client.table(table).select("id").in_("id", ids).execute().data or []
+        return {row["id"] for row in found}
+
+    def attempt() -> None:
+        nonlocal retrying
+        if not retrying:
+            retrying = True
+            client.table(table).insert(rows).execute()
+            return
+        written = landed()
+        todo = [row for row in rows if row["id"] not in written]
+        if not todo:
+            return
+        try:
+            client.table(table).insert(todo).execute()
+        except APIError as e:
+            # The failed try was still running when the read-back looked: it has
+            # committed since, and this try collided with its rows.
+            if str(e.code or "") == "23505" and landed() >= set(ids):
+                return
+            raise
+
+    _retry(f"insert into {table}", attempt)
+
+
 def _insert_rows(client: Any, table: str, rows: list[dict]) -> int:
     """Insert rows in batches of BATCH_SIZE; returns the number inserted."""
     inserted = 0
     for sub in _batches(rows):
-        client.table(table).insert(sub).execute()
+        _insert_batch(client, table, sub)
         inserted += len(sub)
     return inserted
 
@@ -296,8 +509,10 @@ def _user_field(user: Any, name: str) -> Any:
 def _find_user_by_email_rpc(client: Any, email: str) -> str | None:
     """Resolve an email through the ``find_user_by_email`` RPC; None on failure or no match."""
     try:
-        result = client.rpc("find_user_by_email", {"p_email": email}).execute()
-    except Exception as e:  # noqa: BLE001 — any transport/API failure falls back to admin listing
+        result = _execute("resolve owner email", lambda: client.rpc("find_user_by_email", {"p_email": email}))
+    except TransientUploadError:
+        raise  # the target is unreachable: the admin listing would only fail the same way
+    except Exception as e:  # noqa: BLE001 — any other API failure falls back to admin listing
         console.print(
             f"  [yellow]→[/] find_user_by_email RPC unavailable ({type(e).__name__}); "
             "falling back to the admin user listing"
@@ -316,7 +531,9 @@ def _find_user_by_email_admin(client: Any, email: str) -> str | None:
     wanted = email.lower()
     page = 1
     while True:
-        users = client.auth.admin.list_users(page=page, per_page=LIST_USERS_PAGE_SIZE) or []
+        users = _retry(
+            "list users", lambda: client.auth.admin.list_users(page=page, per_page=LIST_USERS_PAGE_SIZE),
+        ) or []
         for user in users:
             if (_user_field(user, "email") or "").lower() == wanted:
                 user_id = _user_field(user, "id")
@@ -350,10 +567,13 @@ def resolve_owner_id(client: Any, user_id: str | None = None, user_email: str | 
 def has_table(client: Any, name: str) -> bool:
     """True when ``name`` is reachable through PostgREST; False when the table is missing.
 
-    Any APIError other than a missing-table error is re-raised.
+    Any APIError other than a missing-table error is re-raised. A transient failure
+    is retried and, if it lasts, stops the run (TransientUploadError): PostgREST's
+    "could not query the database for the schema cache" must never be read as
+    "the table is missing", which would silently skip the practice content.
     """
     try:
-        client.table(name).select("id").limit(0).execute()
+        _execute(f"probe table {name}", lambda: client.table(name).select("id").limit(0))
     except APIError as e:
         code = str(e.code or "")
         message = (e.message or "").lower()
@@ -711,7 +931,9 @@ def create_domain(
     back-fill those columns from the arguments so an extensive curriculum
     uploaded before its variants still groups with them (migration 029).
     """
-    result = client.table("domains").select("id, domain_family, variant").eq("slug", slug).execute()
+    result = _execute(
+        "read domain", lambda: client.table("domains").select("id, domain_family, variant").eq("slug", slug),
+    )
     if result.data:
         row = result.data[0]
         domain_id = row["id"]
@@ -721,7 +943,7 @@ def create_domain(
         if variant and not row.get("variant"):
             update["variant"] = variant
         if update:
-            client.table("domains").update(update).eq("id", domain_id).execute()
+            _execute("update domain", lambda: client.table("domains").update(update).eq("id", domain_id))
             console.print(
                 f"  [yellow]→[/] Domain '{slug}' already existed ({domain_id}); "
                 f"back-filled {', '.join(update.keys())}"
@@ -748,7 +970,7 @@ def create_domain(
     if variant:
         row["variant"] = variant
 
-    client.table("domains").insert(row).execute()
+    _insert_batch(client, "domains", [row])
     console.print(f"  [green]✓[/] Created domain: {name} ({domain_id})")
     return domain_id
 
@@ -761,7 +983,10 @@ def create_curriculum_levels(client: Any, domain_id: str, topics: list[dict]) ->
     if not levels_needed:
         return {}
 
-    existing = client.table("curriculum_levels").select("id, level_number").eq("domain_id", domain_id).execute()
+    existing = _execute(
+        "read curriculum levels",
+        lambda: client.table("curriculum_levels").select("id, level_number").eq("domain_id", domain_id),
+    )
     existing_map = {row["level_number"]: row["id"] for row in existing.data}
 
     level_map: dict[int, str] = {}
@@ -770,13 +995,13 @@ def create_curriculum_levels(client: Any, domain_id: str, topics: list[dict]) ->
             level_map[level_num] = existing_map[level_num]
             continue
         level_id = str(uuid.uuid4())
-        client.table("curriculum_levels").insert({
+        _insert_batch(client, "curriculum_levels", [{
             "id": level_id,
             "domain_id": domain_id,
             "level_number": level_num,
             "name": LEVEL_NAMES.get(level_num, f"Level {level_num}"),
             "description": LEVEL_DESCRIPTIONS.get(level_num, ""),
-        }).execute()
+        }])
         level_map[level_num] = level_id
 
     created = len(level_map) - len(existing_map)
@@ -803,7 +1028,10 @@ def backfill_levels(
         topic_id = existing_topics.get((topic["title"].lower(), 0, None))
         if not level_id or not topic_id:
             continue
-        client.table("topics").update({"curriculum_level_id": level_id}).eq("id", topic_id).execute()
+        _execute(
+            "update topic level",
+            lambda: client.table("topics").update({"curriculum_level_id": level_id}).eq("id", topic_id),
+        )
         updated += 1
     return updated
 
@@ -815,10 +1043,13 @@ def find_existing_topics(
 
     Returns (key_to_id, id_to_title) where key is (lower_title, depth, lower_parent_title|None).
     """
-    result = client.table("topics").select("id, title, depth, parent_topic_id").eq("domain_id", domain_id).execute()
-    id_to_title: dict[str, str] = {row["id"]: row["title"] for row in result.data}
+    rows = _select_all(
+        "read topics",
+        lambda: client.table("topics").select("id, title, depth, parent_topic_id").eq("domain_id", domain_id),
+    )
+    id_to_title: dict[str, str] = {row["id"]: row["title"] for row in rows}
     key_to_id: dict[tuple[str, int, str | None], str] = {}
-    for row in result.data:
+    for row in rows:
         parent_title = id_to_title.get(row["parent_topic_id"])
         key_to_id[(row["title"].lower(), row["depth"], parent_title.lower() if parent_title else None)] = row["id"]
     return key_to_id, id_to_title
@@ -857,7 +1088,7 @@ def insert_topics(
             curriculum_level_id = None
             if level_map and depth == 0 and "suggested_level" in topic:
                 curriculum_level_id = level_map.get(topic["suggested_level"])
-            client.table("topics").insert({
+            _insert_batch(client, "topics", [{
                 "id": topic_id,
                 "book_id": None,  # curriculum topics have no book
                 "domain_id": domain_id,
@@ -866,7 +1097,7 @@ def insert_topics(
                 "depth": depth,
                 "sort_order": topic.get("sort_order", 0),
                 "curriculum_level_id": curriculum_level_id,
-            }).execute()
+            }])
             path_to_id[title] = topic_id
             existing_id = topic_id
 
@@ -882,7 +1113,9 @@ def insert_topics(
 
 def insert_books(client: Any, domain_id: str, sources: list[dict]) -> dict[str, str]:
     """Create a book record for each manifest source. Returns source_path → book_id."""
-    existing = client.table("books").select("id, title, file_name").eq("domain_id", domain_id).execute()
+    existing = _execute(
+        "read books", lambda: client.table("books").select("id, title, file_name").eq("domain_id", domain_id),
+    )
     existing_by_title = {row["title"].lower(): row["id"] for row in existing.data if row["title"]}
     existing_by_file = {row["file_name"]: row["id"] for row in existing.data if row["file_name"]}
 
@@ -904,13 +1137,13 @@ def insert_books(client: Any, domain_id: str, sources: list[dict]) -> dict[str, 
             reused += 1
         else:
             book_id = str(uuid.uuid4())
-            client.table("books").insert({
+            _insert_batch(client, "books", [{
                 "id": book_id,
                 "domain_id": domain_id,
                 "title": _sanitize(title),
                 "author": _sanitize(source.get("author")),
                 "file_name": file_name,
-            }).execute()
+            }])
             source_to_book[source_path] = book_id
             created += 1
 
@@ -1030,8 +1263,15 @@ def insert_exercises(
     exercises: list[dict],
     path_to_id: dict[str, str],
     source_to_book: dict[str, str] | None = None,
+    update_mode: bool = False,
+    replace_chunks: bool = False,
 ) -> int:
-    """Insert exercises.json entries as content_chunks with exercise metadata. Returns count inserted."""
+    """Insert exercises.json entries as content_chunks with exercise metadata. Returns count inserted.
+
+    In update mode the exercise chunks follow the rule of the pages: an existing
+    (topic, chunk_index) is kept and skipped, or with ``replace_chunks`` the old
+    exercise chunks of those topics are deleted first. Without this, every
+    ``--update`` run would add each exercise a second time."""
     fallback_book_id = next(iter(source_to_book.values()), None) if source_to_book else None
     batch: list[dict] = []
     for entry in exercises:
@@ -1046,6 +1286,14 @@ def insert_exercises(
             row = _exercise_chunk_row(topic_id, j, ex, fallback_book_id)
             if row:
                 batch.append(row)
+
+    if update_mode and batch:
+        topic_ids = sorted({row["topic_id"] for row in batch})
+        if replace_chunks:
+            delete_practice_rows(client, topic_ids, {}, include_exercise_chunks=True)
+        else:
+            existing = fetch_chunk_ids(client, topic_ids)
+            batch = [row for row in batch if (row["topic_id"], row["chunk_index"]) not in existing]
     return _insert_rows(client, "content_chunks", batch)
 
 
@@ -1057,14 +1305,18 @@ def insert_exercises(
 def _ensure_storage_bucket(client: Any) -> None:
     """Ensure the curriculum-images storage bucket exists."""
     try:
-        client.storage.get_bucket(CURRICULUM_IMAGES_BUCKET)
+        _retry("read storage bucket", lambda: client.storage.get_bucket(CURRICULUM_IMAGES_BUCKET))
+    except TransientUploadError:
+        raise
     except Exception:  # noqa: BLE001 — storage client raises its own error family
         try:
-            client.storage.create_bucket(
+            _retry("create storage bucket", lambda: client.storage.create_bucket(
                 CURRICULUM_IMAGES_BUCKET,
                 options={"public": True, "file_size_limit": 10 * 1024 * 1024},
-            )
+            ))
             console.print(f"  [green]✓[/] Created storage bucket: {CURRICULUM_IMAGES_BUCKET}")
+        except TransientUploadError:
+            raise
         except Exception as e:  # noqa: BLE001
             if "already exists" not in str(e).lower():
                 console.print(f"  [yellow]Warning:[/] Could not create storage bucket: {e}")
@@ -1096,8 +1348,15 @@ def upload_chunk_images(
             if not file_path:
                 continue
             storage_path = f"{domain_slug}/{img['id']}{file_path.suffix}"
+            data = file_path.read_bytes()
+            options = {"content-type": img.get("mime_type", "image/png")}
             try:
-                bucket.upload(storage_path, file_path.read_bytes(), {"content-type": img.get("mime_type", "image/png")})
+                _retry(
+                    f"upload image {img['id']}",
+                    lambda path=storage_path, data=data, options=options: bucket.upload(path, data, options),
+                )
+            except TransientUploadError:
+                raise  # storage is unreachable: stop here instead of failing image after image
             except Exception as e:  # noqa: BLE001 — storage errors are not a single class
                 if "already exists" not in str(e).lower() and "duplicate" not in str(e).lower():
                     console.print(f"    [yellow]Warning:[/] Failed to upload {img['id']}: {e}")
@@ -1163,13 +1422,12 @@ def fetch_chunk_ids(client: Any, topic_ids: list[str]) -> dict[tuple[str, int], 
     """(topic_id, chunk_index) -> chunk_id for existing chunks of the given topics."""
     out: dict[tuple[str, int], str] = {}
     for i in range(0, len(topic_ids), BATCH_SIZE):
-        result = (
-            client.table("content_chunks")
-            .select("id, topic_id, chunk_index")
-            .in_("topic_id", topic_ids[i:i + BATCH_SIZE])
-            .execute()
+        sub_ids = topic_ids[i:i + BATCH_SIZE]
+        rows = _select_all(
+            "read chunk ids",
+            lambda: client.table("content_chunks").select("id, topic_id, chunk_index").in_("topic_id", sub_ids),
         )
-        for row in result.data:
+        for row in rows:
             out[(row["topic_id"], row["chunk_index"])] = row["id"]
     return out
 
@@ -1241,7 +1499,7 @@ def insert_chunks(
 
         if replace_chunks and topics_with_chunks:
             for tid in topics_with_chunks:
-                client.table("content_chunks").delete().eq("topic_id", tid).execute()
+                _execute("delete old chunks", lambda: client.table("content_chunks").delete().eq("topic_id", tid))
             result.replaced = len(existing)
             existing = {}
             console.print(f"    [yellow]↻[/] Replacing chunks for {len(topics_with_chunks)} topics")
@@ -1422,15 +1680,15 @@ def delete_practice_rows(
         sub_ids = topic_ids[i:i + BATCH_SIZE]
         for table in PRACTICE_TABLES:
             if tables.get(table):
-                result = client.table(table).delete().in_("topic_id", sub_ids).execute()
+                result = _execute(
+                    f"delete old {table}", lambda: client.table(table).delete().in_("topic_id", sub_ids),
+                )
                 deleted[table] += len(result.data or [])
         if include_exercise_chunks:
-            result = (
-                client.table("content_chunks")
-                .delete()
-                .in_("topic_id", sub_ids)
-                .gte("chunk_index", EXERCISE_CHUNK_OFFSET)
-                .execute()
+            result = _execute(
+                "delete old exercise chunks",
+                lambda: client.table("content_chunks").delete().in_("topic_id", sub_ids)
+                .gte("chunk_index", EXERCISE_CHUNK_OFFSET),
             )
             deleted["exercise_chunks"] += len(result.data or [])
     return deleted
@@ -1511,6 +1769,92 @@ def _mode_name(update_mode: bool, replace_chunks: bool) -> str:
 # ---------------------------------------------------------------------------
 
 
+@dataclass
+class _RunState:
+    """What a run has done so far, read when it stops on a TransientUploadError."""
+
+    writing: bool = False  # True once the run may have written to the database
+
+
+def _topic_keys(topics: list[dict]) -> Iterator[tuple[str, int, str | None]]:
+    """The (lower title, depth, lower parent title) key of every topic, as find_existing_topics builds it."""
+    for topic, path in _walk_topics(topics):
+        parent = path[-2].lower() if len(path) > 1 else None
+        yield topic["title"].lower(), topic.get("depth", 0), parent
+
+
+def _refuse_duplicate_upload(client: Any, slug: str, topics: list[dict]) -> None:
+    """Plain (non ``--update``) upload: stop when the domain already holds topics of this curriculum.
+
+    That is a second upload of the same curriculum, usually after an interrupted
+    first one. Inserting every topic again would duplicate them, since nothing in
+    the schema keeps topic titles unique within a domain.
+    """
+    found = _execute("read domain", lambda: client.table("domains").select("id").eq("slug", slug)).data
+    if not found:
+        return
+    existing, _ = find_existing_topics(client, found[0]["id"])
+    keys = list(_topic_keys(topics))
+    already = sum(1 for key in keys if key in existing)
+    if already:
+        raise UploadError(
+            f"Domain '{slug}' already holds {already} of the {len(keys)} topics of this curriculum "
+            "(an earlier upload, possibly an interrupted one). A plain upload would insert them a "
+            "second time. Run the same command with --update to add what is missing, or with "
+            "--update --replace-chunks to also replace the pages.",
+            1,
+        )
+
+
+def _recorded_result(input_dir: Path) -> dict:
+    """The upload_result.json document, or {} when it is absent or unreadable."""
+    path = Path(input_dir) / UPLOAD_RESULT_FILE
+    if not path.exists():
+        return {}
+    try:
+        data = load_json(path)
+    except json.JSONDecodeError:
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _forget_stale_result(input_dir: Path, state: _RunState, target: Target) -> bool:
+    """Remove ``upload_result.json`` when an upload to the target it records stopped
+    after it began writing. True if removed.
+
+    The file records an earlier, finished upload, and status.py reads its mere
+    presence as "uploaded" while that target now holds a partial state. The run
+    that finishes the upload writes it again. A record of another target is
+    kept: this run did not touch that upload. ``enrich`` never calls this: it
+    reads the domain id from the file, and needs it again to finish.
+    """
+    if not state.writing or _recorded_result(input_dir).get("target") != target.name:
+        return False
+    (Path(input_dir) / UPLOAD_RESULT_FILE).unlink()
+    return True
+
+
+def _stopped(
+    error: TransientUploadError,
+    state: _RunState,
+    incomplete: str = "",
+    resume: str = "",
+    result_removed: bool = False,
+) -> TransientUploadError:
+    """``error`` with what the stopped run left behind and how to finish it."""
+    if state.writing:
+        advice = f"{incomplete} {resume} Rows already written are reused, not duplicated."
+        if result_removed:
+            advice += f" The earlier {UPLOAD_RESULT_FILE} was removed, so this upload does not show as done."
+    else:
+        advice = "Nothing was written to the database. Run the same command again."
+    return TransientUploadError(f"{error}.\n{advice}", error.exit_code)
+
+
+def _note_stale_result_removed() -> None:
+    console.print(f"  [yellow]→[/] {UPLOAD_RESULT_FILE} removed: this run stopped after it began writing")
+
+
 def upload_curriculum(
     input_dir: Path,
     client: Any,
@@ -1524,7 +1868,48 @@ def upload_curriculum(
     dry_run: bool = False,
 ) -> dict:
     """Upload a curriculum from an output directory. Returns the upload_result document
-    (written to ``<input_dir>/upload_result.json`` unless ``dry_run``)."""
+    (written to ``<input_dir>/upload_result.json`` unless ``dry_run``).
+
+    Requests that fail for a passing reason are retried (``_retry``). When one
+    still fails, the run stops with a TransientUploadError that says whether the
+    database was touched and which command finishes the upload."""
+    state = _RunState()
+    try:
+        return _upload_curriculum(
+            input_dir, client, target, state, owner_type=owner_type, user_id=user_id, org_id=org_id,
+            update_mode=update_mode, replace_chunks=replace_chunks, skip_validation=skip_validation,
+            dry_run=dry_run,
+        )
+    except TransientUploadError as e:
+        removed = _forget_stale_result(input_dir, state, target)
+        if update_mode:
+            raise _stopped(
+                e, state, "The update is incomplete.", "Run the same command again to finish it.", removed,
+            ) from e
+        raise _stopped(
+            e, state, "The curriculum may be only partly uploaded.",
+            "Run the same command again with --update --replace-chunks to finish it.", removed,
+        ) from e
+    except BaseException:  # any other stop, Ctrl-C included: the old result file is stale too
+        if _forget_stale_result(input_dir, state, target):
+            _note_stale_result_removed()
+        raise
+
+
+def _upload_curriculum(
+    input_dir: Path,
+    client: Any,
+    target: Target,
+    state: _RunState,
+    *,
+    owner_type: str,
+    user_id: str | None,
+    org_id: str | None,
+    update_mode: bool,
+    replace_chunks: bool,
+    skip_validation: bool,
+    dry_run: bool,
+) -> dict:
     input_dir = Path(input_dir)
     _validate_or_exit(input_dir, "upload", skip_validation)
     inputs = _gate_or_raise(input_dir)
@@ -1556,6 +1941,9 @@ def upload_curriculum(
     exercises_path = input_dir / "exercises.json"
     raw_exercises = load_json(exercises_path) if exercises_path.exists() else []
 
+    if not update_mode:
+        _refuse_duplicate_upload(client, slug, topics)  # reads only: `plan` reports the refusal too
+
     if dry_run:
         planned = plan_practice_rows(practice, topics, {t["title"]: t["title"] for t, _ in _walk_topics(topics)}, {}, tables)
         row_counts = {
@@ -1575,6 +1963,23 @@ def upload_curriculum(
             practice_counts=planned.counts(),
         )
 
+    # Images go first: a failed image stops the run before the database holds
+    # half a curriculum. Storage objects left behind are reused by the next run.
+    extracted_dir = input_dir / "extracted"
+    images_uploaded = upload_chunk_images(
+        client, chunks, slug, extracted_dir=extracted_dir if extracted_dir.exists() else None,
+    )
+    if images_uploaded:
+        console.print(f"  [green]✓[/] {images_uploaded} images uploaded to Storage")
+    unresolved = inline_chunk_images(chunks)
+    if unresolved:
+        raise UploadError(
+            "Image placeholders without an uploaded image (validate should have caught this); "
+            "nothing was written to the database:\n  " + "\n  ".join(unresolved),
+            1,
+        )
+
+    state.writing = True
     domain_id = create_domain(
         client, name=name, slug=slug, description=description, owner_id=user_id,
         org_id=org_id if owner_type == "org" else None, sort_order=sort_order,
@@ -1609,20 +2014,6 @@ def upload_curriculum(
     if topics_skipped:
         console.print(f"  [yellow]→[/] {topics_skipped} topics already existed")
 
-    extracted_dir = input_dir / "extracted"
-    images_uploaded = upload_chunk_images(
-        client, chunks, slug, extracted_dir=extracted_dir if extracted_dir.exists() else None,
-    )
-    if images_uploaded:
-        console.print(f"  [green]✓[/] {images_uploaded} images uploaded to Storage")
-    unresolved = inline_chunk_images(chunks)
-    if unresolved:
-        raise UploadError(
-            "Image placeholders without an uploaded image (validate should have caught this):\n  "
-            + "\n  ".join(unresolved),
-            1,
-        )
-
     console.print("  Inserting chunks...")
     chunk_result = insert_chunks(
         client, chunks, path_to_id, source_to_book, update_mode=update_mode, replace_chunks=replace_chunks,
@@ -1632,7 +2023,10 @@ def upload_curriculum(
         console.print(f"  [yellow]↻[/] {chunk_result.replaced} chunks replaced")
 
     if update_mode and existing_topics:
-        cleared = clear_objectives_and_prerequisites(client, existing_topics.values())
+        # Only this curriculum's topics: a domain may also hold another curriculum,
+        # whose objectives and prerequisite links are not ours to clear.
+        own_existing = {existing_topics[key] for key in _topic_keys(topics) if key in existing_topics}
+        cleared = clear_objectives_and_prerequisites(client, own_existing)
         if any(cleared.values()):
             console.print(f"  [yellow]↻[/] Cleared {cleared['objectives']} objectives and "
                           f"{cleared['prerequisites']} prerequisite links of existing topics (re-inserted below)")
@@ -1646,7 +2040,9 @@ def upload_curriculum(
     exercise_chunks = 0
     if raw_exercises:
         console.print("  Inserting exercises...")
-        exercise_chunks = insert_exercises(client, raw_exercises, path_to_id, source_to_book)
+        exercise_chunks = insert_exercises(
+            client, raw_exercises, path_to_id, source_to_book, update_mode=update_mode, replace_chunks=replace_chunks,
+        )
         console.print(f"  [green]✓[/] {exercise_chunks} exercises inserted")
 
     practice_counts: dict[str, int] = {}
@@ -1677,25 +2073,23 @@ def upload_curriculum(
     return result
 
 
-def _resolve_domain_id(client: Any, input_dir: Path, manifest: dict) -> str | None:
+def _resolve_domain_id(client: Any, input_dir: Path, manifest: dict, target: Target | None = None) -> str | None:
     """Resolve the domain ID for an existing curriculum.
 
     Checks (in order): upload_result.json, manifest exported_domain_id, slug lookup.
+    upload_result.json records the last upload only, so with ``target`` its domain
+    id is used only when the file was written for that target: a staging id means
+    nothing on prod, where it would match no topic and enrich nothing.
     """
-    upload_result_path = input_dir / UPLOAD_RESULT_FILE
-    if upload_result_path.exists():
-        try:
-            domain_id = load_json(upload_result_path).get("domain_id")
-        except json.JSONDecodeError:
-            domain_id = None
-        if domain_id:
-            return domain_id
+    recorded = _recorded_result(input_dir)
+    if recorded.get("domain_id") and (target is None or recorded.get("target") == target.name):
+        return recorded["domain_id"]
     domain_id = manifest.get("exported_domain_id")
     if domain_id:
         return domain_id
-    slug = manifest.get("domain", "").lower().replace(" ", "-")
+    slug = _slug_of(manifest, input_dir)  # the slug upload_curriculum created the domain under
     if slug:
-        result = client.table("domains").select("id").eq("slug", slug).execute()
+        result = _execute("read domain", lambda: client.table("domains").select("id").eq("slug", slug))
         if result.data:
             return result.data[0]["id"]
     return None
@@ -1711,9 +2105,15 @@ def clear_objectives_and_prerequisites(client: Any, topic_ids: Iterable[str]) ->
     deleted = {"objectives": 0, "prerequisites": 0}
     for i in range(0, len(ids), BATCH_SIZE):
         sub_ids = ids[i:i + BATCH_SIZE]
-        result = client.table("topic_learning_objectives").delete().in_("topic_id", sub_ids).execute()
+        result = _execute(
+            "delete old objectives",
+            lambda: client.table("topic_learning_objectives").delete().in_("topic_id", sub_ids),
+        )
         deleted["objectives"] += len(result.data or [])
-        result = client.table("topic_prerequisites").delete().in_("topic_id", sub_ids).execute()
+        result = _execute(
+            "delete old prerequisites",
+            lambda: client.table("topic_prerequisites").delete().in_("topic_id", sub_ids),
+        )
         deleted["prerequisites"] += len(result.data or [])
     return deleted
 
@@ -1721,8 +2121,8 @@ def clear_objectives_and_prerequisites(client: Any, topic_ids: Iterable[str]) ->
 def clear_enrichment_data(client: Any, domain_id: str, tables: Mapping[str, bool] | None = None) -> dict[str, int]:
     """Delete all enrichment data of a domain: objectives, prerequisites, exercise chunks
     and, for every present practice table, its rows. Returns counts of deleted items."""
-    result = client.table("topics").select("id").eq("domain_id", domain_id).execute()
-    topic_ids = [row["id"] for row in result.data]
+    rows = _select_all("read topics", lambda: client.table("topics").select("id").eq("domain_id", domain_id))
+    topic_ids = [row["id"] for row in rows]
     deleted = {"objectives": 0, "prerequisites": 0, "exercises": 0}
     if not topic_ids:
         return deleted
@@ -1742,7 +2142,27 @@ def enrich_curriculum(
 ) -> dict:
     """Enrich an already-uploaded curriculum with objectives, prerequisites, exercises and
     (lesson mode) practice content. Does NOT create domains, topics or content chunks;
-    clears the old enrichment rows first so it is idempotent."""
+    clears the old enrichment rows first so it is idempotent, which also makes
+    running it again the way to finish an enrich that stopped part-way."""
+    state = _RunState()
+    try:
+        return _enrich_curriculum(input_dir, client, target, state, skip_validation=skip_validation)
+    except TransientUploadError as e:
+        raise _stopped(
+            e, state,
+            "The enrichment is incomplete: old objectives, prerequisites and practice rows may already be cleared.",
+            "Run the same command again to finish it.",
+        ) from e
+
+
+def _enrich_curriculum(
+    input_dir: Path,
+    client: Any,
+    target: Target,
+    state: _RunState,
+    *,
+    skip_validation: bool,
+) -> dict:
     input_dir = Path(input_dir)
     _validate_or_exit(input_dir, "enrich", skip_validation)
 
@@ -1759,7 +2179,7 @@ def enrich_curriculum(
         _gate_or_raise(input_dir)  # needs chunks.json too, to link practice rows to pages
 
     console.print(f"\n[bold blue]Enriching curriculum:[/] {manifest.get('name', input_dir.name)}")
-    domain_id = _resolve_domain_id(client, input_dir, manifest)
+    domain_id = _resolve_domain_id(client, input_dir, manifest, target)
     if not domain_id:
         raise UploadError("Could not resolve domain ID. Ensure the curriculum has been uploaded.", 1)
     console.print(f"  Domain ID: {domain_id}")
@@ -1772,6 +2192,7 @@ def enrich_curriculum(
     skipped_tables = [t for t in PRACTICE_TABLES if lesson_mode and not tables.get(t)]
 
     console.print("  Clearing existing enrichment data...")
+    state.writing = True
     cleared = clear_enrichment_data(client, domain_id, tables)
     if any(v > 0 for v in cleared.values()):
         console.print(f"    Cleared: {cleared}")
@@ -1906,7 +2327,10 @@ def _run(args: argparse.Namespace, client_factory: Callable[[Target], Any]) -> i
         enrich_curriculum(input_dir, client, target, skip_validation=args.skip_validation)
         return 0
 
-    owner_id = resolve_owner_id(client, args.user_id, args.user_email)
+    try:
+        owner_id = resolve_owner_id(client, args.user_id, args.user_email)
+    except TransientUploadError as e:
+        raise _stopped(e, _RunState()) from e
     upload_curriculum(
         input_dir, client, target,
         owner_type=args.owner, user_id=owner_id, org_id=args.org_id,
@@ -1922,7 +2346,7 @@ def main(argv: list[str] | None = None, client_factory: Callable[[Target], Any] 
     try:
         return _run(args, client_factory)
     except UploadError as e:
-        console.print(f"[red]Error:[/] {e}")
+        console.print(f"[red]Error:[/] {escape(str(e))}")
         return e.exit_code
 
 
