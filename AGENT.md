@@ -760,9 +760,34 @@ python upload.py upload output/<name>/ --target custom --db-url <url> --db-key <
   topic_exercises) is in `docs/artifacts.md`, "Upload mapping"; missing tables on the target
   are reported and skipped (`skipped_tables`).
 - `upload_result.json` is written by the script; report `domain_id` and `target` to the user.
+- **Passing failures are retried.** A request that fails on the network, at a gateway or on a
+  briefly unavailable server (connection reset, TLS alert, timeout, unresolved host name, a
+  gateway or server reply of HTTP 408/425/429/500/502–504 or Cloudflare 520–524, PostgREST
+  `PGRST000`–`PGRST003`, serialization failure, deadlock, statement timeout, database shutting
+  down or out of connections) is tried 5 times, waiting 1, 2, 4 then 8 seconds; each retry
+  prints a `↻` line. Any other database error (constraint, permission, missing table) is not
+  retried. A retried insert first reads back which rows its failed try wrote, so nothing is
+  written twice. A target that hangs is retried too, and each try can last as long as the
+  client timeout (120 s for tables, 20 s for Storage), so such a run can take about
+  10 minutes to give up.
+- **Images are uploaded before any database write.** An image that keeps failing that way, or
+  an `image:` placeholder whose image could not be uploaded, stops the run with the database
+  untouched. Any other failed image is only a warning: its page is uploaded without it.
+- **A run that gives up tells you how to finish it.** The error starts with "… failed 5 times
+  in a row", the run exits 1 with no traceback, and its last lines say what to run:
+  - "Nothing was written to the database" → the same command again.
+  - a first upload that stopped part-way → the same command with `--update --replace-chunks`.
+  - an `--update` run or `enrich` that stopped part-way → the same command again.
 
-**Resume rule:** `upload_result.json` present → done for that target. Uploading the same
-output to a second target (staging → prod) overwrites `upload_result.json`.
+  An `upload` that stops after it began writing also removes an earlier `upload_result.json`
+  of the same target, so `status.py` does not show a partial upload as done; the run that
+  finishes it writes it again. `enrich` keeps the file: it reads the domain id from it. Never
+  re-run a plain upload after a partial one: the script refuses it ("already holds N of the M
+  topics", from `plan` too), because it would insert every topic a second time.
+
+**Resume rule:** `upload_result.json` present → done for the target it names (an upload to
+that target that stopped part-way removes it). Uploading the same output to a second target
+(staging → prod) overwrites `upload_result.json`.
 
 ---
 
@@ -831,7 +856,10 @@ Ending early:
 - **Validation errors at upload:** read `validation_report.json`, fix the artifact, re-run.
   Never `--skip-validation` unless the user asks.
 - **Upload fails:** check the target's `.env` variables and the "refusing: target resolves to
-  SUPABASE_URL" guard; report the error verbatim.
+  SUPABASE_URL" guard; report the error verbatim. An error that says "failed 5 times in a
+  row" already used its retries: run exactly the command its last lines name (Stage 11).
+  Unless it says "Nothing was written to the database", tell the user the target holds a
+  partial upload until that command succeeds.
 
 **When to ask the user:** before extraction of paid/credentialed sources; after
 `qualify.py check` for every critical gap (`resolution`); after the groups critique when a

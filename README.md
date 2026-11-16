@@ -76,6 +76,8 @@ python upload.py upload output/<name>/ --target default --owner user --user-id <
 
 `--target` is required (`default`, `staging`, or `custom` with `--db-url` / `--db-key`). A `staging` or `custom` target that resolves to `SUPABASE_URL` is refused, so a mis-set environment can never write to production. The validator runs first and blocks on errors.
 
+Network and server hiccups are retried (5 tries per request, without writing anything twice). If an upload still stops part-way, the error names the command that finishes it; for a first upload that is the same command with `--update --replace-chunks`.
+
 ### Custom Database
 
 To set up your own database with the DuTaTo schema:
